@@ -1,0 +1,5 @@
+# cmake files
+/build
+
+# editor-files
+*.swp
