@@ -4,8 +4,8 @@ project(grs)
 ADD_DEFINITIONS(-Wall -Werror)
 
 set(GRSD_SOURCES
-  grsd/main.c
-  grsd/grsd.c
+  src/grsd/main.c
+  src/grsd/grsd.c
 )
 
 add_executable(grsd ${GRSD_SOURCES})
