@@ -3,4 +3,9 @@ project(grs)
 
 ADD_DEFINITIONS(-Wall -Werror)
 
-add_subdirectory(grsd)
+set(GRSD_SOURCES
+  grsd/main.c
+  grsd/grsd.c
+)
+
+add_executable(grsd ${GRSD_SOURCES})
