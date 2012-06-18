@@ -3,3 +3,5 @@ set(GRSD_SOURCES
 )
 
 add_executable(grsd ${GRSD_SOURCES})
+include_directories("${PROJECT_SOURCE_DIR}/src/libgrsd")
+target_link_libraries(grsd libgrsd)
