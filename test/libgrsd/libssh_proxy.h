@@ -5,7 +5,9 @@ struct libssh_proxy_env {
 
 };
 
-int libssh_proxy_init(struct libssh_proxy_env* env);
-void libssh_proxy_destroy(struct libssh_proxy_env* env);
+struct libssh_proxy_env* ssh_proxy_env;
+
+int libssh_proxy_init();
+void libssh_proxy_destroy();
 
 #endif /* LIBSSH_PROXY */

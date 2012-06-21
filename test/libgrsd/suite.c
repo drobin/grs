@@ -5,19 +5,12 @@
 
 #include "libssh_proxy.h"
 
-static struct libssh_proxy_env* env;
-
 static void setup() {
-  env = malloc(sizeof(struct libssh_proxy_env));
-  fail_unless(env != NULL);
-
-  fail_unless(libssh_proxy_init(env) == 0);
+  fail_unless(libssh_proxy_init() == 0);
 }
 
 static void teardown() {
-  libssh_proxy_destroy(env);
-  free(env);
-  env = NULL;
+  libssh_proxy_destroy();
 }
 
 START_TEST(init_destroy) {
