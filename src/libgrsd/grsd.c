@@ -34,3 +34,19 @@ int grsd_destroy(grsd_t handle) {
 
   return 0;
 }
+
+int grsd_listen(grsd_t handle) {
+  if (handle == NULL) {
+    return -1;
+  }
+
+  return 0;
+}
+
+int grsd_listen_exit(grsd_t handle) {
+  if (handle == NULL) {
+    return -1;
+  }
+
+  return 0;
+}

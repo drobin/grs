@@ -35,6 +35,22 @@ START_TEST(init_failed) {
 }
 END_TEST
 
+START_TEST(listen_null_handle) {
+  int result;
+
+  result = grsd_listen(NULL);
+  fail_unless(result == -1);
+}
+END_TEST
+
+START_TEST(listen_exit_null_handle) {
+  int result;
+
+  result = grsd_listen_exit(NULL);
+  fail_unless(result == -1);
+}
+END_TEST
+
 Suite* libgrsd_suite() {
   Suite* s = suite_create("libgrsd_test");
 
@@ -44,6 +60,8 @@ Suite* libgrsd_suite() {
 
   tcase_add_test(tc, init_destroy);
   tcase_add_test(tc, init_failed);
+  tcase_add_test(tc, listen_null_handle);
+  tcase_add_test(tc, listen_exit_null_handle);
 
   return s;
 }
