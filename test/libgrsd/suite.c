@@ -25,6 +25,16 @@ START_TEST(init_destroy) {
 }
 END_TEST
 
+START_TEST(init_failed) {
+  grsd_t handle;
+
+  ssh_proxy_env->ssh_bind_new_should_fail = 1;
+
+  handle = grsd_init();
+  fail_unless(handle == NULL);
+}
+END_TEST
+
 Suite* libgrsd_suite() {
   Suite* s = suite_create("libgrsd_test");
 
@@ -33,6 +43,7 @@ Suite* libgrsd_suite() {
   suite_add_tcase(s, tc);
 
   tcase_add_test(tc, init_destroy);
+  tcase_add_test(tc, init_failed);
 
   return s;
 }
