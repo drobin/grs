@@ -1,6 +1,24 @@
+#include <stdlib.h>
 #include <check.h>
 
 #include <grsd.h>
+
+#include "libssh_proxy.h"
+
+static struct libssh_proxy_env* env;
+
+static void setup() {
+  env = malloc(sizeof(struct libssh_proxy_env));
+  fail_unless(env != NULL);
+
+  fail_unless(libssh_proxy_init(env) == 0);
+}
+
+static void teardown() {
+  libssh_proxy_destroy(env);
+  free(env);
+  env = NULL;
+}
 
 START_TEST(init_destroy) {
   grsd_t handle;
@@ -18,6 +36,7 @@ Suite* libgrsd_suite() {
   Suite* s = suite_create("libgrsd_test");
 
   TCase* tc = tcase_create("libgrsd");
+  tcase_add_checked_fixture(tc, setup, teardown);
   suite_add_tcase(s, tc);
 
   tcase_add_test(tc, init_destroy);
