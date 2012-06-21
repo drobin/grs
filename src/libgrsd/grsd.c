@@ -6,6 +6,7 @@
 #include "grsd.h"
 
 struct _grsd {
+  int listen_pipe[2];
   ssh_bind bind;
 };
 
@@ -16,7 +17,14 @@ grsd_t grsd_init() {
     return NULL;
   }
 
+  if (pipe(handle->listen_pipe) != 0) {
+    free(handle);
+    return NULL;
+  }
+
   if ((handle->bind = ssh_bind_new()) == NULL) {
+    close(handle->listen_pipe[0]);
+    close(handle->listen_pipe[1]);
     free(handle);
     return NULL;
   }
@@ -29,6 +37,8 @@ int grsd_destroy(grsd_t handle) {
     return -1;
   }
 
+  close(handle->listen_pipe[0]);
+  close(handle->listen_pipe[1]);
   ssh_bind_free(handle->bind);
   free(handle);
 
