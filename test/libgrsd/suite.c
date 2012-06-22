@@ -1,3 +1,5 @@
+#include <sys/errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <check.h>
 
@@ -51,6 +53,29 @@ START_TEST(listen_exit_null_handle) {
 }
 END_TEST
 
+START_TEST(listen_exit) {
+  grsd_t handle;
+  int result;
+  pid_t pid;
+
+  handle = grsd_init();
+  fail_unless(handle != NULL);
+
+  pid = check_fork();
+  if (pid == 0) {
+    fail_unless(grsd_listen_exit(handle) == 0);
+  } else if (pid > 0) {
+    fail_unless(grsd_listen(handle) == 0);
+    check_waitpid_and_exit(pid);
+  } else {
+    fail(strerror(errno));
+  }
+
+  result = grsd_destroy(handle);
+  fail_unless(result == 0);
+}
+END_TEST
+
 Suite* libgrsd_suite() {
   Suite* s = suite_create("libgrsd_test");
 
@@ -62,6 +87,7 @@ Suite* libgrsd_suite() {
   tcase_add_test(tc, init_failed);
   tcase_add_test(tc, listen_null_handle);
   tcase_add_test(tc, listen_exit_null_handle);
+  tcase_add_test(tc, listen_exit);
 
   return s;
 }

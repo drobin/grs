@@ -1,3 +1,6 @@
+#include <sys/errno.h>
+#include <sys/select.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <libssh/libssh.h>
@@ -46,15 +49,57 @@ int grsd_destroy(grsd_t handle) {
 }
 
 int grsd_listen(grsd_t handle) {
+  fd_set rfds;
+  int exit_loop = 0;
+
   if (handle == NULL) {
     return -1;
+  }
+
+  while (!exit_loop) {
+    int max_fd = handle->listen_pipe[0];
+    int result;
+
+    FD_ZERO(&rfds);
+    FD_SET(handle->listen_pipe[0], &rfds);
+
+    result = select(max_fd + 1, &rfds, NULL, NULL, NULL);
+
+    if (result == -1 && errno != EINTR) {
+      exit_loop = 1;
+      perror("select");
+      break;
+    }
+
+    if (FD_ISSET(handle->listen_pipe[0], &rfds)) {
+      ssize_t nread;
+      char c;
+
+      if ((nread = read(handle->listen_pipe[0], &c, 1)) != 1) {
+        exit_loop = 1;
+        break;
+      }
+
+      if (c == 'q') {
+        exit_loop = 1;
+        break;
+      }
+    }
   }
 
   return 0;
 }
 
 int grsd_listen_exit(grsd_t handle) {
+  ssize_t nwritten;
+
   if (handle == NULL) {
+    return -1;
+  }
+
+  nwritten = write(handle->listen_pipe[1], "q", 1);
+
+  if (nwritten != 1) {
     return -1;
   }
 
