@@ -24,6 +24,22 @@ grsd_t grsd_init();
 int grsd_destroy(grsd_t handle);
 
 /**
+ * Returns the port, where the ssh-daemon is listening on.
+ *
+ * @return The listening-port of the ssh-daemon.
+ */
+int grsd_get_listen_port(grsd_t handle);
+
+/**
+ * Updates the listening-port of the ssh-daemon.
+ *
+ * @param port The new port
+ * @return On success 0 is returned. If the port is out of range, -1 is
+ *         returned.
+ */
+int grsd_set_listen_port(grsd_t handle, unsigned int port);
+
+/**
  * Main listening-loop.
  *
  * This method blocks the calling thread until grsd_listen_exit() is called

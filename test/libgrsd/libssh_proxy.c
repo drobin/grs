@@ -42,3 +42,9 @@ ssh_bind ssh_bind_new() {
 void ssh_bind_free(ssh_bind bind) {
   free(bind);
 }
+
+int ssh_bind_options_set(ssh_bind sshbind, enum ssh_bind_options_e type,
+  const void* value) {
+
+  return ssh_proxy_env->ssh_bind_options_set_should_fail ? SSH_ERROR : SSH_OK;
+}

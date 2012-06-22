@@ -11,6 +11,7 @@
 struct _grsd {
   int listen_pipe[2];
   ssh_bind bind;
+  unsigned int listen_port;
 };
 
 grsd_t grsd_init() {
@@ -32,6 +33,8 @@ grsd_t grsd_init() {
     return NULL;
   }
 
+  handle->listen_port = 22;
+
   return handle;
 }
 
@@ -46,6 +49,36 @@ int grsd_destroy(grsd_t handle) {
   free(handle);
 
   return 0;
+}
+
+int grsd_get_listen_port(grsd_t handle) {
+
+  if (handle == NULL) {
+    return -1;
+  }
+
+  return handle->listen_port;
+}
+
+int grsd_set_listen_port(grsd_t handle, unsigned int port) {
+  int result;
+
+  if (handle == NULL) {
+    return -1;
+  }
+
+  if (port < 1 || port > 65536) {
+    return -1;
+  }
+
+  result = ssh_bind_options_set(handle->bind, SSH_BIND_OPTIONS_BINDPORT, &port);
+
+  if (result == SSH_OK) {
+    handle->listen_port = port;
+    return 0;
+  } else {
+    return -1;
+  }
 }
 
 int grsd_listen(grsd_t handle) {
