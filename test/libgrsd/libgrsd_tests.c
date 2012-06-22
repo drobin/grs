@@ -1,6 +1,4 @@
 #include <sys/errno.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <check.h>
 
 #include <grsd.h>
@@ -76,12 +74,9 @@ START_TEST(listen_exit) {
 }
 END_TEST
 
-Suite* libgrsd_suite() {
-  Suite* s = suite_create("libgrsd_test");
-
+TCase* libgrsd_tcase() {
   TCase* tc = tcase_create("libgrsd");
   tcase_add_checked_fixture(tc, setup, teardown);
-  suite_add_tcase(s, tc);
 
   tcase_add_test(tc, init_destroy);
   tcase_add_test(tc, init_failed);
@@ -89,18 +84,5 @@ Suite* libgrsd_suite() {
   tcase_add_test(tc, listen_exit_null_handle);
   tcase_add_test(tc, listen_exit);
 
-  return s;
-}
-
-int main(int argc, char** argv) {
-  int nfailed;
-
-  Suite* s = libgrsd_suite();
-  SRunner* sr = srunner_create(s);
-  srunner_run_all(sr, CK_NORMAL);
-
-  nfailed = srunner_ntests_failed(sr);
-  srunner_free(sr);
-
-  return (nfailed == 0) ? 0 : 1;
+  return tc;
 }
