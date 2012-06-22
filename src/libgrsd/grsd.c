@@ -12,6 +12,7 @@ struct _grsd {
   int listen_pipe[2];
   ssh_bind bind;
   unsigned int listen_port;
+  char* hostkey;
 };
 
 grsd_t grsd_init() {
@@ -34,6 +35,7 @@ grsd_t grsd_init() {
   }
 
   handle->listen_port = 22;
+  handle->hostkey = NULL;
 
   return handle;
 }
@@ -46,6 +48,7 @@ int grsd_destroy(grsd_t handle) {
   close(handle->listen_pipe[0]);
   close(handle->listen_pipe[1]);
   ssh_bind_free(handle->bind);
+  free(handle->hostkey);
   free(handle);
 
   return 0;
@@ -75,6 +78,38 @@ int grsd_set_listen_port(grsd_t handle, unsigned int port) {
 
   if (result == SSH_OK) {
     handle->listen_port = port;
+    return 0;
+  } else {
+    return -1;
+  }
+}
+
+const char* grsd_get_hostkey(grsd_t handle) {
+  if (handle == NULL) {
+    return NULL;
+  }
+
+  return handle->hostkey;
+}
+
+int grsd_set_hostkey(grsd_t handle, const char* path) {
+  int result;
+
+  if (handle == NULL || path == NULL) {
+    return -1;
+  }
+
+  result = ssh_bind_options_set(handle->bind, SSH_BIND_OPTIONS_RSAKEY, path);
+
+  if (result == SSH_OK) {
+    if (handle->hostkey != NULL) {
+      free(handle->hostkey);
+    }
+
+    if (asprintf(&handle->hostkey, path) == -1) {
+      return -1;
+    }
+
     return 0;
   } else {
     return -1;

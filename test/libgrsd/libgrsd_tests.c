@@ -87,6 +87,38 @@ START_TEST(get_set_listen_port) {
 }
 END_TEST
 
+START_TEST(get_hostkey_null_handler) {
+  fail_unless(grsd_get_hostkey(NULL) == NULL);
+}
+END_TEST
+
+START_TEST(get_hostkey_default) {
+  fail_unless(grsd_get_hostkey(handle) == NULL);
+}
+END_TEST
+
+START_TEST(set_hostkey_null_handler) {
+  fail_unless(grsd_set_hostkey(NULL, "/path/to/key") == -1);
+}
+END_TEST
+
+START_TEST(set_hostkey_null_path) {
+  fail_unless(grsd_set_hostkey(handle, NULL) == -1);
+}
+END_TEST
+
+START_TEST(set_hostkey_failed) {
+  ssh_proxy_env->ssh_bind_options_set_should_fail = 1;
+  fail_unless(grsd_set_hostkey(handle, "/path/to/key") == -1);
+}
+END_TEST
+
+START_TEST(get_set_hostkey) {
+  fail_unless(grsd_set_hostkey(handle, "/path/to/key") == 0);
+  fail_unless(strcmp(grsd_get_hostkey(handle), "/path/to/key") == 0);
+}
+END_TEST
+
 TCase* libgrsd_tcase() {
   TCase* tc = tcase_create("libgrsd");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -101,6 +133,12 @@ TCase* libgrsd_tcase() {
   tcase_add_test(tc, set_listen_port_out_of_range);
   tcase_add_test(tc, set_listen_port_failed);
   tcase_add_test(tc, get_set_listen_port);
+  tcase_add_test(tc, get_hostkey_null_handler);
+  tcase_add_test(tc, get_hostkey_default);
+  tcase_add_test(tc, set_hostkey_null_handler);
+  tcase_add_test(tc, set_hostkey_null_path);
+  tcase_add_test(tc, set_hostkey_failed);
+  tcase_add_test(tc, get_set_hostkey);
 
   return tc;
 }
