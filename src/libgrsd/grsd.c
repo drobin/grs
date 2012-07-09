@@ -124,6 +124,11 @@ int grsd_listen(grsd_t handle) {
     return -1;
   }
 
+  if (ssh_bind_listen(handle->bind) < 0) {
+    printf("Error listening to socket: %s\n",ssh_get_error(handle->bind));
+    return -1;
+  }
+
   while (!exit_loop) {
     int max_fd = handle->listen_pipe[0];
     int result;

@@ -54,6 +54,12 @@ START_TEST(listen_exit) {
 }
 END_TEST
 
+START_TEST(listen_bind_failed) {
+  ssh_proxy_env->ssh_bind_listen_should_fail = 1;
+  fail_unless(grsd_listen(handle) == -1);
+}
+END_TEST
+
 START_TEST(get_listen_port_default) {
   fail_unless(grsd_get_listen_port(handle) == 22);
 }
@@ -127,6 +133,7 @@ TCase* libgrsd_tcase() {
   tcase_add_test(tc, listen_null_handle);
   tcase_add_test(tc, listen_exit_null_handle);
   tcase_add_test(tc, listen_exit);
+  tcase_add_test(tc, listen_bind_failed);
   tcase_add_test(tc, get_listen_port_null_handle);
   tcase_add_test(tc, get_listen_port_default);
   tcase_add_test(tc, set_listen_port_null_handle);

@@ -48,3 +48,11 @@ int ssh_bind_options_set(ssh_bind sshbind, enum ssh_bind_options_e type,
 
   return ssh_proxy_env->ssh_bind_options_set_should_fail ? SSH_ERROR : SSH_OK;
 }
+
+int ssh_bind_listen(ssh_bind ssh_bind_o) {
+  return ssh_proxy_env->ssh_bind_listen_should_fail ? -1 : 0;
+}
+
+const char* ssh_get_error(void *error) {
+  return NULL;
+}
