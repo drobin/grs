@@ -119,6 +119,7 @@ int grsd_set_hostkey(grsd_t handle, const char* path) {
 int grsd_listen(grsd_t handle) {
   fd_set rfds;
   int exit_loop = 0;
+  int exit_code = 0;
 
   if (handle == NULL) {
     return -1;
@@ -160,7 +161,7 @@ int grsd_listen(grsd_t handle) {
     }
   }
 
-  return 0;
+  return exit_code;
 }
 
 int grsd_listen_exit(grsd_t handle) {
