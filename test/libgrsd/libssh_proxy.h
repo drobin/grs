@@ -11,5 +11,6 @@ struct libssh_proxy_env* ssh_proxy_env;
 
 int libssh_proxy_init();
 void libssh_proxy_destroy();
+int libssh_proxy_connect();
 
 #endif /* LIBSSH_PROXY */

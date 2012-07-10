@@ -162,6 +162,17 @@ int grsd_listen(grsd_t handle) {
         exit_loop = 1;
         break;
       }
+    } else if (FD_ISSET(ssh_bind_get_fd(handle->bind), &rfds)) {
+      ssh_session session = ssh_new();
+
+      if (ssh_bind_accept(handle->bind, session) != SSH_OK) {
+        ssh_free(session);
+        exit_code = -1;
+        exit_loop = 1;
+        break;
+      }
+      
+      ssh_free(session);
     }
   }
 

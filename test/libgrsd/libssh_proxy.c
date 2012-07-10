@@ -1,6 +1,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,6 +13,9 @@
 
 struct ssh_bind_struct {
   int so;
+};
+
+struct ssh_session_struct {
 };
 
 int libssh_proxy_init() {
@@ -31,6 +35,29 @@ int libssh_proxy_init() {
 void libssh_proxy_destroy() {
   free(ssh_proxy_env);
   ssh_proxy_env = NULL;
+}
+
+int libssh_proxy_connect() {
+  struct sockaddr_in addr;
+  int fd;
+  
+  if ((fd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+    perror(__FUNCTION__);
+    return -1;
+  }
+  
+  memset(&addr, 0, sizeof(addr));
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(5000);
+  addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+  
+  if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+    perror(__FUNCTION__);
+    close(fd);
+    return -1;
+  }
+  
+  return fd;
 }
 
 ssh_bind ssh_bind_new() {
@@ -103,6 +130,24 @@ int ssh_bind_listen(ssh_bind ssh_bind_o) {
   return 0;
 }
 
+int ssh_bind_accept(ssh_bind ssh_bind_o, ssh_session session) {
+  return SSH_ERROR;
+}
+
 const char* ssh_get_error(void *error) {
   return NULL;
+}
+
+ssh_session ssh_new() {
+  struct ssh_session_struct* sshsession;
+  
+  if ((sshsession = malloc(sizeof(struct ssh_session_struct))) == NULL) {
+    return NULL;
+  }
+  
+  return sshsession;
+}
+
+void ssh_free(ssh_session session) {
+  free(session);
 }
