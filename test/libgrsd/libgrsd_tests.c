@@ -71,6 +71,26 @@ START_TEST(listen_foo) {
 }
 END_TEST
 
+START_TEST(listen_ssh_new_failed) {
+  pid_t pid;
+  
+  ssh_proxy_env->ssh_new_should_fail = 1;
+  
+  pid = check_fork();
+  
+  if (pid == 0) {
+    int fd = libssh_proxy_connect();
+    fail_unless(grsd_listen_exit(handle) == 0);
+    close(fd);
+  } else if (pid > 0) {
+    fail_unless(grsd_listen(handle) == -1);
+    check_waitpid_and_exit(pid);
+  } else {
+    fail(strerror(errno));
+  }
+}
+END_TEST
+
 START_TEST(listen_bind_failed) {
   ssh_proxy_env->ssh_bind_listen_should_fail = 1;
   fail_unless(grsd_listen(handle) == -1);
@@ -151,6 +171,7 @@ TCase* libgrsd_tcase() {
   tcase_add_test(tc, listen_exit_null_handle);
   tcase_add_test(tc, listen_exit);
   tcase_add_test(tc, listen_foo);
+  tcase_add_test(tc, listen_ssh_new_failed);
   tcase_add_test(tc, listen_bind_failed);
   tcase_add_test(tc, get_listen_port_null_handle);
   tcase_add_test(tc, get_listen_port_default);

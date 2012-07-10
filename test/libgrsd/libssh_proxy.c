@@ -144,6 +144,10 @@ const char* ssh_get_error(void *error) {
 ssh_session ssh_new() {
   struct ssh_session_struct* sshsession;
   
+  if (ssh_proxy_env->ssh_new_should_fail) {
+    return NULL;
+  }
+  
   if ((sshsession = malloc(sizeof(struct ssh_session_struct))) == NULL) {
     return NULL;
   }
