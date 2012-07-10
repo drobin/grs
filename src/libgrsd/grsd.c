@@ -8,6 +8,8 @@
 
 #include "grsd.h"
 
+#define MAX(x, y) (x > y) ? x : y
+
 struct _grsd {
   int listen_pipe[2];
   ssh_bind bind;
@@ -131,11 +133,13 @@ int grsd_listen(grsd_t handle) {
   }
 
   while (!exit_loop) {
-    int max_fd = handle->listen_pipe[0];
-    int result;
+    int max_fd, result;
 
     FD_ZERO(&rfds);
     FD_SET(handle->listen_pipe[0], &rfds);
+    FD_SET(ssh_bind_get_fd(handle->bind), &rfds);
+
+    max_fd = MAX(handle->listen_pipe[0], ssh_bind_get_fd(handle->bind));
 
     result = select(max_fd + 1, &rfds, NULL, NULL, NULL);
 

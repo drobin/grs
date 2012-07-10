@@ -68,6 +68,10 @@ void ssh_bind_free(ssh_bind sshbind) {
   free(sshbind);
 }
 
+socket_t ssh_bind_get_fd(ssh_bind ssh_bind_o) {
+  return ssh_bind_o->so;
+}
+
 int ssh_bind_options_set(ssh_bind sshbind, enum ssh_bind_options_e type,
   const void* value) {
 
