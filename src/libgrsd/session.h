@@ -6,9 +6,10 @@
 /**
  * Creates a new session-structure.
  *
+ * @param handle Handle to the parent grsd-daemon
  * @return A new session or <code>NULL</code> on error.
  */
-session_t session_create();
+session_t session_create(grsd_t handle);
 
 /**
  * Destroys the session again.

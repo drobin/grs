@@ -8,8 +8,12 @@ struct _session {
   ssh_session session;
 };
 
-session_t session_create() {
+session_t session_create(grsd_t handle) {
   struct _session* session;
+  
+  if (handle == NULL) {
+    return NULL;
+  }
   
   if ((session = malloc(sizeof(struct _session))) == NULL) {
     return NULL;
