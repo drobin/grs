@@ -59,8 +59,11 @@ START_TEST(listen_foo) {
   pid_t pid = check_fork();
   
   if (pid == 0) {
-    int fd = libssh_proxy_connect();
+    int fd;
+    
+    fail_if ((fd = libssh_proxy_connect()) == -1);
     fail_unless(grsd_listen_exit(handle) == 0);
+    
     close(fd);
   } else if (pid > 0) {
     fail_unless(grsd_listen(handle) == 0);
@@ -79,8 +82,11 @@ START_TEST(listen_ssh_new_failed) {
   pid = check_fork();
   
   if (pid == 0) {
-    int fd = libssh_proxy_connect();
+    int fd;
+    
+    fail_if((fd = libssh_proxy_connect()) == -1);
     fail_unless(grsd_listen_exit(handle) == 0);
+    
     close(fd);
   } else if (pid > 0) {
     fail_unless(grsd_listen(handle) == -1);
