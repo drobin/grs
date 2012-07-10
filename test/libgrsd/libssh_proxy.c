@@ -29,18 +29,18 @@ void libssh_proxy_destroy() {
 }
 
 ssh_bind ssh_bind_new() {
-  struct ssh_bind_struct* bind;
+  struct ssh_bind_struct* sshbind;
 
   if (ssh_proxy_env->ssh_bind_new_should_fail) {
     return NULL;
   }
 
-  bind = malloc(sizeof(struct ssh_bind_struct));
-  return bind;
+  sshbind = malloc(sizeof(struct ssh_bind_struct));
+  return sshbind;
 }
 
-void ssh_bind_free(ssh_bind bind) {
-  free(bind);
+void ssh_bind_free(ssh_bind sshbind) {
+  free(sshbind);
 }
 
 int ssh_bind_options_set(ssh_bind sshbind, enum ssh_bind_options_e type,
