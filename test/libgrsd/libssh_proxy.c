@@ -1,3 +1,6 @@
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -7,6 +10,7 @@
 #include "libssh_proxy.h"
 
 struct ssh_bind_struct {
+  int so;
 };
 
 int libssh_proxy_init() {
@@ -35,11 +39,21 @@ ssh_bind ssh_bind_new() {
     return NULL;
   }
 
-  sshbind = malloc(sizeof(struct ssh_bind_struct));
+  if ((sshbind = malloc(sizeof(struct ssh_bind_struct))) == NULL) {
+    return NULL;
+  }
+
+  if ((sshbind->so = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+    perror(__FUNCTION__);
+    free(sshbind);
+    return NULL;
+  }
+  
   return sshbind;
 }
 
 void ssh_bind_free(ssh_bind sshbind) {
+  close(sshbind->so);
   free(sshbind);
 }
 
