@@ -118,6 +118,21 @@ int grsd_set_hostkey(grsd_t handle, const char* path) {
   }
 }
 
+static int grsd_listen_handle_pipe(grsd_t handle) {
+  ssize_t nread;
+  char c;
+  
+  if ((nread = read(handle->listen_pipe[0], &c, 1)) != 1) {
+    return -1; // Exit loop with -1
+  }
+  
+  if (c == 'q') {
+    return 0; // Exit loop with 0
+  }
+  
+  return 1; // Ignored, stay in loop
+}
+
 int grsd_listen(grsd_t handle) {
   fd_set rfds;
   int exit_loop = 0;
@@ -150,17 +165,9 @@ int grsd_listen(grsd_t handle) {
     }
 
     if (FD_ISSET(handle->listen_pipe[0], &rfds)) {
-      ssize_t nread;
-      char c;
-
-      if ((nread = read(handle->listen_pipe[0], &c, 1)) != 1) {
+      if ((result = grsd_listen_handle_pipe(handle)) <= 0) {
         exit_loop = 1;
-        break;
-      }
-
-      if (c == 'q') {
-        exit_loop = 1;
-        break;
+        exit_code = result;
       }
     } else if (FD_ISSET(ssh_bind_get_fd(handle->bind), &rfds)) {
       ssh_session session;
