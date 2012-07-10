@@ -133,6 +133,25 @@ static int grsd_listen_handle_pipe(grsd_t handle) {
   return 1; // Ignored, stay in loop
 }
 
+static int grsd_listen_handle_ssh(grsd_t handle) {
+  ssh_session session;
+  
+  if ((session = ssh_new()) == NULL) {
+    return -1; // Exit loop with -1
+  }
+  
+  if (ssh_bind_accept(handle->bind, session) != SSH_OK) {
+    printf("Error accepting connection: %s\n", ssh_get_error(handle->bind));
+    ssh_free(session);
+    return -1; // Exit loop with -1
+  }
+  
+  ssh_disconnect(session);
+  ssh_free(session);
+  
+  return 1; // Stay in loop
+}
+
 int grsd_listen(grsd_t handle) {
   fd_set rfds;
   int exit_loop = 0;
@@ -170,24 +189,10 @@ int grsd_listen(grsd_t handle) {
         exit_code = result;
       }
     } else if (FD_ISSET(ssh_bind_get_fd(handle->bind), &rfds)) {
-      ssh_session session;
-
-      if ((session = ssh_new()) == NULL) {
-        exit_code = -1;
+      if ((result = grsd_listen_handle_ssh(handle)) <= 0) {
         exit_loop = 1;
-        break;
+        exit_code = result;
       }
-
-      if (ssh_bind_accept(handle->bind, session) != SSH_OK) {
-        printf("Error accepting connection: %s\n",ssh_get_error(handle->bind));
-        ssh_free(session);
-        exit_code = -1;
-        exit_loop = 1;
-        break;
-      }
-
-      ssh_disconnect(session);
-      ssh_free(session);
     }
   }
 
