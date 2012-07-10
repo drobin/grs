@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,6 +35,7 @@ void libssh_proxy_destroy() {
 
 ssh_bind ssh_bind_new() {
   struct ssh_bind_struct* sshbind;
+  int optval;
 
   if (ssh_proxy_env->ssh_bind_new_should_fail) {
     return NULL;
@@ -45,6 +47,15 @@ ssh_bind ssh_bind_new() {
 
   if ((sshbind->so = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
     perror(__FUNCTION__);
+    free(sshbind);
+    return NULL;
+  }
+  
+  optval = 1;
+  if (setsockopt(sshbind->so, SOL_SOCKET, SO_REUSEADDR,
+                 &optval, sizeof(optval)) == -1) {
+    perror(__FUNCTION__);
+    close(sshbind->so);
     free(sshbind);
     return NULL;
   }
@@ -64,7 +75,28 @@ int ssh_bind_options_set(ssh_bind sshbind, enum ssh_bind_options_e type,
 }
 
 int ssh_bind_listen(ssh_bind ssh_bind_o) {
-  return ssh_proxy_env->ssh_bind_listen_should_fail ? -1 : 0;
+  struct sockaddr_in addr;
+  
+  if (ssh_proxy_env->ssh_bind_listen_should_fail) {
+    return -1;
+  }
+  
+  memset(&addr, 0, sizeof(addr));
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(5000);
+  addr.sin_addr.s_addr = INADDR_ANY;
+  
+  if (bind(ssh_bind_o->so, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+    perror(__FUNCTION__);
+    return -1;
+  }
+  
+  if (listen(ssh_bind_o->so, 128) == -1) {
+    perror(__FUNCTION__);
+    return -1;
+  }
+  
+  return 0;
 }
 
 const char* ssh_get_error(void *error) {
