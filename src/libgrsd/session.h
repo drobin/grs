@@ -1,12 +1,7 @@
 #ifndef SESSION_H
 #define SESSION_H
 
-struct _session;
-
-/**
- * Handle to the session-structure.
- */
-typedef struct _session* session_t;
+#include "types.h"
 
 /**
  * Creates a new session-structure.

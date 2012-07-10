@@ -1,12 +1,7 @@
 #ifndef GRSD_H
 #define GRSD_H
 
-struct _grsd;
-
-/**
- * Handle to the grs-daemon-process.
- */
-typedef struct _grsd* grsd_t;
+#include "types.h"
 
 /*
  * Creates a new grsd-handle.
