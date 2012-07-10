@@ -5,6 +5,7 @@
 #include "session.h"
 
 struct _session {
+  grsd_t handle;
   ssh_session session;
 };
 
@@ -24,6 +25,8 @@ session_t session_create(grsd_t handle) {
     return NULL;
   }
   
+  session->handle = handle;
+  
   return session;
 }
 
@@ -36,4 +39,12 @@ int session_destroy(session_t session) {
   free(session);
   
   return 0;
+}
+
+grsd_t session_get_grsd(session_t session) {
+  if (session == NULL) {
+    return NULL;
+  }
+  
+  return session->handle;
 }

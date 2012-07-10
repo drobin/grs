@@ -9,6 +9,7 @@ static session_t session;
 static void setup() {
   fail_unless((handle = grsd_init()) != NULL);
   fail_unless((session = session_create(handle)) != NULL);
+  fail_unless(session_get_grsd(session) == handle);
 }
 
 static void teardown() {
@@ -28,12 +29,18 @@ START_TEST(destroy_null_handle) {
 }
 END_TEST
 
+START_TEST(get_grst_null_handle) {
+  fail_unless(session_get_grsd(NULL) == NULL);
+}
+END_TEST
+
 TCase* session_tcase() {
   TCase* tc = tcase_create("session");
   tcase_add_checked_fixture(tc, setup, teardown);
 
   tcase_add_test(tc, create_null_handle);
   tcase_add_test(tc, destroy_null_handle);
+  tcase_add_test(tc, get_grst_null_handle);
   
   return tc;
 }
