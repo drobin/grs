@@ -1,5 +1,7 @@
 #include <check.h>
 
+#include "hostkey.h"
+
 extern TCase* libgrsd_tcase();
 
 static Suite* grs_suite() {
@@ -13,6 +15,8 @@ static Suite* grs_suite() {
 int main(int argc, char** argv) {
   int nfailed;
 
+  hostkey_generate();
+  
   Suite* s = grs_suite();
   SRunner* sr = srunner_create(s);
   srunner_run_all(sr, CK_NORMAL);
@@ -20,5 +24,7 @@ int main(int argc, char** argv) {
   nfailed = srunner_ntests_failed(sr);
   srunner_free(sr);
 
+  hostkey_remove();
+  
   return (nfailed == 0) ? 0 : 1;
 }
