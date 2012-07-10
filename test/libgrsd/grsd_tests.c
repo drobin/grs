@@ -126,8 +126,8 @@ START_TEST(get_set_hostkey) {
 }
 END_TEST
 
-TCase* libgrsd_tcase() {
-  TCase* tc = tcase_create("libgrsd");
+TCase* grsd_tcase() {
+  TCase* tc = tcase_create("grsd");
   tcase_add_checked_fixture(tc, setup, teardown);
 
   tcase_add_test(tc, listen_null_handle);

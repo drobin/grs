@@ -2,7 +2,7 @@
 
 #include "hostkey.h"
 
-extern TCase* libgrsd_tcase();
+extern TCase* grsd_tcase();
 
 static Suite* grs_suite() {
   Suite* s = suite_create("grs_test");

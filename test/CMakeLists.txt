@@ -1,7 +1,7 @@
 SET(GRS_TEST_SOURCES
   hostkey.c
   suite.c
-  libgrsd/libgrsd_tests.c
+  libgrsd/grsd_tests.c
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/../bin/include)
