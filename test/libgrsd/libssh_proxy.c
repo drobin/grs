@@ -16,6 +16,7 @@ struct ssh_bind_struct {
 };
 
 struct ssh_session_struct {
+  int so;
 };
 
 int libssh_proxy_init() {
@@ -131,7 +132,9 @@ int ssh_bind_listen(ssh_bind ssh_bind_o) {
 }
 
 int ssh_bind_accept(ssh_bind ssh_bind_o, ssh_session session) {
-  return SSH_ERROR;
+  session->so = accept(ssh_bind_o->so, NULL, NULL);
+  
+  return session->so == -1 ? SSH_ERROR : SSH_OK;
 }
 
 const char* ssh_get_error(void *error) {
@@ -149,5 +152,6 @@ ssh_session ssh_new() {
 }
 
 void ssh_free(ssh_session session) {
+  close(session->so);
   free(session);
 }

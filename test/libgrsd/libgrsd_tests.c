@@ -63,7 +63,7 @@ START_TEST(listen_foo) {
     fail_unless(grsd_listen_exit(handle) == 0);
     close(fd);
   } else if (pid > 0) {
-    fail_unless(grsd_listen(handle) == -1);
+    fail_unless(grsd_listen(handle) == 0);
     check_waitpid_and_exit(pid);
   } else {
     fail(strerror(errno));
