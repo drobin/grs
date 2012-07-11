@@ -2,12 +2,14 @@
 #include <sys/select.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <libssh/libssh.h>
 #include <libssh/server.h>
 
 #include "grsd.h"
 #include "itypes.h"
+#include "log.h"
 #include "session.h"
 
 #define MAX(x, y) (x > y) ? x : y
@@ -130,15 +132,15 @@ static int grsd_listen_handle_pipe(grsd_t handle) {
 
 static int grsd_listen_handle_ssh(grsd_t handle) {
   session_t session;
-  int result;
   
   if ((session = session_create(handle)) == NULL) {
     return -1; // Exit loop with -1
   }
   
-  if ((result = session_accept(session)) <= 0) {
+  if (session_accept(session) != 0) {
     session_destroy(session);
-    return result;
+    return 1; // Failed to accept the connection but stay in loop for further
+              // login-attempts
   }
   
   session_destroy(session);
@@ -150,12 +152,14 @@ int grsd_listen(grsd_t handle) {
   int exit_loop = 0;
   int exit_code = 0;
 
+  log_debug("Enter grsd_listen");
+  
   if (handle == NULL) {
     return -1;
   }
 
   if (ssh_bind_listen(handle->bind) < 0) {
-    printf("Error listening to socket: %s\n",ssh_get_error(handle->bind));
+    log_fatal("Error listening to socket: %s\n", ssh_get_error(handle->bind));
     return -1;
   }
 
@@ -171,24 +175,31 @@ int grsd_listen(grsd_t handle) {
     result = select(max_fd + 1, &rfds, NULL, NULL, NULL);
 
     if (result == -1 && errno != EINTR) {
+      log_fatal("select: %s", strerror(errno));
       exit_loop = 1;
-      perror("select");
       break;
     }
 
     if (FD_ISSET(handle->listen_pipe[0], &rfds)) {
+      log_debug("listen_pipe selected in read-set");
+      
       if ((result = grsd_listen_handle_pipe(handle)) <= 0) {
+        log_debug("listen_pipe-handling ended in %i. Leaving loop...", result);
         exit_loop = 1;
         exit_code = result;
       }
     } else if (FD_ISSET(ssh_bind_get_fd(handle->bind), &rfds)) {
+      log_debug("bind_fd selected in read-set");
+      
       if ((result = grsd_listen_handle_ssh(handle)) <= 0) {
+        log_debug("bind_fd-handling ended in %i. Leaving loop...", result);
         exit_loop = 1;
         exit_code = result;
       }
     }
   }
 
+  log_debug("Leaving grsd_listen with %i", exit_code);
   return exit_code;
 }
 
@@ -199,6 +210,7 @@ int grsd_listen_exit(grsd_t handle) {
     return -1;
   }
 
+  log_debug("Ask to leave grsd_listen");
   nwritten = write(handle->listen_pipe[1], "q", 1);
 
   if (nwritten != 1) {
