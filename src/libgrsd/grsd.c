@@ -7,15 +7,9 @@
 #include <libssh/server.h>
 
 #include "grsd.h"
+#include "itypes.h"
 
 #define MAX(x, y) (x > y) ? x : y
-
-struct _grsd {
-  int listen_pipe[2];
-  ssh_bind bind;
-  unsigned int listen_port;
-  char* hostkey;
-};
 
 grsd_t grsd_init() {
   struct _grsd* handle;

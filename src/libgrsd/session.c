@@ -2,12 +2,8 @@
 
 #include <libssh/libssh.h>
 
+#include "itypes.h"
 #include "session.h"
-
-struct _session {
-  grsd_t handle;
-  ssh_session session;
-};
 
 session_t session_create(grsd_t handle) {
   struct _session* session;
