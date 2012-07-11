@@ -10,6 +10,7 @@ slist_t slist_init();
 int slist_destroy(slist_t slist);
 int slist_get_size(slist_t slist);
 int slist_prepend(slist_t slist, session_t session);
+int slist_remove(slist_t slist, session_t session);
 int slist_clear(slist_t slist);
 
 #endif  /* SLIST_H */

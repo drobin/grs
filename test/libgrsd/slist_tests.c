@@ -64,6 +64,69 @@ START_TEST(prepend_success) {
 }
 END_TEST
 
+START_TEST(remove_null_slist) {
+  grsd_t handle = grsd_init();
+  session_t session = session_create(handle);
+  
+  fail_unless(slist_remove(NULL, session));
+  
+  session_destroy(session);
+  grsd_destroy(handle);
+}
+END_TEST
+
+START_TEST(remove_null_session) {
+  fail_unless(slist_remove(slist, NULL));
+}
+END_TEST
+
+START_TEST(remove_success) {
+  grsd_t handle = grsd_init();
+  session_t s1 = session_create(handle);
+  session_t s2 = session_create(handle);
+  session_t s3 = session_create(handle);
+  
+  fail_unless(slist_prepend(slist, s1) == 0);
+  fail_unless(slist_prepend(slist, s2) == 0);
+  fail_unless(slist_prepend(slist, s3) == 0);
+  fail_unless(slist_get_size(slist) == 3);
+  
+  fail_unless(slist_remove(slist, s2) == 0);
+  fail_unless(slist_get_size(slist) == 2);
+
+  fail_unless(slist_remove(slist, s1) == 0);
+  fail_unless(slist_get_size(slist) == 1);
+
+  fail_unless(slist_remove(slist, s3) == 0);
+  fail_unless(slist_get_size(slist) == 0);
+  
+  session_destroy(s1);
+  session_destroy(s2);
+  session_destroy(s3);
+  grsd_destroy(handle);
+}
+END_TEST
+
+START_TEST(remove_not_found) {
+  grsd_t handle = grsd_init();
+  session_t s1 = session_create(handle);
+  session_t s2 = session_create(handle);
+  session_t s3 = session_create(handle);
+  
+  fail_unless(slist_prepend(slist, s1) == 0);
+  fail_unless(slist_prepend(slist, s2) == 0);
+  fail_unless(slist_get_size(slist) == 2);
+  
+  fail_unless(slist_remove(slist, s3) == -1);
+  fail_unless(slist_get_size(slist) == 2);
+  
+  session_destroy(s1);
+  session_destroy(s2);
+  session_destroy(s3);
+  grsd_destroy(handle);
+}
+END_TEST
+
 START_TEST(clear_null_handle) {
   fail_unless(slist_clear(NULL) == -1);
 }
@@ -106,6 +169,10 @@ TCase* slist_tcase() {
   tcase_add_test(tc, prepend_null_slist);
   tcase_add_test(tc, prepend_null_session);
   tcase_add_test(tc, prepend_success);
+  tcase_add_test(tc, remove_null_slist);
+  tcase_add_test(tc, remove_null_session);
+  tcase_add_test(tc, remove_success);
+  tcase_add_test(tc, remove_not_found);
   tcase_add_test(tc, clear_null_handle);
   tcase_add_test(tc, clear_from_empty);
   tcase_add_test(tc, clear_from_non_empty);

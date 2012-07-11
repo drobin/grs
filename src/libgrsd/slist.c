@@ -66,6 +66,25 @@ int slist_prepend(slist_t slist, session_t session) {
   return 0;
 }
 
+int slist_remove(slist_t slist, session_t session) {
+  struct slist_entry* entry;
+  
+  if (slist == NULL || session == NULL) {
+    return -1;
+  }
+  
+  LIST_FOREACH(entry, &slist->head, entries) {
+    if (entry->session == session) {
+      LIST_REMOVE(entry, entries);
+      slist->size--;
+      free(entry);
+      return 0;
+    }
+  }
+  
+  return -1;
+}
+
 int slist_clear(slist_t slist) {
   if (slist == NULL) {
     return -1;
