@@ -15,6 +15,11 @@ struct _session_list {
   unsigned int size;
 };
 
+struct _session_list_iterator {
+  struct _slist_head* head;
+  struct slist_entry* cur;
+};
+
 slist_t slist_init() {
   struct _session_list* slist;
   
@@ -99,4 +104,66 @@ int slist_clear(slist_t slist) {
   slist->size = 0;
   
   return 0;
+}
+
+slist_it_t slist_iterator(slist_t slist) {
+  struct _session_list_iterator* it;
+  
+  if (slist == NULL) {
+    return NULL;
+  }
+  
+  if ((it = malloc(sizeof(struct _session_list_iterator))) == NULL) {
+    return NULL;
+  }
+  
+  it->head = &slist->head;
+  it->cur = LIST_FIRST(&slist->head);
+  
+  return it;
+}
+
+int slist_iterator_destroy(slist_it_t it) {
+  if (it == NULL) {
+    return -1;
+  }
+  
+  free(it);
+  
+  return 0;
+}
+
+session_t slist_iterator_get(slist_it_t it) {
+  if (it == NULL || it->cur == NULL) {
+    return NULL;
+  }
+  
+  return it->cur->session;
+}
+
+int slist_iterator_has_next(slist_it_t it) {
+  if (it == NULL) {
+    return -1;
+  }
+  
+  if (LIST_FIRST(it->head) == NULL) {
+    return 0; // Empty list
+  }
+  
+  return LIST_NEXT(it->cur, entries) != NULL;
+}
+
+int slist_iterator_next(slist_it_t it) {
+  struct slist_entry* next;
+  
+  if (it == NULL || it->cur == NULL) {
+    return -1;
+  }
+  
+  if ((next = LIST_NEXT(it->cur, entries)) != NULL) {
+    it->cur = next;
+    return 0;
+  } else {
+    return -1;
+  }
 }
