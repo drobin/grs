@@ -121,7 +121,7 @@ static int session_handle_auth(session_t session, ssh_message msg) {
 }
 
 static int session_handle_channel_open(session_t session, ssh_message msg) {
-  log_debug("Handle request for a channel");
+  log_debug("Handle open-request for a channel");
   
   if (ssh_message_type(msg) != SSH_REQUEST_CHANNEL_OPEN) {
     log_debug("Ignoring message of type %i", ssh_message_type(msg));
@@ -134,9 +134,36 @@ static int session_handle_channel_open(session_t session, ssh_message msg) {
   session->channel = ssh_message_channel_request_open_reply_accept(msg);
   log_debug("Channel is open");
   
-  session->state = NOP;
+  session->state = REQUEST_CHANNEL;
   
   return 0;
+}
+
+static int session_handle_request_channel(session_t session, ssh_message msg) {
+  log_debug("Handle channel-request");
+  
+  if (ssh_message_type(msg) != SSH_REQUEST_CHANNEL) {
+    log_debug("Ignoring message of type %i", ssh_message_type(msg));
+    
+    ssh_message_reply_default(msg);
+    
+    return 0;
+  }
+  
+  if (ssh_message_subtype(msg) != SSH_CHANNEL_REQUEST_EXEC) {
+    log_debug("Ignoring channel-type %i", ssh_message_subtype(msg));
+    
+    ssh_message_reply_default(msg);
+    
+    return -1;
+  }
+  
+  ssh_message_channel_request_reply_success(msg);
+  log_debug("Channel request accepted");
+
+  session->state = NOP;
+  
+  return -1;
 }
 
 int session_handle(session_t session) {
@@ -153,6 +180,7 @@ int session_handle(session_t session) {
   switch (session->state) {
   case AUTH: result = session_handle_auth(session, msg); break;
   case CHANNEL_OPEN: result = session_handle_channel_open(session, msg); break;
+  case REQUEST_CHANNEL: result = session_handle_request_channel(session, msg); break;
   case NOP: result = -1;
   }
   

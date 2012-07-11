@@ -9,7 +9,8 @@
 enum SESSION_STATE {
   NOP,
   AUTH,
-  CHANNEL_OPEN
+  CHANNEL_OPEN,
+  REQUEST_CHANNEL
 };
 
 struct _grsd {
