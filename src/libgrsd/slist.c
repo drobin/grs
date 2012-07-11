@@ -8,7 +8,12 @@ struct slist_entry {
   LIST_ENTRY(slist_entry) entries;
 };
 
-LIST_HEAD(_session_list, slist_entry);
+LIST_HEAD(_slist_head, slist_entry);
+
+struct _session_list {
+  struct _slist_head head;
+  unsigned int size;
+};
 
 slist_t slist_init() {
   struct _session_list* slist;
@@ -17,7 +22,8 @@ slist_t slist_init() {
     return NULL;
   }
   
-  LIST_INIT(slist);
+  LIST_INIT(&slist->head);
+  slist->size = 0;
   
   return slist;
 }
@@ -36,7 +42,7 @@ int slist_get_size(slist_t slist) {
     return -1;
   }
   
-  return 0;
+  return slist->size;
 }
 
 int slist_prepend(slist_t slist, session_t session) {
