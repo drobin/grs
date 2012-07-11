@@ -35,6 +35,7 @@ grsd_t grsd_init() {
 
   handle->listen_port = 22;
   handle->hostkey = NULL;
+  handle->session_list = slist_init();
 
   return handle;
 }
@@ -44,6 +45,7 @@ int grsd_destroy(grsd_t handle) {
     return -1;
   }
 
+  slist_destroy(handle->session_list);
   close(handle->listen_pipe[0]);
   close(handle->listen_pipe[1]);
   ssh_bind_free(handle->bind);
