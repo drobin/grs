@@ -240,7 +240,7 @@ int grsd_listen(grsd_t handle) {
         session_destroy(session);
       }
             
-      log_debug("Remaining sessions: %i\n",
+      log_debug("Remaining sessions: %i",
                 slist_get_size(handle->session_list));
     }
   }

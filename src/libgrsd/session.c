@@ -24,6 +24,7 @@ session_t session_create(grsd_t handle) {
     return NULL;
   }
   
+  session->channel = NULL;
   session->handle = handle;
   session->state = AUTH;
   
@@ -33,6 +34,10 @@ session_t session_create(grsd_t handle) {
 int session_destroy(session_t session) {
   if (session == NULL) {
     return -1;
+  }
+  
+  if (session->channel != NULL) {
+    ssh_channel_free(session->channel);
   }
   
   ssh_free(session->session);
@@ -108,7 +113,27 @@ static int session_handle_auth(session_t session, ssh_message msg) {
     return 0;
   }
   
+  log_debug("Authentication succeeded");
   ssh_message_auth_reply_success(msg, 0);
+  session->state = CHANNEL_OPEN;
+  
+  return 0;
+}
+
+static int session_handle_channel_open(session_t session, ssh_message msg) {
+  log_debug("Handle request for a channel");
+  
+  if (ssh_message_type(msg) != SSH_REQUEST_CHANNEL_OPEN) {
+    log_debug("Ignoring message of type %i", ssh_message_type(msg));
+    
+    ssh_message_reply_default(msg);
+    
+    return 0;
+  }
+  
+  session->channel = ssh_message_channel_request_open_reply_accept(msg);
+  log_debug("Channel is open");
+  
   session->state = NOP;
   
   return 0;
@@ -120,8 +145,14 @@ int session_handle(session_t session) {
   
   msg = ssh_message_get(session->session);
   
+  if (ssh_message_type(msg) == -1) {
+    log_debug("ssh_message_type of -1 received. Abort...");
+    return -1;
+  }
+  
   switch (session->state) {
   case AUTH: result = session_handle_auth(session, msg); break;
+  case CHANNEL_OPEN: result = session_handle_channel_open(session, msg); break;
   case NOP: result = -1;
   }
   

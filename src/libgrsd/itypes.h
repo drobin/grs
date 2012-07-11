@@ -8,7 +8,8 @@
 
 enum SESSION_STATE {
   NOP,
-  AUTH
+  AUTH,
+  CHANNEL_OPEN
 };
 
 struct _grsd {
@@ -22,6 +23,7 @@ struct _grsd {
 struct _session {
   struct _grsd* handle;
   ssh_session session;
+  ssh_channel channel;
   enum SESSION_STATE state;
 };
 
