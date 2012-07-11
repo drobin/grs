@@ -1,3 +1,4 @@
+#include <sys/errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -77,6 +78,58 @@ int session_accept(session_t session) {
   // TODO Who is connected?
   
   return 0;
+}
+
+static int session_exec(session_t session, ssh_message msg) {
+  pid_t pid;
+  int pipe_out[2];
+  
+  if (pipe(pipe_out) == -1) {
+    log_err("Failed to create a pipe: %s", strerror(errno));
+    return -1;
+  }
+  
+  if ((pid = fork()) == -1) {
+    log_err("Failed to fork: %s", strerror(errno));
+    return -1;
+  }
+  
+  if (pid == 0) { // The child executes the command
+    char* cmd = ssh_message_channel_request_command(msg);
+
+    log_debug("Executing '%s'", cmd);
+
+    dup2(pipe_out[1], 1);
+    close(pipe_out[0]);
+    close(pipe_out[1]);
+
+    execl("/bin/ls", "-1", NULL);
+    log_err("Failed to exec: %s", strerror(errno));
+    _exit(1);
+  } else {
+    int stat_loc;
+    char buf[512];
+    size_t nread;
+    
+    close(pipe_out[1]);
+    
+    while ((nread = read(pipe_out[0], buf, sizeof(buf))) > 0) {
+      ssh_channel_write(session->channel, buf, nread);
+    }
+    
+    if (waitpid(pid, &stat_loc, 0) == -1) {
+      log_err("wait_pid: %s", strerror(errno));
+      return -1;
+    }
+    
+    if (WIFEXITED(stat_loc)) {
+      log_debug("Process terminated with %i", WEXITSTATUS(stat_loc));
+      return WEXITSTATUS(stat_loc);
+    } else {
+      log_err("Abnormal termination of process");
+      return -1;
+    }
+  }
 }
 
 static int session_handle_auth(session_t session, ssh_message msg) {
@@ -160,8 +213,10 @@ static int session_handle_request_channel(session_t session, ssh_message msg) {
   
   ssh_message_channel_request_reply_success(msg);
   log_debug("Channel request accepted");
-
-  session->state = NOP;
+  
+  session_exec(session, msg);
+  
+  session->state = NOP; // Finished
   
   return -1;
 }

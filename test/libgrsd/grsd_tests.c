@@ -53,16 +53,26 @@ START_TEST(listen_connect) {
   
   if (pid == 0) {
     ssh_session session = ssh_new();
+    ssh_channel channel;
+    char buf[512];
+    size_t nread;
     
     ssh_options_set(session, SSH_OPTIONS_HOST, "localhost");
     ssh_options_set(session, SSH_OPTIONS_PORT_STR, "4711");;
 
     ssh_connect(session);
-    ssh_userauth_password(session, "foo", "foo");
-    grsd_listen_exit(handle);
     
+    ssh_userauth_password(session, "foo", "foo");
+    channel = ssh_channel_new(session);
+    ssh_channel_open_session(channel);
+    ssh_channel_request_exec(channel, "ls");
+    while ((nread = ssh_channel_read(channel, buf, sizeof(buf), 0)) != -1);
+    ssh_channel_send_eof(channel);
+    ssh_channel_close(channel);
+    ssh_channel_free(channel);
     ssh_disconnect(session);
     ssh_free(session);
+    grsd_listen_exit(handle);
   } else if (pid > 0) {
     grsd_set_listen_port(handle, 4711);
     grsd_set_hostkey(handle, hostkey_get_path());
