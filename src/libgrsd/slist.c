@@ -118,7 +118,7 @@ slist_it_t slist_iterator(slist_t slist) {
   }
   
   it->head = &slist->head;
-  it->cur = LIST_FIRST(&slist->head);
+  it->cur = NULL;
   
   return it;
 }
@@ -133,37 +133,17 @@ int slist_iterator_destroy(slist_it_t it) {
   return 0;
 }
 
-session_t slist_iterator_get(slist_it_t it) {
-  if (it == NULL || it->cur == NULL) {
+session_t slist_iterator_next(slist_it_t it) {
+  if (it == NULL) {
     return NULL;
   }
   
-  return it->cur->session;
-}
-
-int slist_iterator_has_next(slist_it_t it) {
-  if (it == NULL) {
-    return -1;
-  }
-  
-  if (LIST_FIRST(it->head) == NULL) {
-    return 0; // Empty list
-  }
-  
-  return LIST_NEXT(it->cur, entries) != NULL;
-}
-
-int slist_iterator_next(slist_it_t it) {
-  struct slist_entry* next;
-  
-  if (it == NULL || it->cur == NULL) {
-    return -1;
-  }
-  
-  if ((next = LIST_NEXT(it->cur, entries)) != NULL) {
-    it->cur = next;
-    return 0;
+  if (it->cur == NULL) {
+    // Before first
+    it->cur = LIST_FIRST(it->head);
   } else {
-    return -1;
+    it->cur = LIST_NEXT(it->cur, entries);
   }
+  
+  return (it->cur != NULL) ? it->cur->session : NULL;
 }

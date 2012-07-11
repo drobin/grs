@@ -18,8 +18,6 @@ int slist_clear(slist_t slist);
 
 slist_it_t slist_iterator(slist_t slist);
 int slist_iterator_destroy(slist_it_t it);
-session_t slist_iterator_get(slist_it_t it);
-int slist_iterator_has_next(slist_it_t it);
-int slist_iterator_next(slist_it_t it);
+session_t slist_iterator_next(slist_it_t it);
 
 #endif  /* SLIST_H */
