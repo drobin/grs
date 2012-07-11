@@ -145,7 +145,9 @@ static int grsd_listen_handle_ssh(grsd_t handle) {
               // login-attempts
   }
   
-  session_destroy(session);
+  
+  slist_prepend(handle->session_list, session);
+  
   return 1; // Stay in loop
 }
 
@@ -167,13 +169,27 @@ int grsd_listen(grsd_t handle) {
 
   while (!exit_loop) {
     int max_fd, result;
+    slist_it_t it;
+    session_t session;
 
+    log_debug("Another listen-loop");
+    
     FD_ZERO(&rfds);
     FD_SET(handle->listen_pipe[0], &rfds);
     FD_SET(ssh_bind_get_fd(handle->bind), &rfds);
-
     max_fd = MAX(handle->listen_pipe[0], ssh_bind_get_fd(handle->bind));
 
+    log_debug("Selecting %i sessions", slist_get_size(handle->session_list));
+    it = slist_iterator(handle->session_list);
+    
+    while ((session = slist_iterator_next(it))) {
+      FD_SET(ssh_get_fd(session->session), &rfds);
+      max_fd = MAX(max_fd, ssh_get_fd(session->session));
+      log_debug("Selecting session %i", ssh_get_fd(session->session));
+    }
+    
+    slist_iterator_destroy(it);
+    
     result = select(max_fd + 1, &rfds, NULL, NULL, NULL);
 
     if (result == -1 && errno != EINTR) {
@@ -198,6 +214,25 @@ int grsd_listen(grsd_t handle) {
         exit_loop = 1;
         exit_code = result;
       }
+    } else {
+      // A session is selected, find the session-instance for the given fd
+      slist_it_t it;
+      session_t session;
+      
+      it = slist_iterator(handle->session_list);
+      
+      while ((session = slist_iterator_next(it))) {
+        if (FD_ISSET(ssh_get_fd(session->session), &rfds)) {
+          log_debug("Session found for fd %i, handle session", 
+                    ssh_get_fd(session->session));
+          slist_iterator_remove(it);
+          session_destroy(session);
+        }
+      }
+      
+      slist_iterator_destroy(it);
+      log_debug("Remaining sessions: %i\n",
+                slist_get_size(handle->session_list));
     }
   }
 
