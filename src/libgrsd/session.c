@@ -4,6 +4,7 @@
 #include <libssh/libssh.h>
 
 #include "itypes.h"
+#include "log.h"
 #include "session.h"
 
 session_t session_create(grsd_t handle) {
@@ -56,9 +57,17 @@ int session_accept(session_t session) {
   sshbind = session->handle->bind;
   
   if (ssh_bind_accept(sshbind, session->session) != SSH_OK) {
-    printf("Error accepting connection: %s\n", ssh_get_error(sshbind));
+    log_err("Error accepting connection: %s\n", ssh_get_error(sshbind));
     return -1;
   }
+  
+  if (ssh_handle_key_exchange(session->session) != SSH_OK) {
+    log_err("Error in key exchange: %s\n", ssh_get_error(session->session));
+    return -1;
+  }
+  
+  log_info("Connection established");
+  // TODO Who is connected?
   
   return 0;
 }
