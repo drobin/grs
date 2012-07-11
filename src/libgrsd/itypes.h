@@ -6,6 +6,11 @@
 
 #include "slist.h"
 
+enum SESSION_STATE {
+  NOP,
+  AUTH
+};
+
 struct _grsd {
   int listen_pipe[2];
   ssh_bind bind;
@@ -17,6 +22,7 @@ struct _grsd {
 struct _session {
   struct _grsd* handle;
   ssh_session session;
+  enum SESSION_STATE state;
 };
 
 #endif  /* ITYPES_H */

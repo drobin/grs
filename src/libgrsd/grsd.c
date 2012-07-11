@@ -145,8 +145,8 @@ static int grsd_listen_handle_ssh(grsd_t handle) {
               // login-attempts
   }
   
-  
   slist_prepend(handle->session_list, session);
+  session_handle(session);
   
   return 1; // Stay in loop
 }
@@ -205,6 +205,7 @@ int grsd_listen(grsd_t handle) {
     slist_iterator_destroy(it);
     
     result = select(max_fd + 1, &rfds, NULL, NULL, NULL);
+    log_debug("select-result: %i", result);
 
     if (result == -1 && errno != EINTR) {
       log_fatal("select: %s", strerror(errno));
@@ -234,9 +235,11 @@ int grsd_listen(grsd_t handle) {
       log_debug("Session found for fd %i, handle session",
                 ssh_get_fd(session->session));
 
-      slist_remove(handle->session_list, session);
-      session_destroy(session);
-      
+      if (session_handle(session) < 0) {
+        slist_remove(handle->session_list, session);
+        session_destroy(session);
+      }
+            
       log_debug("Remaining sessions: %i\n",
                 slist_get_size(handle->session_list));
     }

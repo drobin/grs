@@ -58,6 +58,7 @@ START_TEST(listen_connect) {
     ssh_options_set(session, SSH_OPTIONS_PORT_STR, "4711");;
 
     ssh_connect(session);
+    ssh_userauth_password(session, "foo", "foo");
     grsd_listen_exit(handle);
     
     ssh_disconnect(session);

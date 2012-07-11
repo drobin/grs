@@ -34,4 +34,6 @@ grsd_t session_get_grsd(session_t session);
  */
 int session_accept(session_t session);
 
+int session_handle(session_t session);
+
 #endif  /* SESSION_H */
