@@ -2,6 +2,7 @@ SET(LIBGRSD_SOURCES
   grsd.c
   log.c
   session.c
+  slist.c
 )
 
 add_library(libgrsd STATIC ${LIBGRSD_SOURCES})

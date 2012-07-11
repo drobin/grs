@@ -3,6 +3,7 @@ SET(GRS_TEST_SOURCES
   suite.c
   libgrsd/grsd_tests.c
   libgrsd/session_tests.c
+  libgrsd/slist_tests.c
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/../bin/include)
