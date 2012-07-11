@@ -266,6 +266,7 @@ START_TEST(iterator_remove) {
   while ((session = slist_iterator_next(it)) != NULL) {
     fail_unless(slist_iterator_remove(it) == 0);
     fail_unless(sessions[i] == session);
+    fail_unless(slist_get_size(slist) == i);
     i--;
     j++;
   }
@@ -300,6 +301,7 @@ START_TEST(iterator_remove_middle) {
   fail_unless((session = slist_iterator_next(it)) == sessions[2]);
   fail_unless((session = slist_iterator_next(it)) == sessions[1]);
   fail_unless(slist_iterator_remove(it) == 0);
+  fail_unless(slist_get_size(slist) == 2);
   fail_unless((session = slist_iterator_next(it)) == sessions[0]);
   fail_unless((session = slist_iterator_next(it)) == NULL);
     

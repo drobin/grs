@@ -16,7 +16,7 @@ struct _session_list {
 };
 
 struct _session_list_iterator {
-  struct _slist_head* head;
+  struct _session_list* list;
   struct slist_entry* cur;
 };
 
@@ -117,7 +117,7 @@ slist_it_t slist_iterator(slist_t slist) {
     return NULL;
   }
   
-  it->head = &slist->head;
+  it->list = slist;
   it->cur = NULL;
   
   return it;
@@ -140,7 +140,7 @@ session_t slist_iterator_next(slist_it_t it) {
   
   if (it->cur == NULL) {
     // Before first
-    it->cur = LIST_FIRST(it->head);
+    it->cur = LIST_FIRST(&it->list->head);
   } else {
     it->cur = LIST_NEXT(it->cur, entries);
   }
@@ -173,11 +173,12 @@ int slist_iterator_remove(slist_it_t it) {
     return -1;
   }
 
-  prev = slist_previous(it->head, it->cur);
+  prev = slist_previous(&it->list->head, it->cur);
   
   LIST_REMOVE(it->cur, entries);
   free(it->cur);
   it->cur = prev;
+  it->list->size--;
   
   return 0;
 }
