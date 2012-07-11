@@ -147,3 +147,37 @@ session_t slist_iterator_next(slist_it_t it) {
   
   return (it->cur != NULL) ? it->cur->session : NULL;
 }
+
+// FIXME This is awful. You need to switch to another list-type, which supports
+//        backward-traversion
+static struct slist_entry* slist_previous(struct _slist_head* head,
+                                          struct slist_entry* entry) {
+  struct slist_entry* prev = LIST_FIRST(head);
+  
+  while (prev != NULL && LIST_NEXT(prev, entries) != entry) {
+    prev = LIST_NEXT(prev, entries);
+  }
+  
+  return prev;
+}
+
+int slist_iterator_remove(slist_it_t it) {
+  struct slist_entry* prev;
+  
+  if (it == NULL) {
+    return -1;
+  }
+
+  if (it->cur == NULL) {
+    // The iterator does not point on an entry
+    return -1;
+  }
+
+  prev = slist_previous(it->head, it->cur);
+  
+  LIST_REMOVE(it->cur, entries);
+  free(it->cur);
+  it->cur = prev;
+  
+  return 0;
+}
