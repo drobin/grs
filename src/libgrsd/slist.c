@@ -30,3 +30,19 @@ int slist_destroy(slist_t slist) {
   free(slist);
   return 0;
 }
+
+int slist_get_size(slist_t slist) {
+  if (slist == NULL) {
+    return -1;
+  }
+  
+  return 0;
+}
+
+int slist_prepend(slist_t slist, session_t session) {
+  if (slist == NULL || session == NULL) {
+    return -1;
+  }
+  
+  return -2;
+}
