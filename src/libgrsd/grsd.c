@@ -8,6 +8,7 @@
 
 #include "grsd.h"
 #include "itypes.h"
+#include "session.h"
 
 #define MAX(x, y) (x > y) ? x : y
 
@@ -128,21 +129,19 @@ static int grsd_listen_handle_pipe(grsd_t handle) {
 }
 
 static int grsd_listen_handle_ssh(grsd_t handle) {
-  ssh_session session;
+  session_t session;
+  int result;
   
-  if ((session = ssh_new()) == NULL) {
+  if ((session = session_create(handle)) == NULL) {
     return -1; // Exit loop with -1
   }
   
-  if (ssh_bind_accept(handle->bind, session) != SSH_OK) {
-    printf("Error accepting connection: %s\n", ssh_get_error(handle->bind));
-    ssh_free(session);
-    return -1; // Exit loop with -1
+  if ((result = session_accept(session)) <= 0) {
+    session_destroy(session);
+    return result;
   }
   
-  ssh_disconnect(session);
-  ssh_free(session);
-  
+  session_destroy(session);
   return 1; // Stay in loop
 }
 
