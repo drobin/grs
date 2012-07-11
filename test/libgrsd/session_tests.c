@@ -34,6 +34,11 @@ START_TEST(get_grst_null_handle) {
 }
 END_TEST
 
+START_TEST(accept_null_handle) {
+  fail_unless(session_accept(NULL) == -1);
+}
+END_TEST
+
 TCase* session_tcase() {
   TCase* tc = tcase_create("session");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -41,6 +46,7 @@ TCase* session_tcase() {
   tcase_add_test(tc, create_null_handle);
   tcase_add_test(tc, destroy_null_handle);
   tcase_add_test(tc, get_grst_null_handle);
+  tcase_add_test(tc, accept_null_handle);
   
   return tc;
 }

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <libssh/libssh.h>
@@ -43,4 +44,21 @@ grsd_t session_get_grsd(session_t session) {
   }
   
   return session->handle;
+}
+
+int session_accept(session_t session) {
+  ssh_bind sshbind;
+  
+  if (session == NULL) {
+    return -1;
+  }
+  
+  sshbind = session->handle->bind;
+  
+  if (ssh_bind_accept(sshbind, session->session) != SSH_OK) {
+    printf("Error accepting connection: %s\n", ssh_get_error(sshbind));
+    return -1;
+  }
+  
+  return 0;
 }

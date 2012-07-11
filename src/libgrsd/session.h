@@ -26,4 +26,12 @@ int session_destroy(session_t session);
  */
 grsd_t session_get_grsd(session_t session);
 
+/**
+ * Accepts a connection, which is assigned to the given session.
+ *
+ * @param session The destination session
+ * @return On success <code>0</code> is returned, on error <code>-1</code>.
+ */
+int session_accept(session_t session);
+
 #endif  /* SESSION_H */
