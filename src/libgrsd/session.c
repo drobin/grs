@@ -27,6 +27,7 @@ session_t session_create(grsd_t handle) {
   
   session->channel = NULL;
   session->session_ev = NULL;
+  session->stdout_ev = NULL;
   session->handle = handle;
   session->state = AUTH;
   
@@ -44,6 +45,10 @@ int session_destroy(session_t session) {
   
   if (session->session_ev != NULL) {
     event_free(session->session_ev);
+  }
+  
+  if (session->stdout_ev != NULL) {
+    event_free(session->stdout_ev);
   }
   
   ssh_free(session->session);
