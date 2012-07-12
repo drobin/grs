@@ -3,6 +3,7 @@
 
 #include <libssh/libssh.h>
 #include <libssh/server.h>
+#include <event.h>
 
 #include "slist.h"
 
@@ -18,6 +19,7 @@ struct _grsd {
   ssh_bind bind;
   unsigned int listen_port;
   char* hostkey;
+  struct event_base* event_base;
   slist_t session_list;
 };
 
