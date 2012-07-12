@@ -27,14 +27,6 @@ void grsd_handle_sshbind(evutil_socket_t fd, short what, void* arg) {
     return;
   }
   
-  // Initial handle the ssh-data
-  // If the return-code is less than 0, the the handler asks to remove the
-  // related event from the event_base_loop and destroy the session
-  if (session_handle(session) < 0) {
-    event_del(session->session_ev);
-    session_destroy(session);
-  }
-  
   // Register the session-fd at event_base_loop
   session->session_ev = event_new(handle->event_base,
                                   ssh_get_fd(session->session),
@@ -42,4 +34,7 @@ void grsd_handle_sshbind(evutil_socket_t fd, short what, void* arg) {
                                   grsd_handle_session,
                                   session);
   event_add(session->session_ev, NULL);
+  
+  // Initial handle the ssh-data
+  event_active(session->session_ev, EV_READ, 1);
 }
