@@ -10,25 +10,7 @@
 #include "log.h"
 #include "types.h"
 
-static void handle_pipe(evutil_socket_t fd, short what, void* arg) {
-  grsd_t handle = (grsd_t)arg;
-  int c;
-  size_t nread;
-  
-  log_debug("Handling incoming data from pipe");
-  
-  if ((nread = read(fd, &c, 1)) != 1) {
-    log_fatal("Failed to read from pipe: %s", strerror(errno));
-    event_base_loopexit(handle->event_base, NULL);
-    return;
-  }
-
-  if (c == 'q') {
-    log_debug("Quit-request received");
-    event_base_loopexit(handle->event_base, NULL);
-    return;
-  }
-}
+extern void grsd_handle_pipe(evutil_socket_t, short, void*);
 
 static void handle_session(evutil_socket_t fd, short what, void* arg) {
   session_t session = (session_t)arg;
@@ -105,10 +87,14 @@ grsd_t grsd_init() {
   handle->hostkey = NULL;
   handle->event_base = event_base_new();
   handle->sshbind_ev = NULL;
+  
+  // Create the ctrl_pipe-event
+  // It's safe to create the event already now because the pipe was already
+  // created
   handle->pipe_ev = event_new(handle->event_base,
                               handle->ctrl_pipe[0],
                               EV_READ|EV_PERSIST,
-                              handle_pipe,
+                              grsd_handle_pipe,
                               handle);
   event_add(handle->pipe_ev, NULL);
   
@@ -130,6 +116,7 @@ int grsd_destroy(grsd_t handle) {
     event_free(handle->sshbind_ev);
   }
 
+  // Destroy ctrl_pipe-event
   event_del(handle->pipe_ev);
   event_free(handle->pipe_ev);
   
