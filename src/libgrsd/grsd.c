@@ -9,7 +9,6 @@
 #include "grsd.h"
 #include "itypes.h"
 #include "log.h"
-#include "session.h"
 
 static void handle_pipe(evutil_socket_t fd, short what, void* arg) {
   grsd_t handle = (grsd_t)arg;

@@ -1,7 +1,6 @@
 #include <check.h>
 
 #include <grsd.h>
-#include <session.h>
 #include <slist.h>
 
 static slist_t slist;

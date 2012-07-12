@@ -1,7 +1,6 @@
 #include <check.h>
 
 #include <grsd.h>
-#include <session.h>
 
 static grsd_t handle;
 static session_t session;
