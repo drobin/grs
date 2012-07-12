@@ -42,7 +42,6 @@ static void stdout2channel(evutil_socket_t fd, short what, void* arg) {
 }
 
 static int session_exec(session_t session, ssh_message msg) {
-  pid_t pid;
   int pipe_out[2];
   
   if (pipe(pipe_out) == -1) {
@@ -50,12 +49,12 @@ static int session_exec(session_t session, ssh_message msg) {
     return -1;
   }
   
-  if ((pid = fork()) == -1) {
+  if ((session->pid = fork()) == -1) {
     log_err("Failed to fork: %s", strerror(errno));
     return -1;
   }
   
-  if (pid == 0) { // The child executes the command
+  if (session->pid == 0) { // The child executes the command
     char* cmd = ssh_message_channel_request_command(msg);
     
     log_debug("Executing '%s'", cmd);
