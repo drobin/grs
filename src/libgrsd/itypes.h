@@ -5,8 +5,6 @@
 #include <libssh/server.h>
 #include <event.h>
 
-#include "slist.h"
-
 enum SESSION_STATE {
   NOP,
   AUTH,
@@ -20,13 +18,15 @@ struct _grsd {
   unsigned int listen_port;
   char* hostkey;
   struct event_base* event_base;
-  slist_t session_list;
+  struct event* sshbind_ev;
+  struct event* pipe_ev;
 };
 
 struct _session {
   struct _grsd* handle;
   ssh_session session;
   ssh_channel channel;
+  struct event* session_ev;
   enum SESSION_STATE state;
 };
 

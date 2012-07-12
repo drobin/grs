@@ -1,5 +1,4 @@
 #include <sys/errno.h>
-#include <sys/select.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,7 +11,77 @@
 #include "log.h"
 #include "session.h"
 
-#define MAX(x, y) (x > y) ? x : y
+static void handle_pipe(evutil_socket_t fd, short what, void* arg) {
+  grsd_t handle = (grsd_t)arg;
+  int c;
+  size_t nread;
+  
+  log_debug("Handling incoming data from pipe");
+  
+  if ((nread = read(fd, &c, 1)) != 1) {
+    log_fatal("Failed to read from pipe: %s", strerror(errno));
+    event_base_loopexit(handle->event_base, NULL);
+    return;
+  }
+
+  if (c == 'q') {
+    log_debug("Quit-request received");
+    event_base_loopexit(handle->event_base, NULL);
+    return;
+  }
+}
+
+static void handle_session(evutil_socket_t fd, short what, void* arg) {
+  session_t session = (session_t)arg;
+  
+  // Handle the ssh-data
+  // If the return-code is less than 0, the the handler asks to remove the
+  // related event from the event_base_loop and destroy the session
+  if (session_handle(session) < 0) {
+    event_del(session->session_ev);
+    session_destroy(session);
+  }
+}
+
+static void handle_sshbind(evutil_socket_t fd, short what, void* arg) {
+  grsd_t handle = (grsd_t)arg;
+  session_t session;
+  
+  log_debug("New incoming connection-attempt");
+  
+  // Create a new session for the requested connection
+  if ((session = session_create(handle)) == NULL) {
+    // Fatal error: leave the event_base_loop
+    log_fatal("Failed to create a session");
+    grsd_listen_exit(handle);
+    return;
+  }
+  
+  // Accept the incoming connection
+  if (session_accept(session) != 0) {
+    // Failed to accept connection, stay in event_base_loop for further
+    // login-attempts
+    log_err("Failed to accept incoming connection");
+    session_destroy(session);
+    return;
+  }
+  
+  // Initial handle the ssh-data
+  // If the return-code is less than 0, the the handler asks to remove the
+  // related event from the event_base_loop and destroy the session
+  if (session_handle(session) < 0) {
+    event_del(session->session_ev);
+    session_destroy(session);
+  }
+  
+  // Register the session-fd at event_base_loop
+  session->session_ev = event_new(handle->event_base,
+                                  ssh_get_fd(session->session),
+                                  EV_READ|EV_PERSIST,
+                                  handle_session,
+                                  session);
+  event_add(session->session_ev, NULL);
+}
 
 grsd_t grsd_init() {
   struct _grsd* handle;
@@ -36,8 +105,14 @@ grsd_t grsd_init() {
   handle->listen_port = 22;
   handle->hostkey = NULL;
   handle->event_base = event_base_new();
-  handle->session_list = slist_init();
-
+  handle->sshbind_ev = NULL;
+  handle->pipe_ev = event_new(handle->event_base,
+                              handle->listen_pipe[0],
+                              EV_READ|EV_PERSIST,
+                              handle_pipe,
+                              handle);
+  event_add(handle->pipe_ev, NULL);
+  
   return handle;
 }
 
@@ -46,12 +121,19 @@ int grsd_destroy(grsd_t handle) {
     return -1;
   }
 
-  slist_destroy(handle->session_list);
   close(handle->listen_pipe[0]);
   close(handle->listen_pipe[1]);
   ssh_bind_free(handle->bind);
   free(handle->hostkey);
   event_base_free(handle->event_base);
+  
+  if (handle->sshbind_ev != NULL) {
+    event_free(handle->sshbind_ev);
+  }
+
+  event_del(handle->pipe_ev);
+  event_free(handle->pipe_ev);
+  
   free(handle);
 
   return 0;
@@ -119,57 +201,7 @@ int grsd_set_hostkey(grsd_t handle, const char* path) {
   }
 }
 
-static int grsd_listen_handle_pipe(grsd_t handle) {
-  ssize_t nread;
-  char c;
-  
-  if ((nread = read(handle->listen_pipe[0], &c, 1)) != 1) {
-    return -1; // Exit loop with -1
-  }
-  
-  if (c == 'q') {
-    return 0; // Exit loop with 0
-  }
-  
-  return 1; // Ignored, stay in loop
-}
-
-static int grsd_listen_handle_ssh(grsd_t handle) {
-  session_t session;
-  
-  if ((session = session_create(handle)) == NULL) {
-    return -1; // Exit loop with -1
-  }
-  
-  if (session_accept(session) != 0) {
-    session_destroy(session);
-    return 1; // Failed to accept the connection but stay in loop for further
-              // login-attempts
-  }
-  
-  slist_prepend(handle->session_list, session);
-  session_handle(session);
-  
-  return 1; // Stay in loop
-}
-
-static session_t find_selected_session(grsd_t handle, fd_set* rfds) {
-  slist_it_t it = slist_iterator(handle->session_list);
-  session_t session;
-  
-  while ((session = slist_iterator_next(it))) {
-    if (FD_ISSET(ssh_get_fd(session->session), rfds)) {
-      break;
-    }
-  }
-
-  slist_iterator_destroy(it);
-  return session;
-}
-
 int grsd_listen(grsd_t handle) {
-  fd_set rfds;
-  int exit_loop = 0;
   int exit_code = 0;
 
   log_debug("Enter grsd_listen");
@@ -183,69 +215,16 @@ int grsd_listen(grsd_t handle) {
     return -1;
   }
 
-  while (!exit_loop) {
-    int max_fd, result;
-    slist_it_t it;
-    session_t session;
+  handle->sshbind_ev = event_new(handle->event_base,
+                                 ssh_bind_get_fd(handle->bind),
+                                 EV_READ|EV_PERSIST,
+                                 handle_sshbind,
+                                 handle);
+  event_add(handle->sshbind_ev, NULL);
 
-    log_debug("Another listen-loop");
-    
-    FD_ZERO(&rfds);
-    FD_SET(handle->listen_pipe[0], &rfds);
-    FD_SET(ssh_bind_get_fd(handle->bind), &rfds);
-    max_fd = MAX(handle->listen_pipe[0], ssh_bind_get_fd(handle->bind));
+  event_base_loop(handle->event_base, 0);
 
-    log_debug("Selecting %i sessions", slist_get_size(handle->session_list));
-    it = slist_iterator(handle->session_list);
-    
-    while ((session = slist_iterator_next(it))) {
-      FD_SET(ssh_get_fd(session->session), &rfds);
-      max_fd = MAX(max_fd, ssh_get_fd(session->session));
-      log_debug("Selecting session %i", ssh_get_fd(session->session));
-    }
-    
-    slist_iterator_destroy(it);
-    
-    result = select(max_fd + 1, &rfds, NULL, NULL, NULL);
-    log_debug("select-result: %i", result);
-
-    if (result == -1 && errno != EINTR) {
-      log_fatal("select: %s", strerror(errno));
-      exit_loop = 1;
-      break;
-    }
-
-    if (FD_ISSET(handle->listen_pipe[0], &rfds)) {
-      log_debug("listen_pipe selected in read-set");
-      
-      if ((result = grsd_listen_handle_pipe(handle)) <= 0) {
-        log_debug("listen_pipe-handling ended in %i. Leaving loop...", result);
-        exit_loop = 1;
-        exit_code = result;
-      }
-    } else if (FD_ISSET(ssh_bind_get_fd(handle->bind), &rfds)) {
-      log_debug("bind_fd selected in read-set");
-      
-      if ((result = grsd_listen_handle_ssh(handle)) <= 0) {
-        log_debug("bind_fd-handling ended in %i. Leaving loop...", result);
-        exit_loop = 1;
-        exit_code = result;
-      }
-    } else {
-      // A session is selected, find the session-instance for the given fd
-      session_t session = find_selected_session(handle, &rfds);
-      log_debug("Session found for fd %i, handle session",
-                ssh_get_fd(session->session));
-
-      if (session_handle(session) < 0) {
-        slist_remove(handle->session_list, session);
-        session_destroy(session);
-      }
-            
-      log_debug("Remaining sessions: %i",
-                slist_get_size(handle->session_list));
-    }
-  }
+  event_del(handle->sshbind_ev);
 
   log_debug("Leaving grsd_listen with %i", exit_code);
   return exit_code;
@@ -265,5 +244,6 @@ int grsd_listen_exit(grsd_t handle) {
     return -1;
   }
 
+  log_debug("Leave request issued");
   return 0;
 }
