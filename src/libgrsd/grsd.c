@@ -89,14 +89,14 @@ grsd_t grsd_init() {
     return NULL;
   }
 
-  if (pipe(handle->listen_pipe) != 0) {
+  if (pipe(handle->ctrl_pipe) != 0) {
     free(handle);
     return NULL;
   }
 
   if ((handle->bind = ssh_bind_new()) == NULL) {
-    close(handle->listen_pipe[0]);
-    close(handle->listen_pipe[1]);
+    close(handle->ctrl_pipe[0]);
+    close(handle->ctrl_pipe[1]);
     free(handle);
     return NULL;
   }
@@ -106,7 +106,7 @@ grsd_t grsd_init() {
   handle->event_base = event_base_new();
   handle->sshbind_ev = NULL;
   handle->pipe_ev = event_new(handle->event_base,
-                              handle->listen_pipe[0],
+                              handle->ctrl_pipe[0],
                               EV_READ|EV_PERSIST,
                               handle_pipe,
                               handle);
@@ -120,8 +120,8 @@ int grsd_destroy(grsd_t handle) {
     return -1;
   }
 
-  close(handle->listen_pipe[0]);
-  close(handle->listen_pipe[1]);
+  close(handle->ctrl_pipe[0]);
+  close(handle->ctrl_pipe[1]);
   ssh_bind_free(handle->bind);
   free(handle->hostkey);
   event_base_free(handle->event_base);
@@ -237,7 +237,7 @@ int grsd_listen_exit(grsd_t handle) {
   }
 
   log_debug("Ask to leave grsd_listen");
-  nwritten = write(handle->listen_pipe[1], "q", 1);
+  nwritten = write(handle->ctrl_pipe[1], "q", 1);
 
   if (nwritten != 1) {
     return -1;
