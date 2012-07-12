@@ -6,8 +6,8 @@
 #include <libssh/libssh.h>
 
 #include "grsd.h"
-#include "itypes.h"
 #include "log.h"
+#include "types.h"
 
 session_t session_create(grsd_t handle) {
   struct _session* session;

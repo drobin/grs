@@ -1,5 +1,5 @@
-#ifndef ITYPES_H
-#define ITYPES_H
+#ifndef TYPES_H
+#define TYPES_H
 
 #include <libssh/libssh.h>
 #include <libssh/server.h>
@@ -30,4 +30,4 @@ struct _session {
   enum SESSION_STATE state;
 };
 
-#endif  /* ITYPES_H */
+#endif  /* TYPES_H */
