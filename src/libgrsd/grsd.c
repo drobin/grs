@@ -20,11 +20,13 @@ grsd_t grsd_init() {
     return NULL;
   }
 
+  // The ctrl_pipe
   if (pipe(handle->ctrl_pipe) != 0) {
     free(handle);
     return NULL;
   }
 
+  // Create the libssh-sshbind
   if ((handle->bind = ssh_bind_new()) == NULL) {
     close(handle->ctrl_pipe[0]);
     close(handle->ctrl_pipe[1]);
@@ -32,8 +34,11 @@ grsd_t grsd_init() {
     return NULL;
   }
 
+  // Some default SSH-daemon-information
   handle->listen_port = 22;
   handle->hostkey = NULL;
+  
+  // The event_base from libevent
   handle->event_base = event_base_new();
   
   // sshbind-event
@@ -60,8 +65,12 @@ int grsd_destroy(grsd_t handle) {
 
   close(handle->ctrl_pipe[0]);
   close(handle->ctrl_pipe[1]);
+  
   ssh_bind_free(handle->bind);
+  
   free(handle->hostkey);
+  
+  // Destroy the libevent-event_base
   event_base_free(handle->event_base);
   
   // Destroy sshbind-event if not created
