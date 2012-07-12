@@ -7,7 +7,7 @@
 #include "log.h"
 #include "types.h"
 
-static void pipe2channel(evutil_socket_t fd, short what, void* arg) {
+static void stdout2channel(evutil_socket_t fd, short what, void* arg) {
   session_t session = (session_t)arg;
   size_t nread;
   char buf[512];
@@ -15,7 +15,7 @@ static void pipe2channel(evutil_socket_t fd, short what, void* arg) {
   log_debug("Incoming data from stdout");
   
   nread = read(fd, buf, sizeof(buf));
-  log_debug("%i bytes read from pipe", nread);
+  log_debug("%i bytes read from stdout", nread);
   
   if (nread > 0) {
     // Write data into channel
@@ -72,7 +72,7 @@ static int session_exec(session_t session, ssh_message msg) {
     session->stdout_ev = event_new(session->handle->event_base,
                                    pipe_out[0],
                                    EV_READ|EV_PERSIST,
-                                   pipe2channel,
+                                   stdout2channel,
                                    session);
     event_add(session->stdout_ev, NULL);
   }
