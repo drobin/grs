@@ -155,7 +155,6 @@ void grsd_handle_session(evutil_socket_t fd, short what, void* arg) {
   
   if (ssh_message_type(msg) == -1) {
     log_debug("ssh_message_type of -1 received. Abort...");
-    event_del(session->session_ev);
     session_destroy(session);
     return;
   }
@@ -178,7 +177,6 @@ void grsd_handle_session(evutil_socket_t fd, short what, void* arg) {
   ssh_message_free(msg);
   
   if (result < 0) {
-    event_del(session->session_ev);
     session_destroy(session);
   }
 }
