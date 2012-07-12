@@ -11,58 +11,7 @@
 #include "types.h"
 
 extern void grsd_handle_pipe(evutil_socket_t, short, void*);
-
-static void handle_session(evutil_socket_t fd, short what, void* arg) {
-  session_t session = (session_t)arg;
-  
-  // Handle the ssh-data
-  // If the return-code is less than 0, the the handler asks to remove the
-  // related event from the event_base_loop and destroy the session
-  if (session_handle(session) < 0) {
-    event_del(session->session_ev);
-    session_destroy(session);
-  }
-}
-
-static void handle_sshbind(evutil_socket_t fd, short what, void* arg) {
-  grsd_t handle = (grsd_t)arg;
-  session_t session;
-  
-  log_debug("New incoming connection-attempt");
-  
-  // Create a new session for the requested connection
-  if ((session = session_create(handle)) == NULL) {
-    // Fatal error: leave the event_base_loop
-    log_fatal("Failed to create a session");
-    grsd_listen_exit(handle);
-    return;
-  }
-  
-  // Accept the incoming connection
-  if (session_accept(session) != 0) {
-    // Failed to accept connection, stay in event_base_loop for further
-    // login-attempts
-    log_err("Failed to accept incoming connection");
-    session_destroy(session);
-    return;
-  }
-  
-  // Initial handle the ssh-data
-  // If the return-code is less than 0, the the handler asks to remove the
-  // related event from the event_base_loop and destroy the session
-  if (session_handle(session) < 0) {
-    event_del(session->session_ev);
-    session_destroy(session);
-  }
-  
-  // Register the session-fd at event_base_loop
-  session->session_ev = event_new(handle->event_base,
-                                  ssh_get_fd(session->session),
-                                  EV_READ|EV_PERSIST,
-                                  handle_session,
-                                  session);
-  event_add(session->session_ev, NULL);
-}
+extern void grsd_handle_sshbind(evutil_socket_t, short, void*);
 
 grsd_t grsd_init() {
   struct _grsd* handle;
@@ -86,6 +35,9 @@ grsd_t grsd_init() {
   handle->listen_port = 22;
   handle->hostkey = NULL;
   handle->event_base = event_base_new();
+  
+  // sshbind-event
+  // The event cannot created now because the connection is not open
   handle->sshbind_ev = NULL;
   
   // Create the ctrl_pipe-event
@@ -112,6 +64,7 @@ int grsd_destroy(grsd_t handle) {
   free(handle->hostkey);
   event_base_free(handle->event_base);
   
+  // Destroy sshbind-event if not created
   if (handle->sshbind_ev != NULL) {
     event_free(handle->sshbind_ev);
   }
@@ -204,7 +157,7 @@ int grsd_listen(grsd_t handle) {
   handle->sshbind_ev = event_new(handle->event_base,
                                  ssh_bind_get_fd(handle->bind),
                                  EV_READ|EV_PERSIST,
-                                 handle_sshbind,
+                                 grsd_handle_sshbind,
                                  handle);
   event_add(handle->sshbind_ev, NULL);
 
