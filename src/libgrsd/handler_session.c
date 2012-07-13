@@ -42,7 +42,13 @@ static void stdout2channel(evutil_socket_t fd, short what, void* arg) {
 }
 
 static int session_exec(session_t session, ssh_message msg) {
+  int pipe_in[2];
   int pipe_out[2];
+
+  if (pipe(pipe_in) == -1) {
+    log_err("Failed to create a pipe: %s", strerror(errno));
+    return -1;
+  }
   
   if (pipe(pipe_out) == -1) {
     log_err("Failed to create a pipe: %s", strerror(errno));
@@ -59,13 +65,16 @@ static int session_exec(session_t session, ssh_message msg) {
     
     log_debug("Executing '%s'", cmd);
     
+    close(pipe_in[1]);
     close(pipe_out[0]);
+    dup2(pipe_in[0], 0);
     dup2(pipe_out[1], 1);
     
     execl("/bin/ls", "-1", NULL);
     log_err("Failed to exec: %s", strerror(errno));
     _exit(1);
   } else {
+    close(pipe_in[0]);
     close(pipe_out[1]);
     session->stdout_ev = event_new(session->handle->event_base,
                                    pipe_out[0],
