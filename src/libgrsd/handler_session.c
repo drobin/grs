@@ -59,9 +59,8 @@ static int session_exec(session_t session, ssh_message msg) {
     
     log_debug("Executing '%s'", cmd);
     
-    dup2(pipe_out[1], 1);
     close(pipe_out[0]);
-    close(pipe_out[1]);
+    dup2(pipe_out[1], 1);
     
     execl("/bin/ls", "-1", NULL);
     log_err("Failed to exec: %s", strerror(errno));
