@@ -11,6 +11,6 @@ include_directories(${CMAKE_SOURCE_DIR}/src/libgrsd)
 link_directories(${CMAKE_SOURCE_DIR}/../bin/lib /opt/local/lib)
 
 add_executable(grs_test ${GRS_TEST_SOURCES})
-target_link_libraries(grs_test libgrsd ssh event check)
+target_link_libraries(grs_test libgrsd ${LIBSSH_LIBRARY} event check)
 
 add_test(grs_test grs_test)

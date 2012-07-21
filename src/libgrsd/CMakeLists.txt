@@ -9,4 +9,4 @@ SET(LIBGRSD_SOURCES
 )
 
 add_library(libgrsd STATIC ${LIBGRSD_SOURCES})
-include_directories(${CMAKE_SOURCE_DIR}/../libssh/include /opt/local/include)
+include_directories(${LIBSSH_INCLUDE_DIR} /opt/local/include)
