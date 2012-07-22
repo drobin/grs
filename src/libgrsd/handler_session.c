@@ -1,4 +1,5 @@
 #include <sys/errno.h>
+#include <sys/ioctl.h>
 #include <sys/wait.h>
 #include <stdio.h>
 #include <string.h>
@@ -6,6 +7,64 @@
 #include "grsd.h"
 #include "log.h"
 #include "types.h"
+
+static int stdout2channel(int fd, ssh_channel channel) {
+  int nread;
+  char buf[512];
+  
+  // Detect number of bytes available for reading
+  if (ioctl(fd, FIONREAD, &nread) == -1) {
+    log_err("Failed to read available bytes from stdout: %s", strerror(errno));
+    return -1;
+  }
+  
+  if (nread == 0) {
+    // Nothing to do...
+    return 0;
+  }
+  
+  log_debug("%i bytes available for reading in stdout", nread);
+  
+  // Read data from stdout
+  // FIXME: Is buf large enough? At least nread bytes are required.
+  nread = read(fd, buf, nread);
+    
+  if (nread > 0) {
+    // Write data into channel
+    log_debug("%i bytes read from stdout", nread);
+    int nwritten = ssh_channel_write(channel, buf, nread);
+    log_debug("%i bytes written into channel", nwritten);
+    
+    return 0;
+  } else if (nread == 0) {
+    log_debug("EOF from stdout");
+    return -1;
+  } else {
+    log_err("Failed to read from stdout: %s", strerror(errno));
+    return -1;
+  }
+}
+
+static int channel2stdin(int fd, ssh_channel channel) {
+  int nread;
+  char buf[512];
+  
+  if (ssh_channel_is_eof(channel) != 0) {
+    log_debug("EOF from channel");
+    return -1;
+  }
+  
+  if ((nread = ssh_channel_poll(channel, 0)) > 0) {
+    log_debug("%i bytes available for reading in channel", nread);
+    // FIXME: Is buf large enough? At least nread bytes are required.
+    nread = ssh_channel_read(channel, buf, nread, 0);
+    log_debug("%i bytes read from channel", nread);
+    int nwritten = write(fd, buf, nread);
+    log_debug("%i bytes written into stdin", nwritten);
+  }
+  
+  return 0;
+}
 
 static int session_exec(session_t session, ssh_message msg) {
   int pipe_in[2];
@@ -40,8 +99,35 @@ static int session_exec(session_t session, ssh_message msg) {
     log_err("Failed to exec: %s", strerror(errno));
     _exit(1);
   } else {
+    int result, stat_loc;
+    
     close(pipe_in[0]);
     close(pipe_out[1]);
+    
+    while (1) {
+      // Read from stdout and write data into channel
+      if (stdout2channel(pipe_out[0], session->channel) == -1) {
+        break;
+      }
+                         
+      if (channel2stdin(pipe_in[1], session->channel) == -1) {
+        break;
+      }
+    }
+    
+    close(pipe_in[1]);
+    close(pipe_out[0]);
+    
+    if ((result = waitpid(session->pid, &stat_loc, 0)) == -1) {
+      log_err("wait_pid: %s", strerror(errno));
+    } else if (WIFEXITED(stat_loc)) {
+      log_debug("Process terminated with %i", WEXITSTATUS(stat_loc));
+    } else {
+      log_err("Abnormal termination of process");
+    }
+    
+    channel_send_eof(session->channel);
+    session_destroy(session);
   }
   
   return 0;
