@@ -71,11 +71,6 @@ struct _session {
   struct event* session_ev;
   
   /**
-   * Event is used to read data from stdout of the forked process.
-   */
-  struct event* stdout_ev;
-  
-  /**
    * PID of the forked process.
    */
   pid_t pid;

@@ -7,40 +7,6 @@
 #include "log.h"
 #include "types.h"
 
-static void stdout2channel(evutil_socket_t fd, short what, void* arg) {
-  session_t session = (session_t)arg;
-  size_t nread;
-  char buf[512];
-  
-  log_debug("Incoming data from stdout");
-  
-  nread = read(fd, buf, sizeof(buf));
-  log_debug("%i bytes read from stdout", nread);
-  
-  if (nread > 0) {
-    // Write data into channel
-    int nwritten = ssh_channel_write(session->channel, buf, nread);
-    log_debug("%i bytes written into channel", nwritten);
-  } else if (nread == 0) {
-    int result, stat_loc;
-
-    log_debug("EOF on stdout, wait for process-end");
-    
-    if ((result = waitpid(session->pid, &stat_loc, 0)) == -1) {
-      log_err("wait_pid: %s", strerror(errno));
-    } else if (WIFEXITED(stat_loc)) {
-      log_debug("Process terminated with %i", WEXITSTATUS(stat_loc));
-    } else {
-      log_err("Abnormal termination of process");
-    }
-    
-    session_destroy(session);
-  } else {
-    log_err("Failed to read from pipe: %s", strerror(errno));
-    session_destroy(session);
-  }
-}
-
 static int session_exec(session_t session, ssh_message msg) {
   int pipe_in[2];
   int pipe_out[2];
@@ -76,12 +42,6 @@ static int session_exec(session_t session, ssh_message msg) {
   } else {
     close(pipe_in[0]);
     close(pipe_out[1]);
-    session->stdout_ev = event_new(session->handle->event_base,
-                                   pipe_out[0],
-                                   EV_READ|EV_PERSIST,
-                                   stdout2channel,
-                                   session);
-    event_add(session->stdout_ev, NULL);
   }
   
   return 0;
