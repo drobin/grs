@@ -1,5 +1,6 @@
 #include <sys/errno.h>
 #include <check.h>
+#include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
 

@@ -1,6 +1,7 @@
 #include <sys/errno.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
