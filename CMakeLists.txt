@@ -25,5 +25,8 @@ endif(NOT CHECK_FOUND)
 add_definitions(-Wall -Werror)
 enable_testing()
 
+# define some useful helper-variables
+set(LIBGRSD_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src/libgrsd)
+
 add_subdirectory(src)
 add_subdirectory(test)
