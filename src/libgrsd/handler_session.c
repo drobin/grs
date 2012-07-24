@@ -13,19 +13,6 @@ static int stdout2channel(int fd, ssh_channel channel) {
   int nread;
   char buf[512];
   
-  // Detect number of bytes available for reading
-  if (ioctl(fd, FIONREAD, &nread) == -1) {
-    log_err("Failed to read available bytes from stdout: %s", strerror(errno));
-    return -1;
-  }
-  
-  if (nread == 0) {
-    // Nothing to do...
-    return 0;
-  }
-  
-  log_debug("%i bytes available for reading in stdout", nread);
-  
   // Read data from stdout
   // FIXME: Is buf large enough? At least nread bytes are required.
   nread = read(fd, buf, nread);
@@ -106,13 +93,35 @@ static int session_exec(session_t session, ssh_message msg) {
     close(pipe_out[1]);
     
     while (1) {
-      // Read from stdout and write data into channel
-      if (stdout2channel(pipe_out[0], session->channel) == -1) {
-        break;
+      ssh_channel channels[2], outchannels[2];
+      fd_set fds;
+      int maxfd, result;
+
+      channels[0] = session->channel;
+      channels[1] = NULL;
+      maxfd = ssh_get_fd(session->session);
+
+      FD_ZERO(&fds);
+      FD_SET(pipe_out[0], &fds);
+      if (pipe_out[0] > maxfd) {
+        maxfd = pipe_out[0];
       }
-                         
-      if (channel2stdin(pipe_in[1], session->channel) == -1) {
-        break;
+
+      result = ssh_select(channels, outchannels, maxfd + 1, &fds, NULL);
+      if (result == EINTR) {
+        continue;
+      }
+
+      if (FD_ISSET(pipe_out[0], &fds)) {
+        if (stdout2channel(pipe_out[0], session->channel) == -1) {
+          break;
+        }
+      }
+
+      if (outchannels[0] != NULL) {
+        if (channel2stdin(pipe_in[1], session->channel) == -1) {
+          break;
+        }
       }
     }
     
