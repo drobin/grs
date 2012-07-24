@@ -36,14 +36,14 @@ grsd_t grsd_init() {
   // Some default SSH-daemon-information
   handle->listen_port = 22;
   handle->hostkey = NULL;
-  
+
   // The event_base from libevent
   handle->event_base = event_base_new();
-  
+
   // sshbind-event
   // The event cannot created now because the connection is not open
   handle->sshbind_ev = NULL;
-  
+
   // Create the ctrl_pipe-event
   // It's safe to create the event already now because the pipe was already
   // created
@@ -53,7 +53,7 @@ grsd_t grsd_init() {
                               grsd_handle_pipe,
                               handle);
   event_add(handle->pipe_ev, NULL);
-  
+
   return handle;
 }
 
@@ -64,14 +64,14 @@ int grsd_destroy(grsd_t handle) {
 
   close(handle->ctrl_pipe[0]);
   close(handle->ctrl_pipe[1]);
-  
+
   ssh_bind_free(handle->bind);
-  
+
   free(handle->hostkey);
-  
+
   // Destroy the libevent-event_base
   event_base_free(handle->event_base);
-  
+
   // Destroy sshbind-event if not created
   if (handle->sshbind_ev != NULL) {
     event_free(handle->sshbind_ev);
@@ -80,7 +80,7 @@ int grsd_destroy(grsd_t handle) {
   // Destroy ctrl_pipe-event
   event_del(handle->pipe_ev);
   event_free(handle->pipe_ev);
-  
+
   free(handle);
 
   return 0;
@@ -152,7 +152,7 @@ int grsd_listen(grsd_t handle) {
   int exit_code = 0;
 
   log_debug("Enter grsd_listen");
-  
+
   if (handle == NULL) {
     return -1;
   }

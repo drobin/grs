@@ -51,18 +51,18 @@ END_TEST
 
 START_TEST(listen_connect) {
   pid_t pid = check_fork();
-  
+
   if (pid == 0) {
     ssh_session session = ssh_new();
     ssh_channel channel;
     char buf[512];
     size_t nread;
-    
+
     ssh_options_set(session, SSH_OPTIONS_HOST, "localhost");
     ssh_options_set(session, SSH_OPTIONS_PORT_STR, "4711");;
 
     ssh_connect(session);
-    
+
     ssh_userauth_password(session, "foo", "foo");
     channel = ssh_channel_new(session);
     ssh_channel_open_session(channel);

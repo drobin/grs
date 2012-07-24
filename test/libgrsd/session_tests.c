@@ -46,6 +46,6 @@ TCase* session_tcase() {
   tcase_add_test(tc, destroy_null_handle);
   tcase_add_test(tc, get_grst_null_handle);
   tcase_add_test(tc, accept_null_handle);
-  
+
   return tc;
 }

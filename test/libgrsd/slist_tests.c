@@ -28,9 +28,9 @@ END_TEST
 START_TEST(prepend_null_slist) {
   grsd_t handle = grsd_init();
   session_t session = session_create(handle);
-  
+
   fail_unless(slist_prepend(NULL, session));
-  
+
   session_destroy(session);
   grsd_destroy(handle);
 }
@@ -49,13 +49,13 @@ START_TEST(prepend_success) {
 
   fail_unless(slist_prepend(slist, s1) == 0);
   fail_unless(slist_get_size(slist) == 1);
-  
+
   fail_unless(slist_prepend(slist, s2) == 0);
   fail_unless(slist_get_size(slist) == 2);
-  
+
   fail_unless(slist_prepend(slist, s3) == 0);
   fail_unless(slist_get_size(slist) == 3);
-  
+
   session_destroy(s1);
   session_destroy(s2);
   session_destroy(s3);
@@ -66,9 +66,9 @@ END_TEST
 START_TEST(remove_null_slist) {
   grsd_t handle = grsd_init();
   session_t session = session_create(handle);
-  
+
   fail_unless(slist_remove(NULL, session));
-  
+
   session_destroy(session);
   grsd_destroy(handle);
 }
@@ -84,12 +84,12 @@ START_TEST(remove_success) {
   session_t s1 = session_create(handle);
   session_t s2 = session_create(handle);
   session_t s3 = session_create(handle);
-  
+
   fail_unless(slist_prepend(slist, s1) == 0);
   fail_unless(slist_prepend(slist, s2) == 0);
   fail_unless(slist_prepend(slist, s3) == 0);
   fail_unless(slist_get_size(slist) == 3);
-  
+
   fail_unless(slist_remove(slist, s2) == 0);
   fail_unless(slist_get_size(slist) == 2);
 
@@ -98,7 +98,7 @@ START_TEST(remove_success) {
 
   fail_unless(slist_remove(slist, s3) == 0);
   fail_unless(slist_get_size(slist) == 0);
-  
+
   session_destroy(s1);
   session_destroy(s2);
   session_destroy(s3);
@@ -111,14 +111,14 @@ START_TEST(remove_not_found) {
   session_t s1 = session_create(handle);
   session_t s2 = session_create(handle);
   session_t s3 = session_create(handle);
-  
+
   fail_unless(slist_prepend(slist, s1) == 0);
   fail_unless(slist_prepend(slist, s2) == 0);
   fail_unless(slist_get_size(slist) == 2);
-  
+
   fail_unless(slist_remove(slist, s3) == -1);
   fail_unless(slist_get_size(slist) == 2);
-  
+
   session_destroy(s1);
   session_destroy(s2);
   session_destroy(s3);
@@ -142,15 +142,15 @@ START_TEST(clear_from_non_empty) {
   session_t s1 = session_create(handle);
   session_t s2 = session_create(handle);
   session_t s3 = session_create(handle);
-  
+
   fail_unless(slist_prepend(slist, s1) == 0);
   fail_unless(slist_prepend(slist, s2) == 0);
   fail_unless(slist_prepend(slist, s3) == 0);
   fail_unless(slist_get_size(slist) == 3);
-  
+
   fail_unless(slist_clear(slist) == 0);
   fail_unless(slist_get_size(slist) == 0);
-  
+
   session_destroy(s1);
   session_destroy(s2);
   session_destroy(s3);
@@ -175,9 +175,9 @@ END_TEST
 
 START_TEST(it_on_empty_list) {
   slist_it_t it = slist_iterator(slist);
-  
+
   fail_unless(slist_iterator_next(it) == NULL);
-  
+
   slist_iterator_destroy(it);
 }
 END_TEST
@@ -187,21 +187,21 @@ START_TEST(it_on_filled_list) {
   session_t s1 = session_create(handle);
   session_t s2 = session_create(handle);
   session_t s3 = session_create(handle);
-  
+
   fail_unless(slist_prepend(slist, s1) == 0);
   fail_unless(slist_prepend(slist, s2) == 0);
   fail_unless(slist_prepend(slist, s3) == 0);
   fail_unless(slist_get_size(slist) == 3);
-  
+
   slist_it_t it = slist_iterator(slist);
-  
+
   fail_unless(slist_iterator_next(it) == s3);
   fail_unless(slist_iterator_next(it) == s2);
   fail_unless(slist_iterator_next(it) == s1);
   fail_unless(slist_iterator_next(it) == NULL);
-  
+
   slist_iterator_destroy(it);
-  
+
   session_destroy(s1);
   session_destroy(s2);
   session_destroy(s3);
@@ -214,25 +214,25 @@ START_TEST(it_loop_on_filled_list) {
   session_t sessions[3];
   session_t session;
   int i = 2;
-  
+
   sessions[0] = session_create(handle);
   sessions[1] = session_create(handle);
   sessions[2] = session_create(handle);
-  
+
   fail_unless(slist_prepend(slist, sessions[0]) == 0);
   fail_unless(slist_prepend(slist, sessions[1]) == 0);
   fail_unless(slist_prepend(slist, sessions[2]) == 0);
   fail_unless(slist_get_size(slist) == 3);
-  
+
   slist_it_t it = slist_iterator(slist);
-  
+
   while ((session = slist_iterator_next(it)) != NULL) {
     fail_unless(sessions[i] == session);
     i--;
   }
-  
+
   slist_iterator_destroy(it);
-  
+
   session_destroy(sessions[0]);
   session_destroy(sessions[1]);
   session_destroy(sessions[2]);
@@ -250,18 +250,18 @@ START_TEST(iterator_remove) {
   session_t sessions[3];
   session_t session;
   int i = 2, j = 0;
-  
+
   sessions[0] = session_create(handle);
   sessions[1] = session_create(handle);
   sessions[2] = session_create(handle);
-  
+
   fail_unless(slist_prepend(slist, sessions[0]) == 0);
   fail_unless(slist_prepend(slist, sessions[1]) == 0);
   fail_unless(slist_prepend(slist, sessions[2]) == 0);
   fail_unless(slist_get_size(slist) == 3);
-  
+
   slist_it_t it = slist_iterator(slist);
-  
+
   while ((session = slist_iterator_next(it)) != NULL) {
     fail_unless(slist_iterator_remove(it) == 0);
     fail_unless(sessions[i] == session);
@@ -269,11 +269,11 @@ START_TEST(iterator_remove) {
     i--;
     j++;
   }
-  
+
   fail_unless(j == 3);
-  
+
   slist_iterator_destroy(it);
-  
+
   session_destroy(sessions[0]);
   session_destroy(sessions[1]);
   session_destroy(sessions[2]);
@@ -285,33 +285,33 @@ START_TEST(iterator_remove_middle) {
   grsd_t handle = grsd_init();
   session_t sessions[3];
   session_t session;
-  
+
   sessions[0] = session_create(handle);
   sessions[1] = session_create(handle);
   sessions[2] = session_create(handle);
-  
+
   fail_unless(slist_prepend(slist, sessions[0]) == 0);
   fail_unless(slist_prepend(slist, sessions[1]) == 0);
   fail_unless(slist_prepend(slist, sessions[2]) == 0);
   fail_unless(slist_get_size(slist) == 3);
-  
+
   slist_it_t it = slist_iterator(slist);
-  
+
   fail_unless((session = slist_iterator_next(it)) == sessions[2]);
   fail_unless((session = slist_iterator_next(it)) == sessions[1]);
   fail_unless(slist_iterator_remove(it) == 0);
   fail_unless(slist_get_size(slist) == 2);
   fail_unless((session = slist_iterator_next(it)) == sessions[0]);
   fail_unless((session = slist_iterator_next(it)) == NULL);
-    
+
   slist_iterator_destroy(it);
-  
+
   it = slist_iterator(slist);
   fail_unless((session = slist_iterator_next(it)) == sessions[2]);
   fail_unless((session = slist_iterator_next(it)) == sessions[0]);
   fail_unless((session = slist_iterator_next(it)) == NULL);
   slist_iterator_destroy(it);
-  
+
   session_destroy(sessions[0]);
   session_destroy(sessions[1]);
   session_destroy(sessions[2]);
@@ -323,7 +323,7 @@ START_TEST(iterator_remove_empty_list) {
   slist_it_t it = slist_iterator(slist);
 
   fail_unless(slist_iterator_remove(it) == -1);
-  
+
   slist_iterator_destroy(it);
 }
 END_TEST
@@ -331,7 +331,7 @@ END_TEST
 TCase* slist_tcase() {
   TCase* tc = tcase_create("slist");
   tcase_add_checked_fixture(tc, setup, teardown);
-  
+
   tcase_add_test(tc, destroy_null_handle);
   tcase_add_test(tc, get_size_null_slist);
   tcase_add_test(tc, prepend_null_slist);
@@ -354,6 +354,6 @@ TCase* slist_tcase() {
   tcase_add_test(tc, iterator_remove);
   tcase_add_test(tc, iterator_remove_middle);
   tcase_add_test(tc, iterator_remove_empty_list);
-      
+
   return tc;
 }

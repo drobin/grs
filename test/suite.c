@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
   int nfailed;
 
   hostkey_generate();
-  
+
   Suite* s = grs_suite();
   SRunner* sr = srunner_create(s);
   srunner_run_all(sr, CK_NORMAL);
@@ -29,6 +29,6 @@ int main(int argc, char** argv) {
   srunner_free(sr);
 
   hostkey_remove();
-  
+
   return (nfailed == 0) ? 0 : 1;
 }
