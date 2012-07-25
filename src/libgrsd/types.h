@@ -71,11 +71,6 @@ struct _session {
   struct event* session_ev;
 
   /**
-   * PID of the forked process.
-   */
-  pid_t pid;
-
-  /**
    * State of the session.
    */
   enum SESSION_STATE state;
