@@ -14,8 +14,7 @@ static int stdout2channel(int fd, ssh_channel channel) {
   char buf[512];
 
   // Read data from stdout
-  // FIXME: Is buf large enough? At least nread bytes are required.
-  nread = read(fd, buf, nread);
+  nread = read(fd, buf, sizeof(buf));
 
   if (nread > 0) {
     // Write data into channel
@@ -37,21 +36,21 @@ static int channel2stdin(int fd, ssh_channel channel) {
   int nread;
   char buf[512];
 
-  if (ssh_channel_is_eof(channel) != 0) {
-    log_debug("EOF from channel");
-    return -1;
-  }
-
-  if ((nread = ssh_channel_poll(channel, 0)) > 0) {
-    log_debug("%i bytes available for reading in channel", nread);
-    // FIXME: Is buf large enough? At least nread bytes are required.
-    nread = ssh_channel_read(channel, buf, nread, 0);
+  nread = ssh_channel_read(channel, buf, sizeof(buf), 0);
+  if (nread > 0) {
+    // write data into fd
     log_debug("%i bytes read from channel", nread);
     int nwritten = write(fd, buf, nread);
     log_debug("%i bytes written into stdin", nwritten);
-  }
 
-  return 0;
+    return 0;
+  } else if (nread == 0) {
+    log_debug("EOF from channel");
+    return -1;
+  } else {
+    log_err("Failed to read from channel: %s", ssh_get_error(channel));
+    return -1;
+  }
 }
 
 static int session_exec(session_t session, ssh_message msg) {
