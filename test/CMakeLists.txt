@@ -2,6 +2,7 @@ SET(GRS_TEST_SOURCES
   hostkey.c
   suite.c
   libgrsd/grsd_tests.c
+  libgrsd/process_tests.c
   libgrsd/session_tests.c
   libgrsd/slist_tests.c
 )

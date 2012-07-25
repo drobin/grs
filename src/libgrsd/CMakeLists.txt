@@ -4,6 +4,7 @@ SET(LIBGRSD_SOURCES
   handler_session.c
   handler_sshbind.c
   log.c
+  process.c
   session.c
   slist.c
 )

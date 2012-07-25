@@ -67,7 +67,7 @@ START_TEST(listen_connect) {
     channel = ssh_channel_new(session);
     ssh_channel_open_session(channel);
     ssh_channel_request_exec(channel, "ls");
-    while ((nread = ssh_channel_read(channel, buf, sizeof(buf), 0)) != -1);
+    while ((nread = ssh_channel_read(channel, buf, sizeof(buf), 0)) > 0);
     ssh_channel_send_eof(channel);
     ssh_channel_close(channel);
     ssh_channel_free(channel);
