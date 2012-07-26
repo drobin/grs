@@ -151,7 +151,7 @@ int grs_process_exec(struct grs_process* process, ssh_channel channel) {
       log_err("Abnormal termination of process");
     }
 
-    channel_send_eof(channel);
+    ssh_channel_send_eof(channel);
 
     return WEXITSTATUS(stat_loc);
   }
