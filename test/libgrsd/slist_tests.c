@@ -3,8 +3,9 @@
 #include <grsd.h>
 #include <slist.h>
 
-static slist_t slist;
+//static slist_t slist;
 
+#if 0
 static void setup() {
   fail_unless((slist = slist_init()) != NULL);
   fail_unless(slist_get_size(slist) == 0);
@@ -327,11 +328,13 @@ START_TEST(iterator_remove_empty_list) {
   slist_iterator_destroy(it);
 }
 END_TEST
+#endif
 
 TCase* slist_tcase() {
   TCase* tc = tcase_create("slist");
-  tcase_add_checked_fixture(tc, setup, teardown);
+  //tcase_add_checked_fixture(tc, setup, teardown);
 
+#if 0
   tcase_add_test(tc, destroy_null_handle);
   tcase_add_test(tc, get_size_null_slist);
   tcase_add_test(tc, prepend_null_slist);
@@ -354,6 +357,7 @@ TCase* slist_tcase() {
   tcase_add_test(tc, iterator_remove);
   tcase_add_test(tc, iterator_remove_middle);
   tcase_add_test(tc, iterator_remove_empty_list);
+#endif
 
   return tc;
 }

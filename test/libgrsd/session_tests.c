@@ -2,9 +2,10 @@
 
 #include <grsd.h>
 
-static grsd_t handle;
-static session_t session;
+//static grsd_t handle;
+//static session_t session;
 
+#if 0
 static void setup() {
   fail_unless((handle = grsd_init()) != NULL);
   fail_unless((session = session_create(handle)) != NULL);
@@ -37,15 +38,18 @@ START_TEST(accept_null_handle) {
   fail_unless(session_accept(NULL) == -1);
 }
 END_TEST
+#endif
 
 TCase* session_tcase() {
   TCase* tc = tcase_create("session");
-  tcase_add_checked_fixture(tc, setup, teardown);
+  //tcase_add_checked_fixture(tc, setup, teardown);
 
+#if 0
   tcase_add_test(tc, create_null_handle);
   tcase_add_test(tc, destroy_null_handle);
   tcase_add_test(tc, get_grst_null_handle);
   tcase_add_test(tc, accept_null_handle);
+#endif
 
   return tc;
 }

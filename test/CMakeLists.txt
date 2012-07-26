@@ -1,5 +1,6 @@
 SET(GRS_TEST_SOURCES
   hostkey.c
+  libssh.c
   suite.c
   libgrsd/grsd_tests.c
   libgrsd/process_tests.c
@@ -18,7 +19,6 @@ include_directories(
 
 target_link_libraries(grs_test
   libgrsd
-  ${LIBSSH_LIBRARY}
   ${LIBEVENT_LIBRARY}
   ${CHECK_LIBRARY}
   pthread

@@ -9,8 +9,9 @@
 
 #include "../hostkey.h"
 
-static grsd_t handle;
+//static grsd_t handle;
 
+#if 0
 static void setup() {
   fail_unless((handle = grsd_init()) != NULL);
 }
@@ -137,11 +138,13 @@ START_TEST(get_set_hostkey) {
   fail_unless(strcmp(grsd_get_hostkey(handle), "/path/to/key") == 0);
 }
 END_TEST
+#endif
 
 TCase* grsd_tcase() {
   TCase* tc = tcase_create("grsd");
-  tcase_add_checked_fixture(tc, setup, teardown);
+  //tcase_add_checked_fixture(tc, setup, teardown);
 
+#if 0
   tcase_add_test(tc, listen_null_handle);
   tcase_add_test(tc, listen_exit_null_handle);
   tcase_add_test(tc, listen_exit);
@@ -156,6 +159,7 @@ TCase* grsd_tcase() {
   tcase_add_test(tc, set_hostkey_null_handler);
   tcase_add_test(tc, set_hostkey_null_path);
   tcase_add_test(tc, get_set_hostkey);
+#endif
 
   return tc;
 }
