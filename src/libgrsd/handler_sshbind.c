@@ -1,8 +1,7 @@
 #include "grsd.h"
+#include "handler.h"
 #include "log.h"
 #include "types.h"
-
-extern void grsd_handle_session(evutil_socket_t, short, void*);
 
 void grsd_handle_sshbind(evutil_socket_t fd, short what, void* arg) {
   grsd_t handle = (grsd_t)arg;

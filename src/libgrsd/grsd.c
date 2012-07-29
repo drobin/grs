@@ -6,11 +6,9 @@
 #include <libssh/server.h>
 
 #include "grsd.h"
+#include "handler.h"
 #include "log.h"
 #include "types.h"
-
-extern void grsd_handle_pipe(evutil_socket_t, short, void*);
-extern void grsd_handle_sshbind(evutil_socket_t, short, void*);
 
 grsd_t grsd_init() {
   struct _grsd* handle;
