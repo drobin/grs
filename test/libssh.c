@@ -3,12 +3,17 @@
 #include <libssh/libssh.h>
 #include <libssh/server.h>
 
+#include "libssh_proxy.h"
+
 struct ssh_session_struct {
 };
 
 int ssh_bind_accept(ssh_bind ssh_bind_o, ssh_session session) {
-  // TODO Needs to be implemented
-  return 23;
+  if (libssh_proxy_get_option_int("ssh_bind_accept", "fail", 0)) {
+    return SSH_ERROR;
+  } else {
+    return SSH_OK;
+  }
 }
 
 void ssh_bind_free(ssh_bind ssh_bind_o) {
@@ -76,8 +81,11 @@ socket_t ssh_get_fd(ssh_session session) {
 }
 
 int ssh_handle_key_exchange(ssh_session session) {
-  // TODO Needs to be implemented
-  return 23;
+  if (libssh_proxy_get_option_int("ssh_handle_key_exchange", "fail", 0)) {
+    return SSH_ERROR;
+  } else {
+    return SSH_OK;
+  }
 }
 
 char *ssh_message_auth_password(ssh_message msg) {
@@ -140,7 +148,11 @@ int ssh_message_type(ssh_message msg) {
 }
 
 ssh_session ssh_new(void) {
-  return malloc(sizeof(struct ssh_session_struct));
+  if (libssh_proxy_get_option_int("ssh_new", "fail", 0)) {
+    return NULL;
+  } else {
+    return malloc(sizeof(struct ssh_session_struct));
+  }
 }
 
 int ssh_select(ssh_channel *channels, ssh_channel *outchannels, socket_t maxfd,
