@@ -1,5 +1,10 @@
+#include <stdlib.h>
+
 #include <libssh/libssh.h>
 #include <libssh/server.h>
+
+struct ssh_session_struct {
+};
 
 int ssh_bind_accept(ssh_bind ssh_bind_o, ssh_session session) {
   // TODO Needs to be implemented
@@ -57,7 +62,7 @@ int ssh_channel_write(ssh_channel channel, const void *data, uint32_t len) {
 }
 
 void ssh_free(ssh_session session) {
-  // TODO Needs to be implemented
+  free(session);
 }
 
 const char *ssh_get_error(void *error) {
@@ -135,8 +140,7 @@ int ssh_message_type(ssh_message msg) {
 }
 
 ssh_session ssh_new(void) {
-  // TODO Needs to be implemented
-  return NULL;
+  return malloc(sizeof(struct ssh_session_struct));
 }
 
 int ssh_select(ssh_channel *channels, ssh_channel *outchannels, socket_t maxfd,
