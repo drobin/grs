@@ -3,6 +3,7 @@ SET(GRS_TEST_SOURCES
   libssh.c
   suite.c
   libgrsd/grsd_tests.c
+  libgrsd/handle_pipe_tests.c
   libgrsd/process_tests.c
   libgrsd/session_tests.c
   libgrsd/slist_tests.c
@@ -13,6 +14,7 @@ add_test(grs_test grs_test)
 
 include_directories(
   ${LIBGRSD_INCLUDE_DIR}
+  ${LIBEVENT_INCLUDE_DIR}
   ${LIBSSH_INCLUDE_DIR}
   ${CHECK_INCLUDE_DIR}
 )
