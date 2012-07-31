@@ -11,5 +11,7 @@ int libssh_proxy_destroy();
 
 int libssh_proxy_get_option_int(const char* func, const char* option, int def);
 int libssh_proxy_set_option_int(const char* func, const char* option, int val);
+int* libssh_proxy_get_option_intptr(const char* func, const char* option, int* def);
+int libssh_proxy_set_option_intptr(const char* func, const char* option, int* val);
 
 #endif  /* LIBSSH_PROXY_H */
