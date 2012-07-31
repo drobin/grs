@@ -6,7 +6,11 @@
 
 struct libssh_proxy_option {
   const char* option;
-  int value;
+
+  union {
+    int int_val;
+  } v;
+
   LIST_ENTRY(libssh_proxy_option) entries;
 };
 
@@ -98,7 +102,7 @@ int libssh_proxy_get_option_int(const char* func, const char* option, int def) {
     struct libssh_proxy_option* option_entry;
 
     option_entry = find_option(func_entry, option, 0);
-    return (option_entry != NULL) ? option_entry->value : def;
+    return (option_entry != NULL) ? option_entry->v.int_val : def;
   } else {
     return def;
   }
@@ -108,7 +112,7 @@ int libssh_proxy_set_option_int(const char* func, const char* option, int val) {
   struct libssh_proxy_func* func_entry = find_func(func, 1);
   struct libssh_proxy_option* option_entry = find_option(func_entry, option, 1);
 
-  option_entry->value = val;
+  option_entry->v.int_val = val;
 
   return 0;
 }
