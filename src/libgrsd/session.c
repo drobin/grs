@@ -59,6 +59,23 @@ grsd_t session_get_grsd(session_t session) {
   return session->handle;
 }
 
+enum session_state session_get_state(session_t session) {
+  if (session != NULL) {
+    return session->state;
+  } else {
+    return -1;
+  }
+}
+
+int session_set_state(session_t session, enum session_state state) {
+  if (session != NULL) {
+    session->state = state;
+    return 0;
+  } else {
+    return -1;
+  }
+}
+
 int session_accept(session_t session) {
   ssh_bind sshbind;
 

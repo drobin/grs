@@ -117,6 +117,23 @@ int session_destroy(session_t session);
 grsd_t session_get_grsd(session_t session);
 
 /**
+ * Returns the current state of the session.
+ *
+ * @param session The requested session
+ * @return The current state of the session
+ * @todo This should not be a part of the public API.
+ */
+enum session_state session_get_state(session_t session);
+
+/**
+ * Updates the state of the session.
+ *
+ * @param session The requested session
+ * @return On success <code>0</code> is returned.
+ */
+int session_set_state(session_t session, enum session_state state);
+
+/**
  * Accepts a connection, which is assigned to the given session.
  *
  * @param session The destination session

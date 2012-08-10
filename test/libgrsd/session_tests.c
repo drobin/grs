@@ -51,6 +51,28 @@ START_TEST(get_grsd) {
 }
 END_TEST
 
+START_TEST(get_state_null_handle) {
+  fail_unless(session_get_state(NULL) == -1);
+}
+END_TEST
+
+START_TEST(get_state_initial) {
+  fail_unless(session_get_state(session) == AUTH);
+}
+END_TEST
+
+START_TEST(set_state_null_handle) {
+  fail_unless(session_set_state(NULL, NOP) == -1);
+}
+END_TEST
+
+START_TEST(get_set_state) {
+  fail_unless(session_get_state(session) == AUTH);
+  fail_unless(session_set_state(session, CHANNEL_OPEN) == 0);
+  fail_unless(session_get_state(session) == CHANNEL_OPEN);
+}
+END_TEST
+
 START_TEST(accept_null_handle) {
   fail_unless(session_accept(NULL) == -1);
 }
@@ -82,6 +104,10 @@ TCase* session_tcase() {
   tcase_add_test(tc, destroy_null_handle);
   tcase_add_test(tc, get_grst_null_handle);
   tcase_add_test(tc, get_grsd);
+  tcase_add_test(tc, get_state_null_handle);
+  tcase_add_test(tc, get_state_initial);
+  tcase_add_test(tc, set_state_null_handle);
+  tcase_add_test(tc, get_set_state);
   tcase_add_test(tc, accept_null_handle);
   tcase_add_test(tc, accept_ssh_bind_accept_failure);
   tcase_add_test(tc, accept_ssh_handle_key_exchange_failure);
