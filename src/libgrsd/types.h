@@ -5,12 +5,8 @@
 #include <libssh/server.h>
 #include <event.h>
 
-enum SESSION_STATE {
-  NOP,
-  AUTH,
-  CHANNEL_OPEN,
-  REQUEST_CHANNEL
-};
+// TODO Don't forget to remove this include after a successful refactoring
+#include "grsd.h"
 
 struct _grsd {
   /**
@@ -73,7 +69,7 @@ struct _session {
   /**
    * State of the session.
    */
-  enum SESSION_STATE state;
+  enum session_state state;
 };
 
 #endif  /* TYPES_H */

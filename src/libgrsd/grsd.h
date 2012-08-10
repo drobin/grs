@@ -14,6 +14,13 @@ typedef struct _grsd* grsd_t;
  */
 typedef struct _session* session_t;
 
+enum session_state {
+  NOP,
+  AUTH,
+  CHANNEL_OPEN,
+  REQUEST_CHANNEL
+};
+
 /*
  * Creates a new grsd-handle.
  *
