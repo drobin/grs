@@ -5,6 +5,7 @@ SET(GRS_TEST_SOURCES
   suite.c
   libgrsd/grsd_tests.c
   libgrsd/handle_pipe_tests.c
+  libgrsd/handle_session_tests.c
   libgrsd/handle_sshbind_tests.c
   libgrsd/process_tests.c
   libgrsd/session_tests.c
