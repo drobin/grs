@@ -68,6 +68,19 @@ static struct libssh_proxy_option* find_option(struct libssh_proxy_func* func,
   return entry;
 }
 
+int libssh_proxy_make_list(struct list_head* head,
+                           struct list_entry* entries,
+                           int nentries) {
+  int i;
+
+  LIST_INIT(head);
+  for (i = nentries - 1; i >= 0; i--) {
+    LIST_INSERT_HEAD(head, &entries[i], entries);
+  }
+
+  return 0;
+}
+
 int libssh_proxy_init() {
   if ((libssh_proxy_env = malloc(sizeof(struct _libssh_proxy_head))) == NULL) {
     return -1;

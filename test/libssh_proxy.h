@@ -18,6 +18,10 @@ struct list_entry {
 
 LIST_HEAD(list_head, list_entry);
 
+int libssh_proxy_make_list(struct list_head* head,
+                           struct list_entry* entries,
+                           int nentries);
+
 int libssh_proxy_init();
 int libssh_proxy_destroy();
 
