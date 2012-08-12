@@ -8,11 +8,12 @@
 static int session_handle_auth(session_t session, ssh_message msg) {
   char* user;
   char* password;
+  int msg_type;
 
   log_debug("Handle authentication for session");
 
-  if (ssh_message_type(msg) != SSH_REQUEST_AUTH) {
-    log_debug("Ignoring message of type %i", ssh_message_type(msg));
+  if ((msg_type = ssh_message_type(msg)) != SSH_REQUEST_AUTH) {
+    log_debug("Ignoring message of type %i", msg_type);
 
     ssh_message_reply_default(msg);
 

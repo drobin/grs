@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <libssh/libssh.h>
 #include <libssh/server.h>
@@ -143,8 +144,23 @@ int ssh_message_subtype(ssh_message msg) {
 }
 
 int ssh_message_type(ssh_message msg) {
-  // TODO Needs to be implemented
-  return 23;
+  struct list_head* head =
+    libssh_proxy_get_option_list("ssh_message_type", "results", NULL);
+  struct list_entry* entry;
+
+  if (head == NULL) {
+    fprintf(stderr, "No options assigned\n");
+    return -1;
+  }
+
+  if ((entry = LIST_FIRST(head)) == NULL) {
+    fprintf(stderr, "The list is empty\n");
+    return -1;
+  }
+
+  LIST_REMOVE(entry, entries);
+
+  return entry->v.int_val;
 }
 
 ssh_session ssh_new(void) {
