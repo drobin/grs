@@ -25,6 +25,12 @@ endif(NOT CHECK_FOUND)
 add_definitions(-Wall -Werror)
 enable_testing()
 
+# Debug-mode: enable debug-symbols for the compiler and create a
+#             ENABLE_DEBUG-macro. So the application can react on it.
+if(ENABLE_DEBUG)
+  add_definitions(-g -O0 -DENABLE_DEBUG)
+endif(ENABLE_DEBUG)
+
 # define some useful helper-variables
 set(LIBGRSD_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src/libgrsd)
 

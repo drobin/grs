@@ -29,6 +29,11 @@ int main(int argc, char** argv) {
 
   Suite* s = grs_suite();
   SRunner* sr = srunner_create(s);
+
+  #ifdef ENABLE_DEBUG
+  srunner_set_fork_status(sr, CK_NOFORK);
+  #endif
+
   srunner_run_all(sr, CK_NORMAL);
 
   nfailed = srunner_ntests_failed(sr);
