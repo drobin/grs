@@ -94,6 +94,23 @@ START_TEST(accept_established) {
 }
 END_TEST
 
+START_TEST(get_fd_null_session) {
+  fail_unless(session_get_fd(NULL) == -1);
+}
+END_TEST
+
+START_TEST(get_fd_not_connected) {
+  libssh_proxy_set_option_int("ssh_is_connected", "connected", 0);
+  fail_unless(session_get_fd(session) == -1);
+}
+END_TEST
+
+START_TEST(get_fd_succes) {
+  libssh_proxy_set_option_int("ssh_get_fd", "fd", 4711);
+  fail_unless(session_get_fd(session) == 4711);
+}
+END_TEST
+
 START_TEST(handle_null_session) {
   fail_unless(session_handle(NULL) == -1);
 }
@@ -304,6 +321,9 @@ TCase* session_tcase() {
   tcase_add_test(tc, accept_ssh_bind_accept_failure);
   tcase_add_test(tc, accept_ssh_handle_key_exchange_failure);
   tcase_add_test(tc, accept_established);
+  tcase_add_test(tc, get_fd_null_session);
+  tcase_add_test(tc, get_fd_not_connected);
+  tcase_add_test(tc, get_fd_succes);
   tcase_add_test(tc, handle_null_session);
   tcase_add_test(tc, handle_invalid_msg);
   tcase_add_test(tc, handle_invalid_msg_type);

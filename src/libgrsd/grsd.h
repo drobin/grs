@@ -150,6 +150,14 @@ int session_set_state(session_t session, enum session_state state);
 int session_accept(session_t session);
 
 /**
+ * Returns the filedescriptor or the client-connection.
+ *
+ * @param session The destination session
+ * @return The fd of the connection
+ */
+int session_get_fd(session_t session);
+
+/**
  * Handles incoming data for the session.
  *
  * The return-value specifies what to do with the session:

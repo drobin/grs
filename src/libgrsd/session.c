@@ -204,6 +204,14 @@ int session_accept(session_t session) {
   return 0;
 }
 
+int session_get_fd(session_t session) {
+  if (session == NULL || !ssh_is_connected(session->session)) {
+    return -1;
+  }
+
+  return ssh_get_fd(session->session);
+}
+
 int session_handle(session_t session) {
   ssh_message msg;
   int msg_type;

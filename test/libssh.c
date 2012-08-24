@@ -83,8 +83,7 @@ const char *ssh_get_error(void *error) {
 }
 
 socket_t ssh_get_fd(ssh_session session) {
-  // TODO Needs to be implemented
-  return 23;
+  return libssh_proxy_get_option_int("ssh_get_fd", "fd", -1);
 }
 
 int ssh_handle_key_exchange(ssh_session session) {
@@ -93,6 +92,10 @@ int ssh_handle_key_exchange(ssh_session session) {
   } else {
     return SSH_OK;
   }
+}
+
+int ssh_is_connected(ssh_session session) {
+  return libssh_proxy_get_option_int("ssh_is_connected", "connected", 1);
 }
 
 char *ssh_message_auth_password(ssh_message msg) {
