@@ -108,7 +108,7 @@ static int handle_request_channel(session_t session, ssh_message msg,
 
   session->state = NOP; // Finished
 
-  return 0;
+  return 1;
 }
 
 session_t session_create(grsd_t handle) {

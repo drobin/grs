@@ -283,7 +283,7 @@ START_TEST(handle_request_channel_success) {
   libssh_proxy_make_list(&subtype_list, &subtype_entry, 1);
   libssh_proxy_set_option_list("ssh_message_subtype", "results", &subtype_list);
 
-  fail_unless(session_handle(session) == 0);
+  fail_unless(session_handle(session) == 1);
   fail_unless(session_get_state(session) == NOP);
 }
 END_TEST
