@@ -28,6 +28,11 @@ int libssh_proxy_destroy();
 int libssh_proxy_get_option_int(const char* func, const char* option, int def);
 int libssh_proxy_set_option_int(const char* func, const char* option, int val);
 
+char* libssh_proxy_get_option_string(const char* func, const char* option,
+                                     char* def);
+int libssh_proxy_set_option_string(const char* func, const char* option,
+                                   char* val);
+
 struct list_head* libssh_proxy_get_option_list(const char* func,
                                                const char* option,
                                                struct list_head* def);

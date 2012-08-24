@@ -90,8 +90,8 @@ int ssh_handle_key_exchange(ssh_session session) {
 }
 
 char *ssh_message_auth_password(ssh_message msg) {
-  // TODO Needs to be implemented
-  return NULL;
+  return libssh_proxy_get_option_string(
+    "ssh_message_auth_password", "result", NULL);
 }
 
 int ssh_message_auth_reply_success(ssh_message msg, int partial) {
@@ -105,8 +105,8 @@ int ssh_message_auth_set_methods(ssh_message msg, int methods) {
 }
 
 char *ssh_message_auth_user(ssh_message msg) {
-  // TODO Needs to be implemented
-  return NULL;
+  return libssh_proxy_get_option_string(
+    "ssh_message_auth_user", "result", NULL);
 }
 
 char *ssh_message_channel_request_command(ssh_message msg) {
