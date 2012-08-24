@@ -3,9 +3,6 @@
 #include "hostkey.h"
 
 extern TCase* grsd_tcase();
-extern TCase* handle_pipe_tcase();
-extern TCase* handle_session_tcase();
-extern TCase* handle_sshbind_tcase();
 extern TCase* process_tcase();
 extern TCase* session_tcase();
 extern TCase* slist_tcase();
@@ -14,9 +11,6 @@ static Suite* grs_suite() {
   Suite* s = suite_create("grs_test");
 
   suite_add_tcase(s, grsd_tcase());
-  suite_add_tcase(s, handle_pipe_tcase());
-  suite_add_tcase(s, handle_session_tcase());
-  suite_add_tcase(s, handle_sshbind_tcase());
   suite_add_tcase(s, process_tcase());
   suite_add_tcase(s, session_tcase());
   suite_add_tcase(s, slist_tcase());

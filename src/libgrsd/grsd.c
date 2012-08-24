@@ -6,7 +6,6 @@
 #include <libssh/server.h>
 
 #include "grsd.h"
-#include "handler.h"
 #include "log.h"
 #include "types.h"
 

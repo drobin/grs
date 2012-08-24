@@ -3,7 +3,6 @@
 
 #include <libssh/libssh.h>
 #include <libssh/server.h>
-#include <event.h>
 
 // TODO Don't forget to remove this include after a successful refactoring
 #include "grsd.h"
