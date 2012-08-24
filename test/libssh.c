@@ -12,6 +12,9 @@ struct ssh_session_struct {
 struct ssh_channel_struct {
 };
 
+struct ssh_message_struct {
+};
+
 int ssh_bind_accept(ssh_bind ssh_bind_o, ssh_session session) {
   if (libssh_proxy_get_option_int("ssh_bind_accept", "fail", 0)) {
     return SSH_ERROR;
@@ -124,9 +127,6 @@ ssh_channel ssh_message_channel_request_open_reply_accept(ssh_message msg) {
   } else {
     return malloc(sizeof(struct ssh_channel_struct));
   }
-
-  // TODO Needs to be implemented
-  return NULL;
 }
 
 int ssh_message_channel_request_reply_success(ssh_message msg) {
@@ -135,12 +135,15 @@ int ssh_message_channel_request_reply_success(ssh_message msg) {
 }
 
 void ssh_message_free(ssh_message msg) {
-  // TODO Needs to be implemented
+  free(msg);
 }
 
 ssh_message ssh_message_get(ssh_session session) {
-  // TODO Needs to be implemented
-  return NULL;
+  if (libssh_proxy_get_option_int("ssh_message_get", "fail", 0)) {
+    return NULL;
+  } else {
+    return malloc(sizeof(struct ssh_message_struct));
+  }
 }
 
 int ssh_message_reply_default(ssh_message msg) {

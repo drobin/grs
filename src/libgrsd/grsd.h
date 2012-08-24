@@ -141,4 +141,25 @@ int session_set_state(session_t session, enum session_state state);
  */
 int session_accept(session_t session);
 
+/**
+ * Handles incoming data for the session.
+ *
+ * The return-value specifies what to do with the session:
+ *
+ * <ul>
+ *  <li><code>-1</code>:
+ *    A fatal error occured, the session needs to be destroyed
+ *  </li>
+ *  <li><code>0</code>:
+ *    Data were processed but the session should stay open because further data
+ *    are required.
+ *  </li>
+ *  <li><code>1</code>:
+ *    Data where processed and no more data are required. You can close the
+ *    session.
+ *  </li>
+ * </ul>
+ */
+int session_handle(session_t session);
+
 #endif /* GRSD_H */

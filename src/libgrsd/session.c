@@ -100,3 +100,28 @@ int session_accept(session_t session) {
 
   return 0;
 }
+
+int session_handle(session_t session) {
+  ssh_message msg;
+  int msg_type;
+
+  if (session == NULL) {
+    return -1; // -1: Fatal error, destroy session
+  }
+
+  log_debug("Handle incoming data from session");
+
+  if ((msg = ssh_message_get(session->session)) == NULL) {
+    log_err("Failed to read message from session: %s",
+            ssh_get_error(session->session));
+    return -1;
+  }
+
+  if ((msg_type = ssh_message_type(msg)) == -1) {
+    log_debug("ssh_message_type of -1 received. Abort...");
+    return -1; // -1: Fatal error, destroy session
+  }
+
+  ssh_message_free(msg);
+  return 0;
+}

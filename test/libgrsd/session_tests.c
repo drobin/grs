@@ -95,6 +95,41 @@ START_TEST(accept_established) {
 }
 END_TEST
 
+START_TEST(handle_null_session) {
+  fail_unless(session_handle(NULL) == -1);
+}
+END_TEST
+
+START_TEST(handle_invalid_msg) {
+  libssh_proxy_set_option_int("ssh_message_get", "fail", 1);
+  fail_unless(session_handle(session) == -1);
+}
+END_TEST
+
+START_TEST(handle_invalid_msg_type) {
+  struct list_head list;
+  struct list_entry entry;
+
+  entry.v.int_val = -1;
+  libssh_proxy_make_list(&list, &entry, 1);
+  libssh_proxy_set_option_list("ssh_message_type", "results", &list);
+
+  fail_unless(session_handle(session) == -1);
+}
+END_TEST
+
+START_TEST(handle_success) {
+  struct list_head list;
+  struct list_entry entry;
+
+  entry.v.int_val = 1;
+  libssh_proxy_make_list(&list, &entry, 1);
+  libssh_proxy_set_option_list("ssh_message_type", "results", &list);
+
+  fail_unless(session_handle(session) == 0);
+}
+END_TEST
+
 TCase* session_tcase() {
   TCase* tc = tcase_create("session");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -112,6 +147,10 @@ TCase* session_tcase() {
   tcase_add_test(tc, accept_ssh_bind_accept_failure);
   tcase_add_test(tc, accept_ssh_handle_key_exchange_failure);
   tcase_add_test(tc, accept_established);
+  tcase_add_test(tc, handle_null_session);
+  tcase_add_test(tc, handle_invalid_msg);
+  tcase_add_test(tc, handle_invalid_msg_type);
+  tcase_add_test(tc, handle_success);
 
   return tc;
 }
