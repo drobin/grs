@@ -80,6 +80,12 @@ static struct libssh_proxy_option* get_option(const char* func,
   }
 }
 
+static struct libssh_proxy_option* set_option(const char* func,
+                                              const char* option) {
+  struct libssh_proxy_func* func_entry = find_func(func, 1);
+  return find_option(func_entry, option, 1);
+}
+
 int libssh_proxy_make_list(struct list_head* head,
                            struct list_entry* entries,
                            int nentries) {
@@ -128,11 +134,7 @@ int libssh_proxy_get_option_int(const char* func, const char* option, int def) {
 }
 
 int libssh_proxy_set_option_int(const char* func, const char* option, int val) {
-  struct libssh_proxy_func* func_entry = find_func(func, 1);
-  struct libssh_proxy_option* option_entry = find_option(func_entry, option, 1);
-
-  option_entry->v.int_val = val;
-
+  set_option(func, option)->v.int_val = val;
   return 0;
 }
 
@@ -144,11 +146,7 @@ char* libssh_proxy_get_option_string(const char* func, const char* option,
 
 int libssh_proxy_set_option_string(const char* func, const char* option,
                                    char* val) {
-  struct libssh_proxy_func* func_entry = find_func(func, 1);
-  struct libssh_proxy_option* option_entry = find_option(func_entry, option, 1);
-
-  option_entry->v.str_val = val;
-
+  set_option(func, option)->v.str_val = val;
   return 0;
 }
 
@@ -162,11 +160,7 @@ struct list_head* libssh_proxy_get_option_list(const char* func,
 int libssh_proxy_set_option_list(const char* func,
                                  const char* option,
                                  struct list_head* val) {
-  struct libssh_proxy_func* func_entry = find_func(func, 1);
-  struct libssh_proxy_option* option_entry = find_option(func_entry, option, 1);
-
-  option_entry->v.list_val = val;
-
+  set_option(func, option)->v.list_val = val;
   return 0;
 }
 
@@ -176,11 +170,8 @@ int* libssh_proxy_get_option_intptr(const char* func, const char* option,
   return (entry != NULL) ? entry->v.intptr_val : def;
 }
 
-int libssh_proxy_set_option_intptr(const char* func, const char* option, int* val) {
-  struct libssh_proxy_func* func_entry = find_func(func, 1);
-  struct libssh_proxy_option* option_entry = find_option(func_entry, option, 1);
-
-  option_entry->v.intptr_val = val;
-
+int libssh_proxy_set_option_intptr(const char* func, const char* option,
+                                   int* val) {
+  set_option(func, option)->v.intptr_val = val;
   return 0;
 }
