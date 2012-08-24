@@ -139,8 +139,23 @@ int ssh_message_reply_default(ssh_message msg) {
 }
 
 int ssh_message_subtype(ssh_message msg) {
-  // TODO Needs to be implemented
-  return 23;
+  struct list_head* head =
+    libssh_proxy_get_option_list("ssh_message_subtype", "results", NULL);
+  struct list_entry* entry;
+
+  if (head == NULL) {
+    fprintf(stderr, "%s: No options assigned\n", __FUNCTION__);
+    return -1;
+  }
+
+  if ((entry = LIST_FIRST(head)) == NULL) {
+    fprintf(stderr, "%s: The list is empty\n", __FUNCTION__);
+    return -1;
+  }
+
+  LIST_REMOVE(entry, entries);
+
+  return entry->v.int_val;
 }
 
 int ssh_message_type(ssh_message msg) {
@@ -149,12 +164,12 @@ int ssh_message_type(ssh_message msg) {
   struct list_entry* entry;
 
   if (head == NULL) {
-    fprintf(stderr, "No options assigned\n");
+    fprintf(stderr, "%s: No options assigned\n", __FUNCTION__);
     return -1;
   }
 
   if ((entry = LIST_FIRST(head)) == NULL) {
-    fprintf(stderr, "The list is empty\n");
+    fprintf(stderr, "%s: The list is empty\n", __FUNCTION__);
     return -1;
   }
 

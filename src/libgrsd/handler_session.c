@@ -8,7 +8,7 @@
 static int session_handle_auth(session_t session, ssh_message msg) {
   char* user;
   char* password;
-  int msg_type;
+  int msg_type, msg_subtype;
 
   log_debug("Handle authentication for session");
 
@@ -20,9 +20,9 @@ static int session_handle_auth(session_t session, ssh_message msg) {
     return 0;
   }
 
-  if (ssh_message_subtype(msg) != SSH_AUTH_METHOD_PASSWORD) {
+  if ((msg_subtype = ssh_message_subtype(msg)) != SSH_AUTH_METHOD_PASSWORD) {
     log_debug("Currently only password-authentication is supported.");
-    log_debug("Rejecting auth-type %i", ssh_message_subtype(msg));
+    log_debug("Rejecting auth-type %i", msg_subtype);
 
     ssh_message_auth_set_methods(msg, SSH_AUTH_METHOD_PASSWORD);
     ssh_message_reply_default(msg);
