@@ -5,12 +5,13 @@
 #include "../../src/libgrsd/types.h"
 #include "../libssh_proxy.h"
 
-static struct _grsd* handle;
-static session_t session;
-static int fds[2];
-static struct event_base* eb;
-static struct event* ev;
+//static struct _grsd* handle;
+//static session_t session;
+//static int fds[2];
+//static struct event_base* eb;
+//static struct event* ev;
 
+#if 0
 static void setup() {
   fail_unless(libssh_proxy_init() == 0);
   fail_unless((handle = malloc(sizeof(struct _grsd))) != NULL);
@@ -247,22 +248,23 @@ START_TEST(handle_request_channel_success) {
   // TODO The session is destroyed here, how to check this?
 }
 END_TEST
+#endif
 
 TCase* handle_session_tcase() {
   TCase* tc = tcase_create("handle_session");
 
-  tcase_add_checked_fixture(tc, setup, teardown);
-  tcase_add_test(tc, invalid_message_type);
-  tcase_add_test(tc, handle_auth_invalid_msg_type);
-  tcase_add_test(tc, handle_auth_invalid_msg_subtype);
-  tcase_add_test(tc, handle_auth_wrong_password);
-  tcase_add_test(tc, handle_auth_success);
-  tcase_add_test(tc, handle_channel_open_invalid_msg_type);
-  tcase_add_test(tc, handle_channel_open_no_channel);
-  tcase_add_test(tc, handle_channel_open_success);
-  tcase_add_test(tc, handle_request_channel_invalid_msg_type);
-  tcase_add_test(tc, handle_request_channel_invalid_msg_subtype);
-  tcase_add_test(tc, handle_request_channel_success);
+  //tcase_add_checked_fixture(tc, setup, teardown);
+  //tcase_add_test(tc, invalid_message_type);
+  //tcase_add_test(tc, handle_auth_invalid_msg_type);
+  //tcase_add_test(tc, handle_auth_invalid_msg_subtype);
+  //tcase_add_test(tc, handle_auth_wrong_password);
+  //tcase_add_test(tc, handle_auth_success);
+  //tcase_add_test(tc, handle_channel_open_invalid_msg_type);
+  //tcase_add_test(tc, handle_channel_open_no_channel);
+  //tcase_add_test(tc, handle_channel_open_success);
+  //tcase_add_test(tc, handle_request_channel_invalid_msg_type);
+  //tcase_add_test(tc, handle_request_channel_invalid_msg_subtype);
+  //tcase_add_test(tc, handle_request_channel_success);
 
   return tc;
 }

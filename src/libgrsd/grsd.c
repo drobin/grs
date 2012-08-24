@@ -17,16 +17,8 @@ grsd_t grsd_init() {
     return NULL;
   }
 
-  // The ctrl_pipe
-  if (pipe(handle->ctrl_pipe) != 0) {
-    free(handle);
-    return NULL;
-  }
-
   // Create the libssh-sshbind
   if ((handle->bind = ssh_bind_new()) == NULL) {
-    close(handle->ctrl_pipe[0]);
-    close(handle->ctrl_pipe[1]);
     free(handle);
     return NULL;
   }
@@ -34,23 +26,6 @@ grsd_t grsd_init() {
   // Some default SSH-daemon-information
   handle->listen_port = 22;
   handle->hostkey = NULL;
-
-  // The event_base from libevent
-  handle->event_base = event_base_new();
-
-  // sshbind-event
-  // The event cannot created now because the connection is not open
-  handle->sshbind_ev = NULL;
-
-  // Create the ctrl_pipe-event
-  // It's safe to create the event already now because the pipe was already
-  // created
-  handle->pipe_ev = event_new(handle->event_base,
-                              handle->ctrl_pipe[0],
-                              EV_READ|EV_PERSIST,
-                              grsd_handle_pipe,
-                              handle);
-  event_add(handle->pipe_ev, NULL);
 
   return handle;
 }
@@ -60,25 +35,9 @@ int grsd_destroy(grsd_t handle) {
     return -1;
   }
 
-  close(handle->ctrl_pipe[0]);
-  close(handle->ctrl_pipe[1]);
-
   ssh_bind_free(handle->bind);
 
   free(handle->hostkey);
-
-  // Destroy the libevent-event_base
-  event_base_free(handle->event_base);
-
-  // Destroy sshbind-event if not created
-  if (handle->sshbind_ev != NULL) {
-    event_free(handle->sshbind_ev);
-  }
-
-  // Destroy ctrl_pipe-event
-  event_del(handle->pipe_ev);
-  event_free(handle->pipe_ev);
-
   free(handle);
 
   return 0;
@@ -160,17 +119,6 @@ int grsd_listen(grsd_t handle) {
     return -1;
   }
 
-  handle->sshbind_ev = event_new(handle->event_base,
-                                 ssh_bind_get_fd(handle->bind),
-                                 EV_READ|EV_PERSIST,
-                                 grsd_handle_sshbind,
-                                 handle);
-  event_add(handle->sshbind_ev, NULL);
-
-  event_base_loop(handle->event_base, 0);
-
-  event_del(handle->sshbind_ev);
-
   log_debug("Leaving grsd_listen with %i", exit_code);
   return exit_code;
 }
@@ -181,22 +129,4 @@ int grsd_listen_get_fd(grsd_t handle) {
   }
 
   return ssh_bind_get_fd(handle->bind);
-}
-
-int grsd_listen_exit(grsd_t handle) {
-  ssize_t nwritten;
-
-  if (handle == NULL) {
-    return -1;
-  }
-
-  log_debug("Ask to leave grsd_listen");
-  nwritten = write(handle->ctrl_pipe[1], "q", 1);
-
-  if (nwritten != 1) {
-    return -1;
-  }
-
-  log_debug("Leave request issued");
-  return 0;
 }

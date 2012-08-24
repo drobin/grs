@@ -3,6 +3,7 @@
 #include "log.h"
 #include "types.h"
 
+#if 0
 void grsd_handle_sshbind(evutil_socket_t fd, short what, void* arg) {
   grsd_t handle = (grsd_t)arg;
   session_t session;
@@ -37,3 +38,4 @@ void grsd_handle_sshbind(evutil_socket_t fd, short what, void* arg) {
   // Initial handle the ssh-data
   event_active(session->session_ev, EV_READ, 1);
 }
+#endif

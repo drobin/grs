@@ -7,11 +7,12 @@
 #include "../../src/libgrsd/types.h"
 #include "../libssh_proxy.h"
 
-static struct _grsd* handle;
-static int fds[2];
-static struct event_base* eb;
-static struct event* ev;
+//static struct _grsd* handle;
+//static int fds[2];
+//static struct event_base* eb;
+//static struct event* ev;
 
+#if 0
 static void setup() {
   fail_unless(libssh_proxy_init() == 0);
   fail_unless((handle = malloc(sizeof(struct _grsd))) != NULL);
@@ -56,14 +57,15 @@ START_TEST(bind_success) {
   fail_unless(event_base_loop(eb, EVLOOP_ONCE) == 0);
 }
 END_TEST
+#endif
 
 TCase* handle_sshbind_tcase() {
   TCase* tc = tcase_create("handle_sshbind");
 
-  tcase_add_checked_fixture(tc, setup, teardown);
-  tcase_add_test(tc, session_create_failed);
-  tcase_add_test(tc, session_accept_failed);
-  tcase_add_test(tc, bind_success);
+  //tcase_add_checked_fixture(tc, setup, teardown);
+  //tcase_add_test(tc, session_create_failed);
+  //tcase_add_test(tc, session_accept_failed);
+  //tcase_add_test(tc, bind_success);
 
   return tc;
 }

@@ -7,6 +7,7 @@
 #include "log.h"
 #include "types.h"
 
+#if 0
 void grsd_handle_pipe(evutil_socket_t fd, short what, void* arg) {
   grsd_t handle = (grsd_t)arg;
   int c;
@@ -26,3 +27,4 @@ void grsd_handle_pipe(evutil_socket_t fd, short what, void* arg) {
     return;
   }
 }
+#endif
