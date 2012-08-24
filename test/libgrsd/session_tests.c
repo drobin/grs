@@ -118,15 +118,173 @@ START_TEST(handle_invalid_msg_type) {
 }
 END_TEST
 
-START_TEST(handle_success) {
+START_TEST(handle_auth_invalid_msg_type) {
   struct list_head list;
   struct list_entry entry;
 
-  entry.v.int_val = 1;
+  entry.v.int_val = SSH_REQUEST_AUTH + 1;
   libssh_proxy_make_list(&list, &entry, 1);
   libssh_proxy_set_option_list("ssh_message_type", "results", &list);
 
   fail_unless(session_handle(session) == 0);
+  fail_unless(session_get_state(session) == AUTH);
+}
+END_TEST
+
+START_TEST(handle_auth_invalid_msg_subtype) {
+  struct list_head type_list, subtype_list;
+  struct list_entry type_entry, subtype_entry;
+
+  type_entry.v.int_val = SSH_REQUEST_AUTH;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
+
+  subtype_entry.v.int_val = SSH_AUTH_METHOD_PASSWORD + 1;
+  libssh_proxy_make_list(&subtype_list, &subtype_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_subtype", "results", &subtype_list);
+
+  fail_unless(session_handle(session) == 0);
+  fail_unless(session_get_state(session) == AUTH);
+}
+END_TEST
+
+START_TEST(handle_auth_wrong_password) {
+  struct list_head type_list, subtype_list;
+  struct list_entry type_entry, subtype_entry;
+
+  type_entry.v.int_val = SSH_REQUEST_AUTH;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
+
+  subtype_entry.v.int_val = SSH_AUTH_METHOD_PASSWORD;
+  libssh_proxy_make_list(&subtype_list, &subtype_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_subtype", "results", &subtype_list);
+
+  libssh_proxy_set_option_string("ssh_message_auth_user", "result", "foo");
+  libssh_proxy_set_option_string("ssh_message_auth_password", "result", "bar");
+
+  fail_unless(session_handle(session) == 0);
+  fail_unless(session_get_state(session) == AUTH);
+}
+END_TEST
+
+START_TEST(handle_auth_success) {
+  struct list_head type_list, subtype_list;
+  struct list_entry type_entry, subtype_entry;
+
+  type_entry.v.int_val = SSH_REQUEST_AUTH;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
+
+  subtype_entry.v.int_val = SSH_AUTH_METHOD_PASSWORD;
+  libssh_proxy_make_list(&subtype_list, &subtype_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_subtype", "results", &subtype_list);
+
+  libssh_proxy_set_option_string("ssh_message_auth_user", "result", "foo");
+  libssh_proxy_set_option_string("ssh_message_auth_password", "result", "foo");
+
+  fail_unless(session_handle(session) == 0);
+  fail_unless(session_get_state(session) == CHANNEL_OPEN);
+}
+END_TEST
+
+START_TEST(handle_channel_open_invalid_msg_type) {
+  struct list_head type_list;
+  struct list_entry type_entry;
+
+  session_set_state(session, CHANNEL_OPEN);
+
+  type_entry.v.int_val = SSH_REQUEST_CHANNEL_OPEN + 1;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
+
+  fail_unless(session_handle(session) == 0);
+  fail_unless(session_get_state(session) == CHANNEL_OPEN);
+}
+END_TEST
+
+START_TEST(handle_channel_open_no_channel) {
+  struct list_head type_list;
+  struct list_entry type_entry;
+
+  session_set_state(session, CHANNEL_OPEN);
+
+  type_entry.v.int_val = SSH_REQUEST_CHANNEL_OPEN;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
+  libssh_proxy_set_option_int("ssh_message_channel_request_open_reply_accept",
+                              "fail", 1);
+
+  fail_unless(session_handle(session) == -1);
+  fail_unless(session_get_state(session) == CHANNEL_OPEN);
+}
+END_TEST
+
+START_TEST(handle_channel_open_success) {
+  struct list_head type_list;
+  struct list_entry type_entry;
+
+  session_set_state(session, CHANNEL_OPEN);
+
+  type_entry.v.int_val = SSH_REQUEST_CHANNEL_OPEN;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
+
+  fail_unless(session_handle(session) == 0);
+  fail_unless(session_get_state(session) == REQUEST_CHANNEL);
+}
+END_TEST
+
+START_TEST(handle_request_channel_invalid_msg_type) {
+  struct list_head type_list;
+  struct list_entry type_entry;
+
+  session_set_state(session, REQUEST_CHANNEL);
+
+  type_entry.v.int_val = SSH_REQUEST_CHANNEL + 1;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
+
+  fail_unless(session_handle(session) == 0);
+  fail_unless(session_get_state(session) == REQUEST_CHANNEL);
+}
+END_TEST
+
+START_TEST(handle_request_channel_invalid_msg_subtype) {
+  struct list_head type_list, subtype_list;
+  struct list_entry type_entry, subtype_entry;
+
+  session_set_state(session, REQUEST_CHANNEL);
+
+  type_entry.v.int_val = SSH_REQUEST_CHANNEL;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
+
+  subtype_entry.v.int_val = SSH_CHANNEL_REQUEST_EXEC + 1;
+  libssh_proxy_make_list(&subtype_list, &subtype_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_subtype", "results", &subtype_list);
+
+  fail_unless(session_handle(session) == 1);
+  fail_unless(session_get_state(session) == REQUEST_CHANNEL);
+}
+END_TEST
+
+START_TEST(handle_request_channel_success) {
+  struct list_head type_list, subtype_list;
+  struct list_entry type_entry, subtype_entry;
+
+  session_set_state(session, REQUEST_CHANNEL);
+
+  type_entry.v.int_val = SSH_REQUEST_CHANNEL;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
+
+  subtype_entry.v.int_val = SSH_CHANNEL_REQUEST_EXEC;
+  libssh_proxy_make_list(&subtype_list, &subtype_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_subtype", "results", &subtype_list);
+
+  fail_unless(session_handle(session) == 0);
+  fail_unless(session_get_state(session) == NOP);
 }
 END_TEST
 
@@ -150,7 +308,16 @@ TCase* session_tcase() {
   tcase_add_test(tc, handle_null_session);
   tcase_add_test(tc, handle_invalid_msg);
   tcase_add_test(tc, handle_invalid_msg_type);
-  tcase_add_test(tc, handle_success);
+  tcase_add_test(tc, handle_auth_invalid_msg_type);
+  tcase_add_test(tc, handle_auth_invalid_msg_subtype);
+  tcase_add_test(tc, handle_auth_wrong_password);
+  tcase_add_test(tc, handle_auth_success);
+  tcase_add_test(tc, handle_channel_open_invalid_msg_type);
+  tcase_add_test(tc, handle_channel_open_no_channel);
+  tcase_add_test(tc, handle_channel_open_success);
+  tcase_add_test(tc, handle_request_channel_invalid_msg_type);
+  tcase_add_test(tc, handle_request_channel_invalid_msg_subtype);
+  tcase_add_test(tc, handle_request_channel_success);
 
   return tc;
 }
