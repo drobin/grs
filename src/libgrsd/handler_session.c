@@ -61,11 +61,15 @@ static int session_handle_channel_open(session_t session, ssh_message msg) {
   }
 
   session->channel = ssh_message_channel_request_open_reply_accept(msg);
-  log_debug("Channel is open");
+  if (session->channel != NULL) {
+    log_debug("Channel is open");
+    session->state = REQUEST_CHANNEL;
 
-  session->state = REQUEST_CHANNEL;
-
-  return 0;
+    return 0;
+  } else {
+    log_err("Failed to open channel: %s", ssh_get_error(session->session));
+    return -1;
+  }
 }
 
 static int session_handle_request_channel(session_t session, ssh_message msg) {
