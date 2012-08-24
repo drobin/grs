@@ -3,9 +3,9 @@
 
 #include <check.h>
 
-#include <grsd.h>
-#include <handler.h>
-#include <types.h>
+#include "../../src/libgrsd/grsd.h"
+#include "../../src/libgrsd/handler.h"
+#include "../../src/libgrsd/types.h"
 
 static struct _grsd* handle;
 static int fds[2];

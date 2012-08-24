@@ -1,6 +1,6 @@
 #include <check.h>
 
-#include <process.h>
+#include "../../src/libgrsd/process.h"
 
 START_TEST(prepare_null_process) {
   fail_unless(grs_process_prepare(NULL, "foo") == -1);

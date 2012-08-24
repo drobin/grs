@@ -1,7 +1,7 @@
 #include <check.h>
 
-#include <grsd.h>
-#include <slist.h>
+#include "../../src/libgrsd/grsd.h"
+#include "../../src/libgrsd/slist.h"
 
 //static slist_t slist;
 

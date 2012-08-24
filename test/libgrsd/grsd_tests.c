@@ -5,8 +5,8 @@
 #include <unistd.h>
 
 #include <libssh/libssh.h>
-#include <grsd.h>
 
+#include "../../src/libgrsd/grsd.h"
 #include "../hostkey.h"
 
 //static grsd_t handle;
