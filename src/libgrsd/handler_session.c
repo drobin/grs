@@ -74,7 +74,7 @@ static int session_handle_channel_open(session_t session, ssh_message msg) {
 
 static int session_handle_request_channel(session_t session, ssh_message msg) {
   struct grs_process process;
-  int msg_type;
+  int msg_type, msg_subtype;
 
   log_debug("Handle channel-request");
 
@@ -86,8 +86,8 @@ static int session_handle_request_channel(session_t session, ssh_message msg) {
     return 0;
   }
 
-  if (ssh_message_subtype(msg) != SSH_CHANNEL_REQUEST_EXEC) {
-    log_debug("Ignoring channel-type %i", ssh_message_subtype(msg));
+  if ((msg_subtype = ssh_message_subtype(msg)) != SSH_CHANNEL_REQUEST_EXEC) {
+    log_debug("Ignoring channel-type %i", msg_subtype);
 
     ssh_message_reply_default(msg);
 
