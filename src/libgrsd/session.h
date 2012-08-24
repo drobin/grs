@@ -20,10 +20,9 @@ enum session_state {
 /**
  * Creates a new session-structure.
  *
- * @param handle Handle to the parent grsd-daemon
  * @return A new session or <code>NULL</code> on error.
  */
-session_t session_create(grsd_t handle);
+session_t session_create();
 
 /**
  * Destroys the session again.
@@ -31,14 +30,6 @@ session_t session_create(grsd_t handle);
  * @param session The session to be destroyed
  */
 int session_destroy(session_t session);
-
-/**
- * Returns the parent grsd_t-instance of the session.
- *
- * @param session The requested session
- * @return The parent grsd_t-handle
- */
-grsd_t session_get_grsd(session_t session);
 
 /**
  * Returns the current state of the session.
@@ -61,9 +52,10 @@ int session_set_state(session_t session, enum session_state state);
  * Accepts a connection, which is assigned to the given session.
  *
  * @param session The destination session
+ * @param handle The handle to the grs-daemon
  * @return On success <code>0</code> is returned, on error <code>-1</code>.
  */
-int session_accept(session_t session);
+int session_accept(session_t session, grsd_t handle);
 
 /**
  * Returns the filedescriptor or the client-connection.

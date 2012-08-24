@@ -111,12 +111,8 @@ static int handle_request_channel(session_t session, ssh_message msg,
   return 1;
 }
 
-session_t session_create(grsd_t handle) {
+session_t session_create() {
   struct _session* session;
-
-  if (handle == NULL) {
-    return NULL;
-  }
 
   if ((session = malloc(sizeof(struct _session))) == NULL) {
     return NULL;
@@ -128,7 +124,6 @@ session_t session_create(grsd_t handle) {
   }
 
   session->channel = NULL;
-  session->handle = handle;
   session->state = AUTH;
 
   return session;
@@ -149,14 +144,6 @@ int session_destroy(session_t session) {
   return 0;
 }
 
-grsd_t session_get_grsd(session_t session) {
-  if (session == NULL) {
-    return NULL;
-  }
-
-  return session->handle;
-}
-
 enum session_state session_get_state(session_t session) {
   if (session != NULL) {
     return session->state;
@@ -174,17 +161,13 @@ int session_set_state(session_t session, enum session_state state) {
   }
 }
 
-int session_accept(session_t session) {
-  ssh_bind sshbind;
-
-  if (session == NULL) {
+int session_accept(session_t session, grsd_t handle) {
+  if (session == NULL || handle == NULL) {
     return -1;
   }
 
-  sshbind = session->handle->bind;
-
-  if (ssh_bind_accept(sshbind, session->session) != SSH_OK) {
-    log_err("Error accepting connection: %s", ssh_get_error(sshbind));
+  if (ssh_bind_accept(handle->bind, session->session) != SSH_OK) {
+    log_err("Error accepting connection: %s", ssh_get_error(handle->bind));
     return -1;
   }
 

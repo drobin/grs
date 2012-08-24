@@ -27,11 +27,6 @@ struct _grsd {
 
 struct _session {
   /**
-   * Handle to the parent _grsd-structure.
-   */
-  struct _grsd* handle;
-
-  /**
    * The SSH-session.
    */
   ssh_session session;
