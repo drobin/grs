@@ -194,6 +194,25 @@ START_TEST(handle_channel_open_success) {
 }
 END_TEST
 
+START_TEST(handle_request_channel_invalid_msg_type) {
+  struct list_head type_list;
+  struct list_entry type_entries[2];
+
+  session_set_state(session, REQUEST_CHANNEL);
+
+  type_entries[0].v.int_val = 1;
+  type_entries[1].v.int_val = SSH_REQUEST_CHANNEL + 1;
+  libssh_proxy_make_list(&type_list, type_entries, 2);
+  libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
+
+  event_active(ev, EV_READ, 1);
+  fail_unless(event_base_loop(eb, EVLOOP_ONCE) == 0);
+
+  fail_unless(session_get_state(session) == REQUEST_CHANNEL);
+  session_destroy(session); // session is not destroyed
+}
+END_TEST
+
 TCase* handle_session_tcase() {
   TCase* tc = tcase_create("handle_session");
 
@@ -206,6 +225,7 @@ TCase* handle_session_tcase() {
   tcase_add_test(tc, handle_channel_open_invalid_msg_type);
   tcase_add_test(tc, handle_channel_open_no_channel);
   tcase_add_test(tc, handle_channel_open_success);
+  tcase_add_test(tc, handle_request_channel_invalid_msg_type);
 
   return tc;
 }

@@ -74,11 +74,12 @@ static int session_handle_channel_open(session_t session, ssh_message msg) {
 
 static int session_handle_request_channel(session_t session, ssh_message msg) {
   struct grs_process process;
+  int msg_type;
 
   log_debug("Handle channel-request");
 
-  if (ssh_message_type(msg) != SSH_REQUEST_CHANNEL) {
-    log_debug("Ignoring message of type %i", ssh_message_type(msg));
+  if ((msg_type = ssh_message_type(msg)) != SSH_REQUEST_CHANNEL) {
+    log_debug("Ignoring message of type %i", msg_type);
 
     ssh_message_reply_default(msg);
 
