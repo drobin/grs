@@ -69,6 +69,17 @@ static struct libssh_proxy_option* find_option(struct libssh_proxy_func* func,
   return entry;
 }
 
+static struct libssh_proxy_option* get_option(const char* func,
+                                              const char* option) {
+  struct libssh_proxy_func* func_entry = find_func(func, 0);
+
+  if (func_entry != NULL) {
+    return find_option(func_entry, option, 0);
+  } else {
+    return NULL;
+  }
+}
+
 int libssh_proxy_make_list(struct list_head* head,
                            struct list_entry* entries,
                            int nentries) {
@@ -112,16 +123,8 @@ int libssh_proxy_destroy() {
 }
 
 int libssh_proxy_get_option_int(const char* func, const char* option, int def) {
-  struct libssh_proxy_func* func_entry = find_func(func, 0);
-
-  if (func_entry != NULL) {
-    struct libssh_proxy_option* option_entry;
-
-    option_entry = find_option(func_entry, option, 0);
-    return (option_entry != NULL) ? option_entry->v.int_val : def;
-  } else {
-    return def;
-  }
+  struct libssh_proxy_option* entry = get_option(func, option);
+  return (entry != NULL) ? entry->v.int_val : def;
 }
 
 int libssh_proxy_set_option_int(const char* func, const char* option, int val) {
@@ -135,16 +138,8 @@ int libssh_proxy_set_option_int(const char* func, const char* option, int val) {
 
 char* libssh_proxy_get_option_string(const char* func, const char* option,
                                      char* def) {
-  struct libssh_proxy_func* func_entry = find_func(func, 0);
-
-  if (func_entry != NULL) {
-    struct libssh_proxy_option* option_entry;
-
-    option_entry = find_option(func_entry, option, 0);
-    return (option_entry != NULL) ? option_entry->v.str_val : def;
-  } else {
-    return def;
-  }
+  struct libssh_proxy_option* entry = get_option(func, option);
+  return (entry != NULL) ? entry->v.str_val : def;
 }
 
 int libssh_proxy_set_option_string(const char* func, const char* option,
@@ -160,16 +155,8 @@ int libssh_proxy_set_option_string(const char* func, const char* option,
 struct list_head* libssh_proxy_get_option_list(const char* func,
                                                const char* option,
                                                struct list_head* def) {
-  struct libssh_proxy_func* func_entry = find_func(func, 0);
-
-  if (func_entry != NULL) {
-    struct libssh_proxy_option* option_entry;
-
-    option_entry = find_option(func_entry, option, 0);
-    return (option_entry != NULL) ? option_entry->v.list_val : def;
-  } else {
-    return def;
-  }
+  struct libssh_proxy_option* entry = get_option(func, option);
+  return (entry != NULL) ? entry->v.list_val : def;
 }
 
 int libssh_proxy_set_option_list(const char* func,
@@ -183,17 +170,10 @@ int libssh_proxy_set_option_list(const char* func,
   return 0;
 }
 
-int* libssh_proxy_get_option_intptr(const char* func, const char* option, int* def) {
-  struct libssh_proxy_func* func_entry = find_func(func, 0);
-
-  if (func_entry != NULL) {
-    struct libssh_proxy_option* option_entry;
-
-    option_entry = find_option(func_entry, option, 0);
-    return (option_entry != NULL) ? option_entry->v.intptr_val : def;
-  } else {
-    return def;
-  }
+int* libssh_proxy_get_option_intptr(const char* func, const char* option,
+                                    int* def) {
+  struct libssh_proxy_option* entry = get_option(func, option);
+  return (entry != NULL) ? entry->v.intptr_val : def;
 }
 
 int libssh_proxy_set_option_intptr(const char* func, const char* option, int* val) {
