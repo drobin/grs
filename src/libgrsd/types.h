@@ -6,6 +6,7 @@
 
 // TODO Don't forget to remove this include after a successful refactoring
 #include "grsd.h"
+#include "session.h"
 
 struct _grsd {
   /**

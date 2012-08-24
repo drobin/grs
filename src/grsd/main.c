@@ -9,6 +9,7 @@
 
 #include <grsd.h>
 #include <log.h>
+#include <session.h>
 
 /**
  * The event_base of the event-loop.

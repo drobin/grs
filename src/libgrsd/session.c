@@ -4,9 +4,9 @@
 
 #include <libssh/libssh.h>
 
-#include "grsd.h"
 #include "log.h"
 #include "process.h"
+#include "session.h"
 #include "types.h"
 
 static int handle_auth(session_t session, ssh_message msg, int msg_type) {

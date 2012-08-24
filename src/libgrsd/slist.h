@@ -1,7 +1,7 @@
 #ifndef SLIST_H
 #define SLIST_H
 
-#include "grsd.h"
+#include "session.h"
 
 struct _session_list;
 struct _session_list_iterator;
