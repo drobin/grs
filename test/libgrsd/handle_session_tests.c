@@ -51,11 +51,10 @@ END_TEST
 
 START_TEST(handle_auth_invalid_msg_type) {
   struct list_head list;
-  struct list_entry entries[2];
+  struct list_entry entry;
 
-  entries[0].v.int_val = 1;
-  entries[1].v.int_val = SSH_REQUEST_AUTH + 1;
-  libssh_proxy_make_list(&list, entries, 2);
+  entry.v.int_val = SSH_REQUEST_AUTH + 1;
+  libssh_proxy_make_list(&list, &entry, 1);
   libssh_proxy_set_option_list("ssh_message_type", "results", &list);
 
   event_active(ev, EV_READ, 1);
@@ -68,11 +67,10 @@ END_TEST
 
 START_TEST(handle_auth_invalid_msg_subtype) {
   struct list_head type_list, subtype_list;
-  struct list_entry type_entries[2], subtype_entry;
+  struct list_entry type_entry, subtype_entry;
 
-  type_entries[0].v.int_val = 1;
-  type_entries[1].v.int_val = SSH_REQUEST_AUTH;
-  libssh_proxy_make_list(&type_list, type_entries, 2);
+  type_entry.v.int_val = SSH_REQUEST_AUTH;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
   libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
 
   subtype_entry.v.int_val = SSH_AUTH_METHOD_PASSWORD + 1;
@@ -89,11 +87,10 @@ END_TEST
 
 START_TEST(handle_auth_wrong_password) {
   struct list_head type_list, subtype_list;
-  struct list_entry type_entries[2], subtype_entry;
+  struct list_entry type_entry, subtype_entry;
 
-  type_entries[0].v.int_val = 1;
-  type_entries[1].v.int_val = SSH_REQUEST_AUTH;
-  libssh_proxy_make_list(&type_list, type_entries, 2);
+  type_entry.v.int_val = SSH_REQUEST_AUTH;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
   libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
 
   subtype_entry.v.int_val = SSH_AUTH_METHOD_PASSWORD;
@@ -113,11 +110,10 @@ END_TEST
 
 START_TEST(handle_auth_success) {
   struct list_head type_list, subtype_list;
-  struct list_entry type_entries[2], subtype_entry;
+  struct list_entry type_entry, subtype_entry;
 
-  type_entries[0].v.int_val = 1;
-  type_entries[1].v.int_val = SSH_REQUEST_AUTH;
-  libssh_proxy_make_list(&type_list, type_entries, 2);
+  type_entry.v.int_val = SSH_REQUEST_AUTH;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
   libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
 
   subtype_entry.v.int_val = SSH_AUTH_METHOD_PASSWORD;
@@ -137,13 +133,12 @@ END_TEST
 
 START_TEST(handle_channel_open_invalid_msg_type) {
   struct list_head type_list;
-  struct list_entry type_entries[2];
+  struct list_entry type_entry;
 
   session_set_state(session, CHANNEL_OPEN);
 
-  type_entries[0].v.int_val = 1;
-  type_entries[1].v.int_val = SSH_REQUEST_CHANNEL_OPEN + 1;
-  libssh_proxy_make_list(&type_list, type_entries, 2);
+  type_entry.v.int_val = SSH_REQUEST_CHANNEL_OPEN + 1;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
   libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
 
   event_active(ev, EV_READ, 1);
@@ -156,13 +151,12 @@ END_TEST
 
 START_TEST(handle_channel_open_no_channel) {
   struct list_head type_list;
-  struct list_entry type_entries[2];
+  struct list_entry type_entry;
 
   session_set_state(session, CHANNEL_OPEN);
 
-  type_entries[0].v.int_val = 1;
-  type_entries[1].v.int_val = SSH_REQUEST_CHANNEL_OPEN;
-  libssh_proxy_make_list(&type_list, type_entries, 2);
+  type_entry.v.int_val = SSH_REQUEST_CHANNEL_OPEN;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
   libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
   libssh_proxy_set_option_int(
     "ssh_message_channel_request_open_reply_accept", "fail", 1);
@@ -177,13 +171,12 @@ END_TEST
 
 START_TEST(handle_channel_open_success) {
   struct list_head type_list;
-  struct list_entry type_entries[2];
+  struct list_entry type_entry;
 
   session_set_state(session, CHANNEL_OPEN);
 
-  type_entries[0].v.int_val = 1;
-  type_entries[1].v.int_val = SSH_REQUEST_CHANNEL_OPEN;
-  libssh_proxy_make_list(&type_list, type_entries, 2);
+  type_entry.v.int_val = SSH_REQUEST_CHANNEL_OPEN;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
   libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
 
   event_active(ev, EV_READ, 1);
@@ -196,13 +189,12 @@ END_TEST
 
 START_TEST(handle_request_channel_invalid_msg_type) {
   struct list_head type_list;
-  struct list_entry type_entries[2];
+  struct list_entry type_entry;
 
   session_set_state(session, REQUEST_CHANNEL);
 
-  type_entries[0].v.int_val = 1;
-  type_entries[1].v.int_val = SSH_REQUEST_CHANNEL + 1;
-  libssh_proxy_make_list(&type_list, type_entries, 2);
+  type_entry.v.int_val = SSH_REQUEST_CHANNEL + 1;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
   libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
 
   event_active(ev, EV_READ, 1);
@@ -215,13 +207,12 @@ END_TEST
 
 START_TEST(handle_request_channel_invalid_msg_subtype) {
   struct list_head type_list, subtype_list;
-  struct list_entry type_entries[2], subtype_entry;
+  struct list_entry type_entry, subtype_entry;
 
   session_set_state(session, REQUEST_CHANNEL);
 
-  type_entries[0].v.int_val = 1;
-  type_entries[1].v.int_val = SSH_REQUEST_CHANNEL;
-  libssh_proxy_make_list(&type_list, type_entries, 2);
+  type_entry.v.int_val = SSH_REQUEST_CHANNEL;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
   libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
 
   subtype_entry.v.int_val = SSH_CHANNEL_REQUEST_EXEC + 1;
@@ -238,13 +229,12 @@ END_TEST
 
 START_TEST(handle_request_channel_success) {
   struct list_head type_list, subtype_list;
-  struct list_entry type_entries[2], subtype_entry;
+  struct list_entry type_entry, subtype_entry;
 
   session_set_state(session, REQUEST_CHANNEL);
 
-  type_entries[0].v.int_val = 1;
-  type_entries[1].v.int_val = SSH_REQUEST_CHANNEL;
-  libssh_proxy_make_list(&type_list, type_entries, 2);
+  type_entry.v.int_val = SSH_REQUEST_CHANNEL;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
   libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
 
   subtype_entry.v.int_val = SSH_CHANNEL_REQUEST_EXEC;

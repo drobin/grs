@@ -5,14 +5,15 @@
 #include "process.h"
 #include "types.h"
 
-static int session_handle_auth(session_t session, ssh_message msg) {
+static int session_handle_auth(session_t session, ssh_message msg,
+                               int msg_type) {
   char* user;
   char* password;
-  int msg_type, msg_subtype;
+  int msg_subtype;
 
   log_debug("Handle authentication for session");
 
-  if ((msg_type = ssh_message_type(msg)) != SSH_REQUEST_AUTH) {
+  if (msg_type != SSH_REQUEST_AUTH) {
     log_debug("Ignoring message of type %i", msg_type);
 
     ssh_message_reply_default(msg);
@@ -47,12 +48,12 @@ static int session_handle_auth(session_t session, ssh_message msg) {
   return 0;
 }
 
-static int session_handle_channel_open(session_t session, ssh_message msg) {
-  int msg_type;
+static int session_handle_channel_open(session_t session, ssh_message msg,
+                                       int msg_type) {
 
   log_debug("Handle open-request for a channel");
 
-  if ((msg_type = ssh_message_type(msg)) != SSH_REQUEST_CHANNEL_OPEN) {
+  if (msg_type != SSH_REQUEST_CHANNEL_OPEN) {
     log_debug("Ignoring message of type %i", msg_type);
 
     ssh_message_reply_default(msg);
@@ -72,13 +73,14 @@ static int session_handle_channel_open(session_t session, ssh_message msg) {
   }
 }
 
-static int session_handle_request_channel(session_t session, ssh_message msg) {
+static int session_handle_request_channel(session_t session, ssh_message msg,
+                                          int msg_type) {
   struct grs_process process;
-  int msg_type, msg_subtype;
+  int msg_subtype;
 
   log_debug("Handle channel-request");
 
-  if ((msg_type = ssh_message_type(msg)) != SSH_REQUEST_CHANNEL) {
+  if (msg_type != SSH_REQUEST_CHANNEL) {
     log_debug("Ignoring message of type %i", msg_type);
 
     ssh_message_reply_default(msg);
@@ -109,11 +111,12 @@ static int session_handle_request_channel(session_t session, ssh_message msg) {
 void grsd_handle_session(evutil_socket_t fd, short what, void* arg) {
   session_t session = (session_t)arg;
   ssh_message msg = ssh_message_get(session->session);
+  int msg_type;
   int result;
 
   log_debug("Handle incoming data from session");
 
-  if (ssh_message_type(msg) == -1) {
+  if ((msg_type = ssh_message_type(msg)) == -1) {
     log_debug("ssh_message_type of -1 received. Abort...");
     session_destroy(session);
     return;
@@ -124,11 +127,11 @@ void grsd_handle_session(evutil_socket_t fd, short what, void* arg) {
   // related event from the event_base_loop and destroy the session
   switch (session->state) {
     case AUTH:
-      result = session_handle_auth(session, msg); break;
+      result = session_handle_auth(session, msg, msg_type); break;
     case CHANNEL_OPEN:
-      result = session_handle_channel_open(session, msg); break;
+      result = session_handle_channel_open(session, msg, msg_type); break;
     case REQUEST_CHANNEL:
-      result = session_handle_request_channel(session, msg); break;
+      result = session_handle_request_channel(session, msg, msg_type); break;
     case NOP:
       result = -1; break;
   }
