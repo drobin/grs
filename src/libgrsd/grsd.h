@@ -85,6 +85,14 @@ int grsd_set_hostkey(grsd_t handle, const char* path);
 int grsd_listen(grsd_t handle);
 
 /**
+ * Returns the filedescriptor, where the ssh-daemon is listening.
+ *
+ * @param handle The handle to the grsd-module
+ * @return The fd of the ssh-daemon
+ */
+int grsd_listen_get_fd(grsd_t handle);
+
+/**
  * Requests to leave the grsd_listen-loop.
  *
  * @param handle The handle to the grsd-module

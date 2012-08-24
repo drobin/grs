@@ -175,6 +175,14 @@ int grsd_listen(grsd_t handle) {
   return exit_code;
 }
 
+int grsd_listen_get_fd(grsd_t handle) {
+  if (handle == NULL || handle->bind == NULL) {
+    return -1;
+  }
+
+  return ssh_bind_get_fd(handle->bind);
+}
+
 int grsd_listen_exit(grsd_t handle) {
   ssize_t nwritten;
 
