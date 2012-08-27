@@ -1,3 +1,4 @@
+#include <sys/errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -245,4 +246,12 @@ int session_handle(session_t session) {
 
   ssh_message_free(msg);
   return result;
+}
+
+int session_multiplex(session_t session, int read_fd, int write_fd) {
+  if (session == NULL) {
+    return -1;
+  }
+
+  return 0;
 }

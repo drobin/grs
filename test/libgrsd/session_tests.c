@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <check.h>
@@ -294,6 +295,11 @@ START_TEST(handle_request_channel_success) {
 }
 END_TEST
 
+START_TEST(multiplex_null_session) {
+  fail_unless(session_multiplex(NULL, 0, 0) == -1);
+}
+END_TEST
+
 TCase* session_tcase() {
   TCase* tc = tcase_create("session");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -325,6 +331,7 @@ TCase* session_tcase() {
   tcase_add_test(tc, handle_request_channel_invalid_msg_type);
   tcase_add_test(tc, handle_request_channel_invalid_msg_subtype);
   tcase_add_test(tc, handle_request_channel_success);
+  tcase_add_test(tc, multiplex_null_session);
 
   return tc;
 }

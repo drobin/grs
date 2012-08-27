@@ -86,4 +86,6 @@ int session_get_fd(session_t session);
  */
 int session_handle(session_t session);
 
+int session_multiplex(session_t session, int read_fd, int write_fd);
+
 #endif  /* SESSION_H */
