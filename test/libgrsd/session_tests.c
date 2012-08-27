@@ -11,13 +11,13 @@ static session_t session;
 
 static void setup() {
   fail_unless(libssh_proxy_init() == 0);
-  fail_unless((handle = malloc(sizeof(struct _grsd))) != NULL);
+  fail_unless((handle = grsd_init()) != NULL);
   fail_unless((session = session_create(handle)) != NULL);
 }
 
 static void teardown() {
   fail_unless(session_destroy(session) == 0);
-  free(handle);
+  fail_unless(grsd_destroy(handle) == 0);
   session = NULL;
   handle = NULL;
   fail_unless(libssh_proxy_destroy() == 0);

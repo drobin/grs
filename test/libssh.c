@@ -6,6 +6,9 @@
 
 #include "libssh_proxy.h"
 
+struct ssh_bind_struct {
+};
+
 struct ssh_session_struct {
 };
 
@@ -24,7 +27,7 @@ int ssh_bind_accept(ssh_bind ssh_bind_o, ssh_session session) {
 }
 
 void ssh_bind_free(ssh_bind ssh_bind_o) {
-  // TODO Needs to be implemented
+  free(ssh_bind_o);
 }
 
 socket_t ssh_bind_get_fd(ssh_bind ssh_bind_o) {
@@ -38,8 +41,7 @@ int ssh_bind_listen(ssh_bind ssh_bind_o) {
 }
 
 ssh_bind ssh_bind_new(void) {
-  // TODO Needs to be implemented
-  return NULL;
+  return malloc(sizeof(struct ssh_bind_struct));
 }
 
 int ssh_bind_options_set(ssh_bind sshbind, enum ssh_bind_options_e type,

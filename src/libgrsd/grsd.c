@@ -7,7 +7,23 @@
 
 #include "grsd.h"
 #include "log.h"
-#include "types.h"
+
+struct _grsd {
+  /**
+   * Instance to the SSH-server-bind.
+   */
+  ssh_bind bind;
+
+  /**
+   * Port where the SSH-server is listening.
+   */
+  unsigned int listen_port;
+
+  /**
+   * Hostkey of the SSH-server.
+   */
+  char* hostkey;
+};
 
 int grsd_bind_accept(grsd_t handle, ssh_session session) {
   int result;
