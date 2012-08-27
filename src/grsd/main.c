@@ -101,7 +101,7 @@ static void sshbind_handler(evutil_socket_t fd, short what, void* arg) {
   }
 
   // Accept the incoming connection
-  if (session_accept(session) != 0) {
+  if (session_accept(session, handle) != 0) {
     // Failed to accept connection, stay in event_base_loop for further
     // login-attempts
     log_err("Failed to accept incoming connection");
