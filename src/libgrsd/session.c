@@ -9,6 +9,8 @@
 #include "session.h"
 #include "types.h"
 
+extern int grsd_bind_accept(grsd_t, ssh_session);
+
 static int handle_auth(session_t session, ssh_message msg, int msg_type) {
   char* user;
   char* password;
@@ -166,8 +168,7 @@ int session_accept(session_t session, grsd_t handle) {
     return -1;
   }
 
-  if (ssh_bind_accept(handle->bind, session->session) != SSH_OK) {
-    log_err("Error accepting connection: %s", ssh_get_error(handle->bind));
+  if (grsd_bind_accept(handle, session->session) != SSH_OK) {
     return -1;
   }
 

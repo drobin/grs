@@ -9,6 +9,16 @@
 #include "log.h"
 #include "types.h"
 
+int grsd_bind_accept(grsd_t handle, ssh_session session) {
+  int result;
+
+  if ((result = ssh_bind_accept(handle->bind, session)) != SSH_OK) {
+    log_err("Error accepting connection: %s", ssh_get_error(handle->bind));
+  }
+
+  return result;
+}
+
 grsd_t grsd_init() {
   struct _grsd* handle;
 
