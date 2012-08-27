@@ -2,8 +2,9 @@
 
 #include <check.h>
 
-#include "../../src/libgrsd/grsd.h"
-#include "../../src/libgrsd/types.h"
+#include <libssh/libssh.h>
+
+#include "../../src/libgrsd/session.h"
 #include "../libssh_proxy.h"
 
 static struct _grsd* handle;

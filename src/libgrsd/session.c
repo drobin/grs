@@ -3,11 +3,29 @@
 #include <string.h>
 
 #include <libssh/libssh.h>
+#include <libssh/server.h>
 
 #include "log.h"
 #include "process.h"
 #include "session.h"
-#include "types.h"
+
+struct _session {
+  /**
+   * The SSH-session.
+   */
+  ssh_session session;
+
+  /**
+   * The SSH-channel.
+   */
+  ssh_channel channel;
+
+  /**
+   * State of the session.
+   */
+  enum session_state state;
+};
+
 
 extern int grsd_bind_accept(grsd_t, ssh_session);
 
