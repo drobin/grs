@@ -1,4 +1,5 @@
 #include <sys/errno.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -132,6 +133,29 @@ static int handle_request_channel(session_t session, ssh_message msg,
   return 1;
 }
 
+static int fd2channel(int fd, ssh_channel channel) {
+  int nread;
+  char buf[512];
+
+  // Read data from stdout
+  nread = read(fd, buf, sizeof(buf));
+
+  if (nread > 0) {
+    // Write data into channel
+    log_debug("%i bytes read from fd", nread);
+    int nwritten = ssh_channel_write(channel, buf, nread);
+    log_debug("%i bytes written into channel", nwritten);
+
+    return 0;
+  } else if (nread == 0) {
+    log_debug("EOF from fd");
+    return -1;
+  } else {
+    log_err("Failed to read from fd: %s", strerror(errno));
+    return -1;
+  }
+}
+
 session_t session_create() {
   struct _session* session;
 
@@ -251,6 +275,33 @@ int session_handle(session_t session) {
 int session_multiplex(session_t session, int read_fd, int write_fd) {
   if (session == NULL) {
     return -1;
+  }
+
+  while (1) {
+    ssh_channel channels[2], outchannels[2];
+    fd_set fds;
+    int maxfd, result;
+
+    channels[0] = session->channel;
+    channels[1] = NULL;
+    maxfd = ssh_get_fd(session->session);
+
+    FD_ZERO(&fds);
+    FD_SET(read_fd, &fds);
+    if (read_fd > maxfd) {
+      maxfd = read_fd;
+    }
+
+    result = ssh_select(channels, outchannels, maxfd + 1, &fds, NULL);
+    if (result == EINTR) {
+      continue;
+    }
+
+    if (FD_ISSET(read_fd, &fds)) {
+      if (fd2channel(read_fd, session->channel) == -1) {
+        break;
+      }
+    }
   }
 
   return 0;

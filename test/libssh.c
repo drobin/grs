@@ -226,6 +226,10 @@ ssh_session ssh_new(void) {
 
 int ssh_select(ssh_channel *channels, ssh_channel *outchannels, socket_t maxfd,
                fd_set *readfds, struct timeval *timeout) {
-  // TODO Needs to be implemented
-  return 23;
+  if (libssh_proxy_get_option_int("ssh_select", "readfds", 0)) {
+    return select(maxfd, readfds, NULL, NULL, timeout);
+  } else {
+    // TODO Needs to be implemented
+    return 23;
+  }
 }
