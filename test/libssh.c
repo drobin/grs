@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <libssh/libssh.h>
 #include <libssh/server.h>
@@ -13,10 +14,20 @@ struct ssh_session_struct {
 };
 
 struct ssh_channel_struct {
+  char* buf;
+  int bufsize;
 };
 
 struct ssh_message_struct {
 };
+
+int libssh_proxy_channel_get_size(ssh_channel channel) {
+  return channel->bufsize;
+}
+
+char* libssh_proxy_channel_get_data(ssh_channel channel) {
+  return channel->buf;
+}
 
 int ssh_bind_accept(ssh_bind ssh_bind_o, ssh_session session) {
   if (libssh_proxy_get_option_int("ssh_bind_accept", "fail", 0)) {
@@ -51,6 +62,7 @@ int ssh_bind_options_set(ssh_bind sshbind, enum ssh_bind_options_e type,
 }
 
 void ssh_channel_free(ssh_channel channel) {
+  free(channel->buf);
   free(channel);
 }
 
@@ -71,8 +83,11 @@ int ssh_channel_send_eof(ssh_channel channel) {
 }
 
 int ssh_channel_write(ssh_channel channel, const void *data, uint32_t len) {
-  // TODO Needs to be implemented
-  return 23;
+  channel->buf = realloc(channel->buf, channel->bufsize + len);
+  memcpy(channel->buf + channel->bufsize, data, len);
+  channel->bufsize += len;
+
+  return len;
 }
 
 void ssh_free(ssh_session session) {
@@ -130,7 +145,12 @@ ssh_channel ssh_message_channel_request_open_reply_accept(ssh_message msg) {
       "ssh_message_channel_request_open_reply_accept", "fail", 0)) {
     return NULL;
   } else {
-    return malloc(sizeof(struct ssh_channel_struct));
+    struct ssh_channel_struct* channel;
+
+    channel = malloc(sizeof(struct ssh_channel_struct));
+    memset(channel, 0, sizeof(struct ssh_channel_struct));
+
+    return channel;
   }
 }
 

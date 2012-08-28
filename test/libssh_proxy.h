@@ -3,6 +3,8 @@
 
 #include <sys/queue.h>
 
+#include <libssh/libssh.h>
+
 struct _libssh_proxy_head;
 typedef struct _libssh_proxy_head* libssh_proxy_t;
 
@@ -42,5 +44,8 @@ int libssh_proxy_set_option_list(const char* func,
 
 int* libssh_proxy_get_option_intptr(const char* func, const char* option, int* def);
 int libssh_proxy_set_option_intptr(const char* func, const char* option, int* val);
+
+int libssh_proxy_channel_get_size(ssh_channel channel);
+char* libssh_proxy_channel_get_data(ssh_channel channel);
 
 #endif  /* LIBSSH_PROXY_H */
