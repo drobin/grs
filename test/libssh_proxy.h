@@ -47,5 +47,6 @@ int libssh_proxy_set_option_intptr(const char* func, const char* option, int* va
 
 int libssh_proxy_channel_get_size(ssh_channel channel);
 char* libssh_proxy_channel_get_data(ssh_channel channel);
+int libssh_proxy_channel_set_data(ssh_channel channel, char* data, int len);
 
 #endif  /* LIBSSH_PROXY_H */

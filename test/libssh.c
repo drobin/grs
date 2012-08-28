@@ -29,6 +29,16 @@ char* libssh_proxy_channel_get_data(ssh_channel channel) {
   return channel->buf;
 }
 
+int libssh_proxy_channel_set_data(ssh_channel channel, char* data, int len) {
+  free(channel->buf);
+  channel->buf = malloc(len);
+
+  memcpy(channel->buf, data, len);
+  channel->bufsize = len;
+
+  return 0;
+}
+
 int ssh_bind_accept(ssh_bind ssh_bind_o, ssh_session session) {
   if (libssh_proxy_get_option_int("ssh_bind_accept", "fail", 0)) {
     return SSH_ERROR;
@@ -73,8 +83,17 @@ ssh_session ssh_channel_get_session(ssh_channel channel) {
 
 int ssh_channel_read(ssh_channel channel, void *dest, uint32_t count,
                      int is_stderr) {
-  // TODO Needs to be implemented
-  return 23;
+  int nbytes = (count > channel->bufsize) ? channel->bufsize : count;
+
+  if (nbytes == 0) {
+    return 0;
+  }
+
+  memcpy(dest, channel->buf, nbytes);
+  memmove(channel->buf, channel->buf + nbytes, channel->bufsize - nbytes);
+  channel->bufsize -= nbytes;
+
+  return nbytes;
 }
 
 int ssh_channel_send_eof(ssh_channel channel) {
