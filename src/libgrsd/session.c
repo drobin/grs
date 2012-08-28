@@ -156,6 +156,27 @@ static int fd2channel(int fd, ssh_channel channel) {
   }
 }
 
+static int channel2fd(int fd, ssh_channel channel) {
+  int nread;
+  char buf[512];
+
+  nread = ssh_channel_read(channel, buf, sizeof(buf), 0);
+  if (nread > 0) {
+    // write data into fd
+    log_debug("%i bytes read from channel", nread);
+    int nwritten = write(fd, buf, nread);
+    log_debug("%i bytes written into fd", nwritten);
+
+    return 0;
+  } else if (nread == 0) {
+    log_debug("EOF from channel");
+    return -1;
+  } else {
+    log_err("Failed to read from channel: %s", ssh_get_error(channel));
+    return -1;
+  }
+}
+
 session_t session_create() {
   struct _session* session;
 
@@ -299,6 +320,12 @@ int session_multiplex(session_t session, int read_fd, int write_fd) {
 
     if (FD_ISSET(read_fd, &fds)) {
       if (fd2channel(read_fd, session->channel) == -1) {
+        break;
+      }
+    }
+
+    if (outchannels[0] == session->channel) {
+      if (channel2fd(write_fd, session->channel) == -1) {
         break;
       }
     }

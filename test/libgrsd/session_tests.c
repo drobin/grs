@@ -336,6 +336,33 @@ START_TEST(multiplex_fd2channel) {
 }
 END_TEST
 
+START_TEST(multiplex_channel2fd) {
+  struct list_head type_list;
+  struct list_entry type_entry;
+  int fds[2];
+  char buf[4];
+
+  session_set_state(session, CHANNEL_OPEN);
+
+  type_entry.v.int_val = SSH_REQUEST_CHANNEL_OPEN;
+  libssh_proxy_make_list(&type_list, &type_entry, 1);
+  libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
+
+  fail_unless(session_handle(session) == 0);
+  fail_unless(session_get_state(session) == REQUEST_CHANNEL);
+
+  libssh_proxy_channel_set_data(session->channel, "1234", 4);
+  fail_unless(pipe(fds) == 0);
+
+  fail_unless(session_multiplex(session, fds[0], fds[1]) == 0);
+  fail_unless(read(fds[0], buf, 4) == 4);
+  fail_unless(strncmp(buf, "1234", 4) == 0);
+
+  close(fds[0]);
+  close(fds[1]);
+}
+END_TEST
+
 TCase* session_tcase() {
   TCase* tc = tcase_create("session");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -369,6 +396,7 @@ TCase* session_tcase() {
   tcase_add_test(tc, handle_request_channel_success);
   tcase_add_test(tc, multiplex_null_session);
   tcase_add_test(tc, multiplex_fd2channel);
+  tcase_add_test(tc, multiplex_channel2fd);
 
   return tc;
 }

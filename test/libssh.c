@@ -248,7 +248,8 @@ int ssh_select(ssh_channel *channels, ssh_channel *outchannels, socket_t maxfd,
   if (libssh_proxy_get_option_int("ssh_select", "readfds", 0)) {
     return select(maxfd, readfds, NULL, NULL, timeout);
   } else {
-    // TODO Needs to be implemented
-    return 23;
+    FD_ZERO(readfds);
+    outchannels[0] = channels[0];
+    return 1;
   }
 }
