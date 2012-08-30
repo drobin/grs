@@ -23,7 +23,11 @@ static void do_log(enum LOG_LEVEL level, const char* format, va_list ap) {
   case LOG_DEBUG: asprintf(&fmt, "[DEBUG] %s\n", format);; break;
   }
 
-  vprintf(fmt, ap);
+  if (level == LOG_ERR || level == LOG_FATAL) {
+    vfprintf(stderr, fmt, ap);
+  } else {
+    vfprintf(stdout, fmt, ap);
+  }
 
   free(fmt);
 }
