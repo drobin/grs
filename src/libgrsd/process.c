@@ -110,7 +110,7 @@ int grs_process_exec(process_t process, session_t session) {
 
     execv(cmd, process->token);
     log_err("Failed to exec: %s", strerror(errno));
-    _exit(1);
+    _exit(127);
   } else {
     int result, stat_loc;
 
