@@ -100,7 +100,7 @@ START_TEST(exec_success) {
   process_t process;
 
   libssh_proxy_set_option_int("ssh_select", "readfds", 1);
-  fail_unless((process = grs_process_init("foobar")) != NULL);
+  fail_unless((process = grs_process_init("/bin/ls -1")) != NULL);
   fail_unless(grs_process_exec(process, session) == 0);
   fail_unless(libssh_proxy_channel_get_size(session->channel) > 0);
   fail_unless(grs_process_destroy(process) == 0);

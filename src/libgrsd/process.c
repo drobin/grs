@@ -99,14 +99,16 @@ int grs_process_exec(process_t process, session_t session) {
   }
 
   if (pid == 0) { // The child executes the command
-    log_debug("Executing '%s'", grs_process_get_command(process));
+    const char* cmd = grs_process_get_command(process);
+
+    log_debug("Executing '%s'", cmd);
 
     close(pipe_in[1]);
     close(pipe_out[0]);
     dup2(pipe_in[0], 0);
     dup2(pipe_out[1], 1);
 
-    execl("/bin/ls", "-1", NULL);
+    execv(cmd, process->token);
     log_err("Failed to exec: %s", strerror(errno));
     _exit(1);
   } else {
