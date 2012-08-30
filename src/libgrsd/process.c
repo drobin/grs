@@ -65,14 +65,18 @@ int grs_process_exec(struct grs_process* process, session_t session) {
     close(pipe_out[1]);
 
     session_multiplex(session, pipe_out[0], pipe_in[1]);
+    result = waitpid(pid, &stat_loc, 0);
 
     close(pipe_in[1]);
     close(pipe_out[0]);
 
-    if ((result = waitpid(pid, &stat_loc, 0)) == -1) {
+    if (result == -1) {
       log_err("wait_pid: %s", strerror(errno));
     } else if (WIFEXITED(stat_loc)) {
       log_debug("Process terminated with %i", WEXITSTATUS(stat_loc));
+    } else if (WIFSIGNALED(stat_loc)) {
+      int signal = WTERMSIG(stat_loc);
+      log_err("Process received the signal %i (%s)", signal, strsignal(signal));
     } else {
       log_err("Abnormal termination of process");
     }
