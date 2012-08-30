@@ -294,7 +294,7 @@ int session_handle(session_t session) {
 }
 
 int session_multiplex(session_t session, int read_fd, int write_fd) {
-  if (session == NULL) {
+  if (session == NULL || session->channel == NULL) {
     return -1;
   }
 
