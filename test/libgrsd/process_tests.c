@@ -29,22 +29,27 @@ static void teardown() {
   session = NULL;
 }
 
-START_TEST(prepare_null_process) {
-  fail_unless(grs_process_prepare(NULL, "foo") == -1);
+START_TEST(init_null_command) {
+  fail_unless(grs_process_init(NULL) == NULL);
 }
 END_TEST
 
-START_TEST(prepare_null_command) {
-  struct grs_process process;
-  fail_unless(grs_process_prepare(&process, NULL) == -1);
+START_TEST(init_success) {
+  process_t process;
+
+  fail_unless((process = grs_process_init("foobar")) != NULL);
+  fail_unless(strcmp(grs_process_get_command(process), "foobar") == 0);
+  fail_unless(grs_process_destroy(process) == 0);
 }
 END_TEST
 
-START_TEST(prepare_success) {
-  struct grs_process process;
+START_TEST(destroy_null_process) {
+  fail_unless(grs_process_destroy(NULL) == -1);
+}
+END_TEST
 
-  fail_unless(grs_process_prepare(&process, "foobar") == 0);
-  fail_unless(strcmp(process.command, "foobar") == 0);
+START_TEST(get_command_null_process) {
+  fail_unless(grs_process_get_command(NULL) == NULL);
 }
 END_TEST
 
@@ -54,18 +59,22 @@ START_TEST(exec_null_process) {
 END_TEST
 
 START_TEST(exec_null_session) {
-  struct grs_process process;
-  fail_unless(grs_process_exec(&process, NULL) == -1);
+  process_t process;
+
+  fail_unless((process = grs_process_init("foobar")) != NULL);
+  fail_unless(grs_process_exec(process, NULL) == -1);
+  fail_unless(grs_process_destroy(process) == 0);
 }
 END_TEST
 
 START_TEST(exec_success) {
-  struct grs_process process;
+  process_t process;
 
   libssh_proxy_set_option_int("ssh_select", "readfds", 1);
-  fail_unless(grs_process_prepare(&process, "foobar") == 0);
-  fail_unless(grs_process_exec(&process, session) == 0);
+  fail_unless((process = grs_process_init("foobar")) != NULL);
+  fail_unless(grs_process_exec(process, session) == 0);
   fail_unless(libssh_proxy_channel_get_size(session->channel) > 0);
+  fail_unless(grs_process_destroy(process) == 0);
 }
 END_TEST
 
@@ -73,12 +82,13 @@ TCase* process_tcase() {
   TCase* tc = tcase_create("process");
   tcase_add_checked_fixture(tc, setup, teardown);
 
-  tcase_add_test(tc, prepare_null_process);
-  tcase_add_test(tc, prepare_null_command);
-  tcase_add_test(tc, prepare_success);
+  tcase_add_test(tc, init_null_command);
+  tcase_add_test(tc, init_success);
+  tcase_add_test(tc, get_command_null_process);
   tcase_add_test(tc, exec_null_process);
   tcase_add_test(tc, exec_null_session);
   tcase_add_test(tc, exec_success);
+  tcase_add_test(tc, destroy_null_process);
 
   return tc;
 }

@@ -9,6 +9,10 @@
 #include "log.h"
 #include "process.h"
 
+struct _process {
+  char *command;
+};
+
 static void close_pipes(int pipe_in[2], int pipe_out[2]) {
   close(pipe_in[0]);
   close(pipe_in[1]);
@@ -16,17 +20,42 @@ static void close_pipes(int pipe_in[2], int pipe_out[2]) {
   close(pipe_out[1]);
 }
 
-int grs_process_prepare(struct grs_process* process, const char* command) {
-  if (process == NULL || command == NULL) {
+process_t grs_process_init(const char* command) {
+  struct _process* process;
+
+  if (command == NULL) {
+    return NULL;
+  }
+
+  if ((process = malloc(sizeof(struct _process))) == NULL) {
+    return NULL;
+  }
+
+  process->command = strdup(command);
+
+  return process;
+}
+
+int grs_process_destroy(process_t process) {
+  if (process == NULL) {
     return -1;
   }
 
-  process->command = command;
+  free(process->command);
+  free(process);
 
   return 0;
 }
 
-int grs_process_exec(struct grs_process* process, session_t session) {
+const char* grs_process_get_command(process_t process) {
+  if (process == NULL) {
+    return NULL;
+  }
+
+  return process->command;
+}
+
+int grs_process_exec(process_t process, session_t session) {
   int pipe_in[2];
   int pipe_out[2];
   pid_t pid;

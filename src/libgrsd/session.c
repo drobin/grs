@@ -84,7 +84,7 @@ static int handle_channel_open(session_t session, ssh_message msg,
 static int handle_request_channel(session_t session, ssh_message msg,
                                   int msg_type) {
 
-  struct grs_process process;
+  process_t process;
   int msg_subtype;
 
   log_debug("Handle channel-request");
@@ -108,8 +108,9 @@ static int handle_request_channel(session_t session, ssh_message msg,
   ssh_message_channel_request_reply_success(msg);
   log_debug("Channel request accepted");
 
-  grs_process_prepare(&process, ssh_message_channel_request_command(msg));
-  grs_process_exec(&process, session);
+  process = grs_process_init(ssh_message_channel_request_command(msg));
+  grs_process_exec(process, session);
+  grs_process_destroy(process);
 
   session->state = NOP; // Finished
 
