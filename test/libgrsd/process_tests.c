@@ -34,11 +34,12 @@ START_TEST(init_null_command) {
 }
 END_TEST
 
-START_TEST(init_success) {
+START_TEST(init_no_args) {
   process_t process;
 
   fail_unless((process = grs_process_init("foobar")) != NULL);
   fail_unless(strcmp(grs_process_get_command(process), "foobar") == 0);
+  fail_unless(grs_process_get_args(process)[0] == NULL);
   fail_unless(grs_process_destroy(process) == 0);
 }
 END_TEST
@@ -50,6 +51,11 @@ END_TEST
 
 START_TEST(get_command_null_process) {
   fail_unless(grs_process_get_command(NULL) == NULL);
+}
+END_TEST
+
+START_TEST(get_args_null_process) {
+  fail_unless(grs_process_get_args(NULL) == NULL);
 }
 END_TEST
 
@@ -83,8 +89,9 @@ TCase* process_tcase() {
   tcase_add_checked_fixture(tc, setup, teardown);
 
   tcase_add_test(tc, init_null_command);
-  tcase_add_test(tc, init_success);
+  tcase_add_test(tc, init_no_args);
   tcase_add_test(tc, get_command_null_process);
+  tcase_add_test(tc, get_args_null_process);
   tcase_add_test(tc, exec_null_process);
   tcase_add_test(tc, exec_null_session);
   tcase_add_test(tc, exec_success);

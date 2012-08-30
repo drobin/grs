@@ -10,7 +10,8 @@
 #include "process.h"
 
 struct _process {
-  char *command;
+  char* command;
+  char** args;
 };
 
 static void close_pipes(int pipe_in[2], int pipe_out[2]) {
@@ -31,17 +32,36 @@ process_t grs_process_init(const char* command) {
     return NULL;
   }
 
-  process->command = strdup(command);
+  if ((process->args = calloc(1, sizeof(char*))) == NULL) {
+    free(process);
+    return NULL;
+  }
+
+  if ((process->command = strdup(command)) == NULL) {
+    free(process->args);
+    free(process);
+    return NULL;
+  }
+
+  process->args[0] = NULL;
 
   return process;
 }
 
 int grs_process_destroy(process_t process) {
+  int i = 0;
+
   if (process == NULL) {
     return -1;
   }
 
+  while (process->args[i] != NULL) {
+    free(process->args[i]);
+    i++;
+  }
+
   free(process->command);
+  free(process->args);
   free(process);
 
   return 0;
@@ -53,6 +73,14 @@ const char* grs_process_get_command(process_t process) {
   }
 
   return process->command;
+}
+
+const char** grs_process_get_args(process_t process) {
+  if (process == NULL) {
+    return NULL;
+  }
+
+  return (const char**)process->args;
 }
 
 int grs_process_exec(process_t process, session_t session) {
