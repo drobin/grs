@@ -15,6 +15,17 @@ struct _process {
   char* token[ARG_MAX];
 };
 
+static void tokenize(struct _process* process) {
+  char* token;
+  int nargs = 0;
+
+  for (; (token = strsep(&process->raw_token, " \t")) != NULL; nargs++) {
+    process->token[nargs] = token;
+  }
+
+  process->token[nargs] = NULL;
+}
+
 static void close_pipes(int pipe_in[2], int pipe_out[2]) {
   close(pipe_in[0]);
   close(pipe_in[1]);
@@ -34,8 +45,7 @@ process_t grs_process_init(const char* command) {
   }
 
   process->raw_token = strdup(command);
-  process->token[0] = process->raw_token;
-  process->token[1] = NULL;
+  tokenize(process);
 
   return process;
 }

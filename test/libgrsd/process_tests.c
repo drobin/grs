@@ -44,6 +44,29 @@ START_TEST(init_no_args) {
 }
 END_TEST
 
+START_TEST(init_one_arg) {
+  process_t process;
+
+  fail_unless((process = grs_process_init("foobar foo")) != NULL);
+  fail_unless(strcmp(grs_process_get_command(process), "foobar") == 0);
+  fail_unless(strcmp(grs_process_get_args(process)[0], "foo") == 0);
+  fail_unless(grs_process_get_args(process)[1] == NULL);
+  fail_unless(grs_process_destroy(process) == 0);
+}
+END_TEST
+
+START_TEST(init_two_args) {
+  process_t process;
+
+  fail_unless((process = grs_process_init("foobar foo bar")) != NULL);
+  fail_unless(strcmp(grs_process_get_command(process), "foobar") == 0);
+  fail_unless(strcmp(grs_process_get_args(process)[0], "foo") == 0);
+  fail_unless(strcmp(grs_process_get_args(process)[1], "bar") == 0);
+  fail_unless(grs_process_get_args(process)[2] == NULL);
+  fail_unless(grs_process_destroy(process) == 0);
+}
+END_TEST
+
 START_TEST(destroy_null_process) {
   fail_unless(grs_process_destroy(NULL) == -1);
 }
@@ -90,6 +113,8 @@ TCase* process_tcase() {
 
   tcase_add_test(tc, init_null_command);
   tcase_add_test(tc, init_no_args);
+  tcase_add_test(tc, init_one_arg);
+  tcase_add_test(tc, init_two_args);
   tcase_add_test(tc, get_command_null_process);
   tcase_add_test(tc, get_args_null_process);
   tcase_add_test(tc, exec_null_process);
