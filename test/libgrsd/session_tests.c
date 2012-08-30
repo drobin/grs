@@ -6,13 +6,8 @@
 #include <libssh/libssh.h>
 
 #include "../../src/libgrsd/session.h"
+#include "../../src/libgrsd/_session.h"
 #include "../libssh_proxy.h"
-
-struct _session {
-  ssh_session session;
-  ssh_channel channel;
-  enum session_state state;
-};
 
 static struct _grsd* handle;
 static session_t session;

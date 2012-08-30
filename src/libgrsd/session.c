@@ -10,24 +10,7 @@
 #include "log.h"
 #include "process.h"
 #include "session.h"
-
-struct _session {
-  /**
-   * The SSH-session.
-   */
-  ssh_session session;
-
-  /**
-   * The SSH-channel.
-   */
-  ssh_channel channel;
-
-  /**
-   * State of the session.
-   */
-  enum session_state state;
-};
-
+#include "_session.h"
 
 extern int grsd_bind_accept(grsd_t, ssh_session);
 
