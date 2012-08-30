@@ -126,7 +126,7 @@ static int handle_request_channel(session_t session, ssh_message msg,
   log_debug("Channel request accepted");
 
   grs_process_prepare(&process, ssh_message_channel_request_command(msg));
-  grs_process_exec(&process, session->channel);
+  grs_process_exec(&process, session);
 
   session->state = NOP; // Finished
 

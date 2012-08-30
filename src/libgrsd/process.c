@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "log.h"
 #include "process.h"
@@ -13,50 +14,6 @@ static void close_pipes(int pipe_in[2], int pipe_out[2]) {
   close(pipe_in[1]);
   close(pipe_out[0]);
   close(pipe_out[1]);
-}
-
-static int stdout2channel(int fd, ssh_channel channel) {
-  int nread;
-  char buf[512];
-
-  // Read data from stdout
-  nread = read(fd, buf, sizeof(buf));
-
-  if (nread > 0) {
-    // Write data into channel
-    log_debug("%i bytes read from stdout", nread);
-    int nwritten = ssh_channel_write(channel, buf, nread);
-    log_debug("%i bytes written into channel", nwritten);
-
-    return 0;
-  } else if (nread == 0) {
-    log_debug("EOF from stdout");
-    return -1;
-  } else {
-    log_err("Failed to read from stdout: %s", strerror(errno));
-    return -1;
-  }
-}
-
-static int channel2stdin(int fd, ssh_channel channel) {
-  int nread;
-  char buf[512];
-
-  nread = ssh_channel_read(channel, buf, sizeof(buf), 0);
-  if (nread > 0) {
-    // write data into fd
-    log_debug("%i bytes read from channel", nread);
-    int nwritten = write(fd, buf, nread);
-    log_debug("%i bytes written into stdin", nwritten);
-
-    return 0;
-  } else if (nread == 0) {
-    log_debug("EOF from channel");
-    return -1;
-  } else {
-    log_err("Failed to read from channel: %s", ssh_get_error(channel));
-    return -1;
-  }
 }
 
 int grs_process_prepare(struct grs_process* process, const char* command) {
@@ -69,12 +26,12 @@ int grs_process_prepare(struct grs_process* process, const char* command) {
   return 0;
 }
 
-int grs_process_exec(struct grs_process* process, ssh_channel channel) {
+int grs_process_exec(struct grs_process* process, session_t session) {
   int pipe_in[2];
   int pipe_out[2];
   pid_t pid;
 
-  if (process == NULL || channel == NULL) {
+  if (process == NULL || session == NULL) {
     return -1;
   }
 
@@ -107,38 +64,7 @@ int grs_process_exec(struct grs_process* process, ssh_channel channel) {
     close(pipe_in[0]);
     close(pipe_out[1]);
 
-    while (1) {
-      ssh_channel channels[2], outchannels[2];
-      fd_set fds;
-      int maxfd, result;
-
-      channels[0] = channel;
-      channels[1] = NULL;
-      maxfd = ssh_get_fd(ssh_channel_get_session(channel));
-
-      FD_ZERO(&fds);
-      FD_SET(pipe_out[0], &fds);
-      if (pipe_out[0] > maxfd) {
-        maxfd = pipe_out[0];
-      }
-
-      result = ssh_select(channels, outchannels, maxfd + 1, &fds, NULL);
-      if (result == EINTR) {
-        continue;
-      }
-
-      if (FD_ISSET(pipe_out[0], &fds)) {
-        if (stdout2channel(pipe_out[0], channel) == -1) {
-          break;
-        }
-      }
-
-      if (outchannels[0] != NULL) {
-        if (channel2stdin(pipe_in[1], channel) == -1) {
-          break;
-        }
-      }
-    }
+    session_multiplex(session, pipe_out[0], pipe_in[1]);
 
     close(pipe_in[1]);
     close(pipe_out[0]);
@@ -150,8 +76,6 @@ int grs_process_exec(struct grs_process* process, ssh_channel channel) {
     } else {
       log_err("Abnormal termination of process");
     }
-
-    ssh_channel_send_eof(channel);
 
     return WEXITSTATUS(stat_loc);
   }
