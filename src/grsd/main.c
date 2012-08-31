@@ -171,7 +171,11 @@ int main(int argc, char** argv) {
 
   event_free(pipe_ev);
   event_free(sshbind_ev);
-  event_free(session_ev);
+
+  if (session_ev != NULL) {
+    event_free(session_ev);
+  }
+
   event_base_free(event_base);
 
   return 0;
