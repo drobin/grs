@@ -17,11 +17,6 @@
 struct event_base* event_base;
 
 /**
- * Event is used to receive information from the ctrl_pipe.
- */
-struct event* pipe_ev;
-
-/**
  * Event is used to receive information from the SSH-server-bind.
  */
 struct event* sshbind_ev;
@@ -36,46 +31,14 @@ struct event* session_ev;
  */
 static grsd_t handle;
 
-/**
- * The control-pipe is used to send commands into the event_base_loop.
- */
-int ctrl_pipe[2];
-
 static void leave_handler(int sig) {
-  ssize_t nwritten;
-
   log_debug("Ask to leave grsd_listen");
-  nwritten = write(ctrl_pipe[1], "q", 1);
-
-  if (nwritten == 1) {
-    log_debug("Leave request issued");
-  } else {
-    log_err("Failed to issue leave-requedt");
-  }
+  event_base_loopexit(event_base, NULL);
 }
 
 static void usage() {
   printf("USAGE\n");
   exit(1);
-}
-
-static void pipe_handler(evutil_socket_t fd, short what, void* arg) {
-  char c;
-  size_t nread;
-
-  log_debug("Handling incoming data from pipe");
-
-  if ((nread = read(fd, &c, 1)) != 1) {
-    log_fatal("Failed to read from pipe: %s", strerror(errno));
-    event_base_loopexit(event_base, NULL);
-    return;
-  }
-
-  if (c == 'q') {
-    log_debug("Quit-request received");
-    event_base_loopexit(event_base, NULL);
-  } else {
-    log_warn("Unsupported char received from pipe: %c", c); }
 }
 
 static void session_handler(evutil_socket_t fd, short what, void* arg) {
@@ -147,16 +110,6 @@ int main(int argc, char** argv) {
 
   event_base = event_base_new();
 
-  // Prepare the control-pipe
-  if (pipe(ctrl_pipe) != 0) {
-    free(handle);
-    return -1;
-  }
-
-  pipe_ev = event_new(event_base, ctrl_pipe[0], EV_READ|EV_PERSIST,
-                      pipe_handler, handle);
-  event_add(pipe_ev, NULL);
-
   // Prepare grsd-library
   grsd_listen(handle);
   sshbind_ev = event_new(event_base, grsd_listen_get_fd(handle),
@@ -165,14 +118,11 @@ int main(int argc, char** argv) {
 
   // Run the event-loop
   event_base_loop(event_base, 0);
+  log_debug("event_base_loop exited");
 
   // Destroy everything
   grsd_destroy(handle);
 
-  close(ctrl_pipe[0]);
-  close(ctrl_pipe[1]);
-
-  event_free(pipe_ev);
   event_free(sshbind_ev);
 
   if (session_ev != NULL) {
