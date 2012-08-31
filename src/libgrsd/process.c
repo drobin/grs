@@ -108,7 +108,7 @@ int grs_process_exec(process_t process, session_t session) {
     dup2(pipe_in[0], 0);
     dup2(pipe_out[1], 1);
 
-    execv(cmd, process->token);
+    execvp(cmd, process->token);
     log_err("Failed to exec: %s", strerror(errno));
     _exit(127);
   } else {

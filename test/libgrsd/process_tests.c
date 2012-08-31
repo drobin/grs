@@ -96,11 +96,22 @@ START_TEST(exec_null_session) {
 }
 END_TEST
 
-START_TEST(exec_success) {
+START_TEST(exec_absolute_path) {
   process_t process;
 
   libssh_proxy_set_option_int("ssh_select", "readfds", 1);
   fail_unless((process = grs_process_init("/bin/ls -1")) != NULL);
+  fail_unless(grs_process_exec(process, session) == 0);
+  fail_unless(libssh_proxy_channel_get_size(session->channel) > 0);
+  fail_unless(grs_process_destroy(process) == 0);
+}
+END_TEST
+
+START_TEST(exec_relative_path) {
+  process_t process;
+
+  libssh_proxy_set_option_int("ssh_select", "readfds", 1);
+  fail_unless((process = grs_process_init("ls -1")) != NULL);
   fail_unless(grs_process_exec(process, session) == 0);
   fail_unless(libssh_proxy_channel_get_size(session->channel) > 0);
   fail_unless(grs_process_destroy(process) == 0);
@@ -130,7 +141,8 @@ TCase* process_tcase() {
   tcase_add_test(tc, get_args_null_process);
   tcase_add_test(tc, exec_null_process);
   tcase_add_test(tc, exec_null_session);
-  tcase_add_test(tc, exec_success);
+  tcase_add_test(tc, exec_absolute_path);
+  tcase_add_test(tc, exec_relative_path);
   tcase_add_test(tc, exec_no_such_file);
   tcase_add_test(tc, destroy_null_process);
 
