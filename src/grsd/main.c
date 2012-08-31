@@ -83,6 +83,9 @@ static void session_handler(evutil_socket_t fd, short what, void* arg) {
 
   if (session_handle(session) != 0) {
     session_destroy(session);
+    log_debug("Session is destroyed");
+    event_free(session_ev);
+    session_ev = NULL;
   }
 }
 
