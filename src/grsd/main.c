@@ -60,7 +60,7 @@ static void usage() {
 }
 
 static void pipe_handler(evutil_socket_t fd, short what, void* arg) {
-  int c;
+  char c;
   size_t nread;
 
   log_debug("Handling incoming data from pipe");
@@ -74,8 +74,8 @@ static void pipe_handler(evutil_socket_t fd, short what, void* arg) {
   if (c == 'q') {
     log_debug("Quit-request received");
     event_base_loopexit(event_base, NULL);
-    return;
-  }
+  } else {
+    log_warn("Unsupported char received from pipe: %c", c); }
 }
 
 static void session_handler(evutil_socket_t fd, short what, void* arg) {
