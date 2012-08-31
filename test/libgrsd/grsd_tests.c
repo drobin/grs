@@ -7,7 +7,6 @@
 #include <libssh/libssh.h>
 
 #include "../../src/libgrsd/grsd.h"
-#include "../hostkey.h"
 
 //static grsd_t handle;
 

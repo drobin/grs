@@ -1,7 +1,5 @@
 #include <check.h>
 
-#include "hostkey.h"
-
 extern TCase* grsd_tcase();
 extern TCase* process_tcase();
 extern TCase* session_tcase();

@@ -1,5 +1,4 @@
 SET(GRS_TEST_SOURCES
-  hostkey.c
   libssh.c
   libssh_proxy.c
   suite.c
