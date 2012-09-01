@@ -139,5 +139,15 @@ int grs_process_exec(process_t process, session_t session) {
     return -1;
   }
 
+  if (strcmp(process->token[0], "git-upload-pack") == 0 ||
+      strcmp(process->token[0], "git-receive-pack") == 0) {
+    char* repository = process->token[1];
+
+    if (repository[0] == '\'' && repository[strlen(repository) - 1] == '\'') {
+      repository[strlen(repository) - 1] = '\0';
+      process->token[1] = repository + 1;
+    }
+  }
+
   return fork_exec(process, session);
 }
