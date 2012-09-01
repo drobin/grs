@@ -33,58 +33,10 @@ static void close_pipes(int pipe_in[2], int pipe_out[2]) {
   close(pipe_out[1]);
 }
 
-process_t grs_process_init(const char* command) {
-  struct _process* process;
-
-  if (command == NULL) {
-    return NULL;
-  }
-
-  if ((process = malloc(sizeof(struct _process))) == NULL) {
-    return NULL;
-  }
-
-  process->raw_token = strdup(command);
-  tokenize(process);
-
-  return process;
-}
-
-int grs_process_destroy(process_t process) {
-  if (process == NULL) {
-    return -1;
-  }
-
-  free(process->raw_token);
-  free(process);
-
-  return 0;
-}
-
-const char* grs_process_get_command(process_t process) {
-  if (process == NULL) {
-    return NULL;
-  }
-
-  return process->token[0];
-}
-
-const char** grs_process_get_args(process_t process) {
-  if (process == NULL) {
-    return NULL;
-  }
-
-  return (const char**)process->token + 1;
-}
-
-int grs_process_exec(process_t process, session_t session) {
+static int fork_exec(process_t process, session_t session) {
   int pipe_in[2];
   int pipe_out[2];
   pid_t pid;
-
-  if (process == NULL || session == NULL) {
-    return -1;
-  }
 
   if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1) {
     log_err("Failed to create a pipe: %s", strerror(errno));
@@ -136,4 +88,56 @@ int grs_process_exec(process_t process, session_t session) {
 
     return WEXITSTATUS(stat_loc);
   }
+}
+
+process_t grs_process_init(const char* command) {
+  struct _process* process;
+
+  if (command == NULL) {
+    return NULL;
+  }
+
+  if ((process = malloc(sizeof(struct _process))) == NULL) {
+    return NULL;
+  }
+
+  process->raw_token = strdup(command);
+  tokenize(process);
+
+  return process;
+}
+
+int grs_process_destroy(process_t process) {
+  if (process == NULL) {
+    return -1;
+  }
+
+  free(process->raw_token);
+  free(process);
+
+  return 0;
+}
+
+const char* grs_process_get_command(process_t process) {
+  if (process == NULL) {
+    return NULL;
+  }
+
+  return process->token[0];
+}
+
+const char** grs_process_get_args(process_t process) {
+  if (process == NULL) {
+    return NULL;
+  }
+
+  return (const char**)process->token + 1;
+}
+
+int grs_process_exec(process_t process, session_t session) {
+  if (process == NULL || session == NULL) {
+    return -1;
+  }
+
+  return fork_exec(process, session);
 }
