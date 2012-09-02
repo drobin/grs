@@ -69,7 +69,7 @@ END_TEST
 
 START_TEST(authenticate_success) {
   fail_unless(session2_authenticate(session, "foo", "foo") == 0);
-  fail_unless(session2_get_state(session) == NOOP);
+  fail_unless(session2_get_state(session) == NEED_PROCESS);
 }
 END_TEST
 
@@ -95,14 +95,27 @@ START_TEST(set_process_null_process) {
 }
 END_TEST
 
-START_TEST(get_set_process) {
+START_TEST(set_process_wrong_state) {
   process_env_t env;
   process_t process;
 
   fail_unless((env = process_env_create()) != NULL);
   fail_unless((process = process_prepare(env, "foobar")) != NULL);
+  fail_unless(session2_set_process(session, process) == -1);
+  fail_unless(session2_get_process(session) == NULL);
+}
+END_TEST
+
+START_TEST(set_process_success) {
+  process_env_t env;
+  process_t process;
+
+  fail_unless((env = process_env_create()) != NULL);
+  fail_unless((process = process_prepare(env, "foobar")) != NULL);
+  fail_unless(session2_set_state(session, NEED_PROCESS) == 0);
   fail_unless(session2_set_process(session, process) == 0);
   fail_unless(session2_get_process(session) == process);
+  fail_unless(session2_get_state(session) == NOOP);
 }
 END_TEST
 
@@ -124,7 +137,8 @@ TCase* session2_tcase() {
   tcase_add_test(tc, get_process_null_session);
   tcase_add_test(tc, set_process_null_session);
   tcase_add_test(tc, set_process_null_process);
-  tcase_add_test(tc, get_set_process);
+  tcase_add_test(tc, set_process_wrong_state);
+  tcase_add_test(tc, set_process_success);
 
   return tc;
 }

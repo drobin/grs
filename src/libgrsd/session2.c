@@ -61,7 +61,7 @@ int session2_authenticate(session2_t session,
   }
 
   if (strcmp(username, password) == 0) {
-    session->state = NOOP;
+    session->state = NEED_PROCESS;
     return 0;
   } else {
     return -1;
@@ -81,7 +81,12 @@ int session2_set_process(session2_t session, process_t process) {
     return -1;
   }
 
+  if (session->state != NEED_PROCESS) {
+    return -1;
+  }
+
   session->process = process;
+  session->state = NOOP;
 
   return 0;
 }
