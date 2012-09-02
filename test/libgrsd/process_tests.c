@@ -109,17 +109,8 @@ START_TEST(get_args_null_process) {
 }
 END_TEST
 
-START_TEST(exec_null_env) {
-  process_t process;
-
-  fail_unless((process = process_prepare(env, "foobar")) != NULL);
-  fail_unless(process_exec(NULL, process, session) == -1);
-  fail_unless(process_destroy(process) == 0);
-}
-END_TEST
-
 START_TEST(exec_null_process) {
-  fail_unless(process_exec(env, NULL, session) == -1);
+  fail_unless(process_exec(NULL, session) == -1);
 }
 END_TEST
 
@@ -127,7 +118,7 @@ START_TEST(exec_null_session) {
   process_t process;
 
   fail_unless((process = process_prepare(env, "foobar")) != NULL);
-  fail_unless(process_exec(env, process, NULL) == -1);
+  fail_unless(process_exec(process, NULL) == -1);
   fail_unless(process_destroy(process) == 0);
 }
 END_TEST
@@ -137,7 +128,7 @@ START_TEST(exec_absolute_path) {
 
   libssh_proxy_set_option_int("ssh_select", "readfds", 1);
   fail_unless((process = process_prepare(env, "/bin/ls -1")) != NULL);
-  fail_unless(process_exec(env, process, session) == 0);
+  fail_unless(process_exec(process, session) == 0);
   fail_unless(libssh_proxy_channel_get_size(session->channel) > 0);
   fail_unless(process_destroy(process) == 0);
 }
@@ -148,7 +139,7 @@ START_TEST(exec_relative_path) {
 
   libssh_proxy_set_option_int("ssh_select", "readfds", 1);
   fail_unless((process = process_prepare(env, "ls -1")) != NULL);
-  fail_unless(process_exec(env, process, session) == 0);
+  fail_unless(process_exec(process, session) == 0);
   fail_unless(libssh_proxy_channel_get_size(session->channel) > 0);
   fail_unless(process_destroy(process) == 0);
 }
@@ -159,7 +150,7 @@ START_TEST(exec_no_such_file) {
 
   libssh_proxy_set_option_int("ssh_select", "readfds", 1);
   fail_unless((process = process_prepare(env, "foobar")) != NULL);
-  fail_unless(process_exec(env, process, session) == 127);
+  fail_unless(process_exec(process, session) == 127);
   fail_unless(libssh_proxy_channel_get_size(session->channel) == 0);
   fail_unless(process_destroy(process) == 0);
 }
@@ -180,7 +171,6 @@ TCase* process_tcase() {
   tcase_add_test(tc, get_env_null_process);
   tcase_add_test(tc, get_command_null_process);
   tcase_add_test(tc, get_args_null_process);
-  tcase_add_test(tc, exec_null_env);
   tcase_add_test(tc, exec_null_process);
   tcase_add_test(tc, exec_null_session);
   tcase_add_test(tc, exec_absolute_path);

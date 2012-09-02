@@ -167,8 +167,8 @@ const char** process_get_args(process_t process) {
   return (const char**)process->token + 1;
 }
 
-int process_exec(process_env_t env, process_t process, session_t session) {
-  if (env == NULL || process == NULL || session == NULL) {
+int process_exec(process_t process, session_t session) {
+  if (process == NULL || session == NULL) {
     return -1;
   }
 

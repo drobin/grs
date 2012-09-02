@@ -76,12 +76,11 @@ const char** process_get_args(process_t process);
 /**
  * Executes a process in the given <code>session</code>.
  *
- * @param env The process environment
  * @param process Information about the process to be executed
  * @param session The target session, where the process is executed
  * @return The exit-code of the process. Usually an exit-code of <code>0</code>
  *         means success.
  */
-int process_exec(process_env_t env, process_t process, session_t session);
+int process_exec(process_t process, session_t session);
 
 #endif  /* PROCESS_H */
