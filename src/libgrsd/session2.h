@@ -10,7 +10,7 @@ enum session2_state {
   NEED_AUTHENTICATION,
   NEED_PROCESS,
   NEED_EXEC,
-  NOOP
+  FINISHED
 };
 
 session2_t session2_create();

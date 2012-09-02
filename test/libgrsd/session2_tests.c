@@ -29,14 +29,14 @@ START_TEST(get_state_initial) {
 END_TEST
 
 START_TEST(set_state_null_session) {
-  fail_unless(session2_set_state(NULL, NOOP) == -1);
+  fail_unless(session2_set_state(NULL, FINISHED) == -1);
 }
 END_TEST
 
 START_TEST(get_set_state) {
   fail_unless(session2_get_state(session) == NEED_AUTHENTICATION);
-  fail_unless(session2_set_state(session, NOOP) == 0);
-  fail_unless(session2_get_state(session) == NOOP);
+  fail_unless(session2_set_state(session, FINISHED) == 0);
+  fail_unless(session2_get_state(session) == FINISHED);
 }
 END_TEST
 
@@ -56,7 +56,7 @@ START_TEST(authenticate_null_password) {
 END_TEST
 
 START_TEST(authenticate_wrong_state) {
-  fail_unless(session2_set_state(session, NOOP) == 0);
+  fail_unless(session2_set_state(session, FINISHED) == 0);
   fail_unless(session2_authenticate(session, "foo", "foo") == -1);
 }
 END_TEST
@@ -132,7 +132,7 @@ END_TEST
 START_TEST(exec_success) {
   fail_unless(session2_set_state(session, NEED_EXEC) == 0);
   fail_unless(session2_exec(session) == 0);
-  fail_unless(session2_get_state(session) == NOOP);
+  fail_unless(session2_get_state(session) == FINISHED);
 }
 END_TEST
 

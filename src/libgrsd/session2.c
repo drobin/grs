@@ -100,7 +100,7 @@ int session2_exec(session2_t session) {
     return -1;
   }
 
-  session->state = NOOP;
+  session->state = FINISHED;
 
   return 0;
 }
