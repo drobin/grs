@@ -11,19 +11,22 @@
 #include "process.h"
 
 struct _process {
+};
+
+struct _process_info {
   char* raw_token;
   char* token[ARG_MAX];
 };
 
-static void tokenize(struct _process* process) {
+static void tokenize(struct _process_info* process_info) {
   char* token;
   int nargs = 0;
 
-  for (; (token = strsep(&process->raw_token, " \t")) != NULL; nargs++) {
-    process->token[nargs] = token;
+  for (; (token = strsep(&process_info->raw_token, " \t")) != NULL; nargs++) {
+    process_info->token[nargs] = token;
   }
 
-  process->token[nargs] = NULL;
+  process_info->token[nargs] = NULL;
 }
 
 static void close_pipes(int pipe_in[2], int pipe_out[2]) {
@@ -33,7 +36,7 @@ static void close_pipes(int pipe_in[2], int pipe_out[2]) {
   close(pipe_out[1]);
 }
 
-static int fork_exec(process_t process, session_t session) {
+static int fork_exec(process_info_t process_info, session_t session) {
   int pipe_in[2];
   int pipe_out[2];
   pid_t pid;
@@ -51,7 +54,7 @@ static int fork_exec(process_t process, session_t session) {
   }
 
   if (pid == 0) { // The child executes the command
-    const char* cmd = grs_process_get_command(process);
+    const char* cmd = process_info_get_command(process_info);
 
     log_debug("Executing '%s'", cmd);
 
@@ -60,7 +63,7 @@ static int fork_exec(process_t process, session_t session) {
     dup2(pipe_in[0], 0);
     dup2(pipe_out[1], 1);
 
-    execvp(cmd, process->token);
+    execvp(cmd, process_info->token);
     log_err("Failed to exec: %s", strerror(errno));
     _exit(127);
   } else {
@@ -90,64 +93,85 @@ static int fork_exec(process_t process, session_t session) {
   }
 }
 
-process_t grs_process_init(const char* command) {
+process_t process_init() {
   struct _process* process;
-
-  if (command == NULL) {
-    return NULL;
-  }
 
   if ((process = malloc(sizeof(struct _process))) == NULL) {
     return NULL;
   }
 
-  process->raw_token = strdup(command);
-  tokenize(process);
-
   return process;
 }
 
-int grs_process_destroy(process_t process) {
+int process_destroy(process_t process) {
   if (process == NULL) {
     return -1;
   }
 
-  free(process->raw_token);
   free(process);
 
   return 0;
 }
 
-const char* grs_process_get_command(process_t process) {
-  if (process == NULL) {
+process_info_t process_prepare(process_t process, const char* command) {
+  struct _process_info* process_info;
+
+  if (process == NULL || command == NULL) {
     return NULL;
   }
 
-  return process->token[0];
-}
-
-const char** grs_process_get_args(process_t process) {
-  if (process == NULL) {
+  if ((process_info = malloc(sizeof(struct _process_info))) == NULL) {
     return NULL;
   }
 
-  return (const char**)process->token + 1;
+  process_info->raw_token = strdup(command);
+  tokenize(process_info);
+
+  return process_info;
 }
 
-int grs_process_exec(process_t process, session_t session) {
-  if (process == NULL || session == NULL) {
+int process_info_destroy(process_info_t process_info) {
+  if (process_info == NULL) {
     return -1;
   }
 
-  if (strcmp(process->token[0], "git-upload-pack") == 0 ||
-      strcmp(process->token[0], "git-receive-pack") == 0) {
-    char* repository = process->token[1];
+  free(process_info->raw_token);
+  free(process_info);
+
+  return 0;
+}
+
+const char* process_info_get_command(process_info_t process_info) {
+  if (process_info == NULL) {
+    return NULL;
+  }
+
+  return process_info->token[0];
+}
+
+const char** process_info_get_args(process_info_t process_info) {
+  if (process_info == NULL) {
+    return NULL;
+  }
+
+  return (const char**)process_info->token + 1;
+}
+
+int process_exec(process_t process, process_info_t process_info,
+                 session_t session) {
+  if (process == NULL || process_info == NULL || session == NULL) {
+    return -1;
+  }
+
+  if (strcmp(process_info->token[0], "git-upload-pack") == 0 ||
+      strcmp(process_info->token[0], "git-receive-pack") == 0) {
+    char* repository = process_info->token[1];
 
     if (repository[0] == '\'' && repository[strlen(repository) - 1] == '\'') {
       repository[strlen(repository) - 1] = '\0';
-      process->token[1] = repository + 1;
+      process_info->token[1] = repository + 1;
     }
   }
 
-  return fork_exec(process, session);
+  return fork_exec(process_info, session);
 }
