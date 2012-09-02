@@ -53,7 +53,7 @@ START_TEST(prepare_no_args) {
   fail_unless((process = process_prepare(env, "foobar")) != NULL);
   fail_unless(strcmp(process_info_get_command(process), "foobar") == 0);
   fail_unless(process_info_get_args(process)[0] == NULL);
-  fail_unless(process_info_destroy(process) == 0);
+  fail_unless(process_destroy(process) == 0);
 }
 END_TEST
 
@@ -64,7 +64,7 @@ START_TEST(prepare_one_arg) {
   fail_unless(strcmp(process_info_get_command(process), "foobar") == 0);
   fail_unless(strcmp(process_info_get_args(process)[0], "foo") == 0);
   fail_unless(process_info_get_args(process)[1] == NULL);
-  fail_unless(process_info_destroy(process) == 0);
+  fail_unless(process_destroy(process) == 0);
 }
 END_TEST
 
@@ -76,12 +76,12 @@ START_TEST(prepare_two_args) {
   fail_unless(strcmp(process_info_get_args(process)[0], "foo") == 0);
   fail_unless(strcmp(process_info_get_args(process)[1], "bar") == 0);
   fail_unless(process_info_get_args(process)[2] == NULL);
-  fail_unless(process_info_destroy(process) == 0);
+  fail_unless(process_destroy(process) == 0);
 }
 END_TEST
 
-START_TEST(process_info_destroy_null_process) {
-  fail_unless(process_info_destroy(NULL) == -1);
+START_TEST(process_destroy_null_process) {
+  fail_unless(process_destroy(NULL) == -1);
 }
 END_TEST
 
@@ -100,7 +100,7 @@ START_TEST(exec_null_env) {
 
   fail_unless((process = process_prepare(env, "foobar")) != NULL);
   fail_unless(process_exec(NULL, process, session) == -1);
-  fail_unless(process_info_destroy(process) == 0);
+  fail_unless(process_destroy(process) == 0);
 }
 END_TEST
 
@@ -114,7 +114,7 @@ START_TEST(exec_null_session) {
 
   fail_unless((process = process_prepare(env, "foobar")) != NULL);
   fail_unless(process_exec(env, process, NULL) == -1);
-  fail_unless(process_info_destroy(process) == 0);
+  fail_unless(process_destroy(process) == 0);
 }
 END_TEST
 
@@ -125,7 +125,7 @@ START_TEST(exec_absolute_path) {
   fail_unless((process = process_prepare(env, "/bin/ls -1")) != NULL);
   fail_unless(process_exec(env, process, session) == 0);
   fail_unless(libssh_proxy_channel_get_size(session->channel) > 0);
-  fail_unless(process_info_destroy(process) == 0);
+  fail_unless(process_destroy(process) == 0);
 }
 END_TEST
 
@@ -136,7 +136,7 @@ START_TEST(exec_relative_path) {
   fail_unless((process = process_prepare(env, "ls -1")) != NULL);
   fail_unless(process_exec(env, process, session) == 0);
   fail_unless(libssh_proxy_channel_get_size(session->channel) > 0);
-  fail_unless(process_info_destroy(process) == 0);
+  fail_unless(process_destroy(process) == 0);
 }
 END_TEST
 
@@ -147,7 +147,7 @@ START_TEST(exec_no_such_file) {
   fail_unless((process = process_prepare(env, "foobar")) != NULL);
   fail_unless(process_exec(env, process, session) == 127);
   fail_unless(libssh_proxy_channel_get_size(session->channel) == 0);
-  fail_unless(process_info_destroy(process) == 0);
+  fail_unless(process_destroy(process) == 0);
 }
 END_TEST
 
@@ -161,7 +161,7 @@ TCase* process_tcase() {
   tcase_add_test(tc, prepare_no_args);
   tcase_add_test(tc, prepare_one_arg);
   tcase_add_test(tc, prepare_two_args);
-  tcase_add_test(tc, process_info_destroy_null_process);
+  tcase_add_test(tc, process_destroy_null_process);
   tcase_add_test(tc, get_command_null_process);
   tcase_add_test(tc, get_args_null_process);
   tcase_add_test(tc, exec_null_env);

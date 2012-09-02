@@ -130,7 +130,7 @@ process_t process_prepare(process_env_t env, const char* command) {
   return process;
 }
 
-int process_info_destroy(process_t process) {
+int process_destroy(process_t process) {
   if (process == NULL) {
     return -1;
   }

@@ -39,12 +39,12 @@ int process_env_destroy(process_env_t env);
 process_t process_prepare(process_env_t env, const char* command);
 
 /**
- * Destroys <code>process_info</code> again.
+ * Destroys <code>process</code> again.
  *
  * @param process The process to be destroyed
  * @return On success <code>0</code> is returned.
  */
-int process_info_destroy(process_t process);
+int process_destroy(process_t process);
 
 /**
  * Returns the command to be executed of the given <code>process</code>.
