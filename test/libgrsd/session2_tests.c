@@ -73,6 +73,11 @@ START_TEST(authenticate_success) {
 }
 END_TEST
 
+START_TEST(get_process_null_session) {
+  fail_unless(session2_get_process(NULL) == NULL);
+}
+END_TEST
+
 TCase* session2_tcase() {
   TCase* tc = tcase_create("session");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -88,6 +93,7 @@ TCase* session2_tcase() {
   tcase_add_test(tc, authenticate_wrong_state);
   tcase_add_test(tc, authenticate_wrong_password);
   tcase_add_test(tc, authenticate_success);
+  tcase_add_test(tc, get_process_null_session);
 
   return tc;
 }

@@ -5,6 +5,7 @@
 
 struct _session2 {
   enum session2_state state;
+  process_t process;
 };
 
 session2_t session2_create() {
@@ -15,6 +16,7 @@ session2_t session2_create() {
   }
 
   session->state = NEED_AUTHENTICATION;
+  session->process = NULL;
 
   return session;
 }
@@ -64,4 +66,12 @@ int session2_authenticate(session2_t session,
   } else {
     return -1;
   }
+}
+
+process_t session2_get_process(session2_t session) {
+  if (session == NULL) {
+    return NULL;
+  }
+
+  return session->process;
 }
