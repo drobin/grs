@@ -85,7 +85,7 @@ static int handle_request_channel(session_t session, ssh_message msg,
                                   int msg_type) {
 
   process_env_t env;
-  process_info_t process_info;
+  process_t process;
   int msg_subtype;
 
   log_debug("Handle channel-request");
@@ -110,9 +110,9 @@ static int handle_request_channel(session_t session, ssh_message msg,
   log_debug("Channel request accepted");
 
   env = process_env_create();
-  process_info = process_prepare(env, ssh_message_channel_request_command(msg));
-  process_exec(env, process_info, session);
-  process_info_destroy(process_info);
+  process = process_prepare(env, ssh_message_channel_request_command(msg));
+  process_exec(env, process, session);
+  process_info_destroy(process);
   process_env_destroy(env);
 
   session->state = NOP; // Finished

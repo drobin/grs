@@ -4,10 +4,10 @@
 #include "session.h"
 
 struct _process_env;
-struct _process_info;
+struct _process;
 
 typedef struct _process_env* process_env_t;
-typedef struct _process_info* process_info_t;
+typedef struct _process* process_t;
 
 /**
  * Initializes the process module.
@@ -33,48 +33,47 @@ int process_env_destroy(process_env_t env);
  *
  * @param env The process environment
  * @param command The command (incl. arguments) to be executed.
- * @return On success a process_info_t-structure is returned, which can be
+ * @return On success a process_t-structure is returned, which can be
  *         executed by process_exec().
  */
-process_info_t process_prepare(process_env_t env, const char* command);
+process_t process_prepare(process_env_t env, const char* command);
 
 /**
  * Destroys <code>process_info</code> again.
  *
- * @param process_info The process information to be destroyed
+ * @param process The process to be destroyed
  * @return On success <code>0</code> is returned.
  */
-int process_info_destroy(process_info_t process_info);
+int process_info_destroy(process_t process);
 
 /**
- * Returns the command to be executed of the given <code>process_info</code>.
+ * Returns the command to be executed of the given <code>process</code>.
  *
  * Usually this is the path of the binary or something similar.
  *
- * @param process_info The process_info to scan
+ * @param process The process to scan
  * @return The command to be executed
  */
-const char* process_info_get_command(process_info_t process_info);
+const char* process_info_get_command(process_t process);
 
 /**
  * Returns the arguments passed to the command of the given
- * <code>process_info</code>.
+ * <code>process</code>.
  *
- * @param process_info The process_info to scan
+ * @param process_info The process to scan
  * @return The arguments passed to the command
  */
-const char** process_info_get_args(process_info_t process_info);
+const char** process_info_get_args(process_t process);
 
 /**
  * Executes a process in the given <code>session</code>.
  *
  * @param env The process environment
- * @param process_info Information about the process to be executed
+ * @param process Information about the process to be executed
  * @param session The target session, where the process is executed
  * @return The exit-code of the process. Usually an exit-code of <code>0</code>
  *         means success.
  */
-int process_exec(process_env_t env, process_info_t process_info,
-                 session_t session);
+int process_exec(process_env_t env, process_t process, session_t session);
 
 #endif  /* PROCESS_H */
