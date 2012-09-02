@@ -5,6 +5,7 @@ SET(GRS_TEST_SOURCES
   libgrsd/grsd_tests.c
   libgrsd/process_tests.c
   libgrsd/session_tests.c
+  libgrsd/session2_tests.c
   libgrsd/slist_tests.c
 )
 

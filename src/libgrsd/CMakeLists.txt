@@ -3,6 +3,7 @@ SET(LIBGRSD_SOURCES
   log.c
   process.c
   session.c
+  session2.c
   slist.c
 )
 
