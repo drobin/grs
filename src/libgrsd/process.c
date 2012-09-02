@@ -54,7 +54,7 @@ static int fork_exec(process_t process, session_t session) {
   }
 
   if (pid == 0) { // The child executes the command
-    const char* cmd = process_info_get_command(process);
+    const char* cmd = process_get_command(process);
 
     log_debug("Executing '%s'", cmd);
 
@@ -141,7 +141,7 @@ int process_destroy(process_t process) {
   return 0;
 }
 
-const char* process_info_get_command(process_t process) {
+const char* process_get_command(process_t process) {
   if (process == NULL) {
     return NULL;
   }
@@ -149,7 +149,7 @@ const char* process_info_get_command(process_t process) {
   return process->token[0];
 }
 
-const char** process_info_get_args(process_t process) {
+const char** process_get_args(process_t process) {
   if (process == NULL) {
     return NULL;
   }

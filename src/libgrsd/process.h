@@ -54,16 +54,16 @@ int process_destroy(process_t process);
  * @param process The process to scan
  * @return The command to be executed
  */
-const char* process_info_get_command(process_t process);
+const char* process_get_command(process_t process);
 
 /**
  * Returns the arguments passed to the command of the given
  * <code>process</code>.
  *
- * @param process_info The process to scan
+ * @param process The process to scan
  * @return The arguments passed to the command
  */
-const char** process_info_get_args(process_t process);
+const char** process_get_args(process_t process);
 
 /**
  * Executes a process in the given <code>session</code>.

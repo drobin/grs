@@ -51,8 +51,8 @@ START_TEST(prepare_no_args) {
   process_t process;
 
   fail_unless((process = process_prepare(env, "foobar")) != NULL);
-  fail_unless(strcmp(process_info_get_command(process), "foobar") == 0);
-  fail_unless(process_info_get_args(process)[0] == NULL);
+  fail_unless(strcmp(process_get_command(process), "foobar") == 0);
+  fail_unless(process_get_args(process)[0] == NULL);
   fail_unless(process_destroy(process) == 0);
 }
 END_TEST
@@ -61,9 +61,9 @@ START_TEST(prepare_one_arg) {
   process_t process;
 
   fail_unless((process = process_prepare(env, "foobar foo")) != NULL);
-  fail_unless(strcmp(process_info_get_command(process), "foobar") == 0);
-  fail_unless(strcmp(process_info_get_args(process)[0], "foo") == 0);
-  fail_unless(process_info_get_args(process)[1] == NULL);
+  fail_unless(strcmp(process_get_command(process), "foobar") == 0);
+  fail_unless(strcmp(process_get_args(process)[0], "foo") == 0);
+  fail_unless(process_get_args(process)[1] == NULL);
   fail_unless(process_destroy(process) == 0);
 }
 END_TEST
@@ -72,10 +72,10 @@ START_TEST(prepare_two_args) {
   process_t process;
 
   fail_unless((process = process_prepare(env, "foobar foo bar")) != NULL);
-  fail_unless(strcmp(process_info_get_command(process), "foobar") == 0);
-  fail_unless(strcmp(process_info_get_args(process)[0], "foo") == 0);
-  fail_unless(strcmp(process_info_get_args(process)[1], "bar") == 0);
-  fail_unless(process_info_get_args(process)[2] == NULL);
+  fail_unless(strcmp(process_get_command(process), "foobar") == 0);
+  fail_unless(strcmp(process_get_args(process)[0], "foo") == 0);
+  fail_unless(strcmp(process_get_args(process)[1], "bar") == 0);
+  fail_unless(process_get_args(process)[2] == NULL);
   fail_unless(process_destroy(process) == 0);
 }
 END_TEST
@@ -86,12 +86,12 @@ START_TEST(process_destroy_null_process) {
 END_TEST
 
 START_TEST(get_command_null_process) {
-  fail_unless(process_info_get_command(NULL) == NULL);
+  fail_unless(process_get_command(NULL) == NULL);
 }
 END_TEST
 
 START_TEST(get_args_null_process) {
-  fail_unless(process_info_get_args(NULL) == NULL);
+  fail_unless(process_get_args(NULL) == NULL);
 }
 END_TEST
 
