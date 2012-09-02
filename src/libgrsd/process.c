@@ -10,7 +10,7 @@
 #include "log.h"
 #include "process.h"
 
-struct _process {
+struct _process_env {
 };
 
 struct _process_info {
@@ -93,30 +93,30 @@ static int fork_exec(process_info_t process_info, session_t session) {
   }
 }
 
-process_t process_init() {
-  struct _process* process;
+process_env_t process_init() {
+  struct _process_env* env;
 
-  if ((process = malloc(sizeof(struct _process))) == NULL) {
+  if ((env = malloc(sizeof(struct _process_env))) == NULL) {
     return NULL;
   }
 
-  return process;
+  return env;
 }
 
-int process_destroy(process_t process) {
-  if (process == NULL) {
+int process_destroy(process_env_t env) {
+  if (env == NULL) {
     return -1;
   }
 
-  free(process);
+  free(env);
 
   return 0;
 }
 
-process_info_t process_prepare(process_t process, const char* command) {
+process_info_t process_prepare(process_env_t env, const char* command) {
   struct _process_info* process_info;
 
-  if (process == NULL || command == NULL) {
+  if (env == NULL || command == NULL) {
     return NULL;
   }
 
@@ -157,9 +157,9 @@ const char** process_info_get_args(process_info_t process_info) {
   return (const char**)process_info->token + 1;
 }
 
-int process_exec(process_t process, process_info_t process_info,
+int process_exec(process_env_t env, process_info_t process_info,
                  session_t session) {
-  if (process == NULL || process_info == NULL || session == NULL) {
+  if (env == NULL || process_info == NULL || session == NULL) {
     return -1;
   }
 
