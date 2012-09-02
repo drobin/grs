@@ -78,6 +78,34 @@ START_TEST(get_process_null_session) {
 }
 END_TEST
 
+START_TEST(set_process_null_session) {
+  process_env_t env;
+  process_t process;
+
+  fail_unless((env = process_env_create()) != NULL);
+  fail_unless((process = process_prepare(env, "foobar")) != NULL);
+  fail_unless(session2_set_process(NULL, process) == -1);
+  fail_unless(process_destroy(process) == 0);
+  fail_unless(process_env_destroy(env) == 0);
+}
+END_TEST
+
+START_TEST(set_process_null_process) {
+  fail_unless(session2_set_process(session, NULL) == -1);
+}
+END_TEST
+
+START_TEST(get_set_process) {
+  process_env_t env;
+  process_t process;
+
+  fail_unless((env = process_env_create()) != NULL);
+  fail_unless((process = process_prepare(env, "foobar")) != NULL);
+  fail_unless(session2_set_process(session, process) == 0);
+  fail_unless(session2_get_process(session) == process);
+}
+END_TEST
+
 TCase* session2_tcase() {
   TCase* tc = tcase_create("session");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -94,6 +122,9 @@ TCase* session2_tcase() {
   tcase_add_test(tc, authenticate_wrong_password);
   tcase_add_test(tc, authenticate_success);
   tcase_add_test(tc, get_process_null_session);
+  tcase_add_test(tc, set_process_null_session);
+  tcase_add_test(tc, set_process_null_process);
+  tcase_add_test(tc, get_set_process);
 
   return tc;
 }

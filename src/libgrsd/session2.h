@@ -20,5 +20,6 @@ int session2_set_state(session2_t session, enum session2_state state);
 int session2_authenticate(session2_t session,
                            const char* username, const char* password);
 process_t session2_get_process(session2_t session);
+int session2_set_process(session2_t session, process_t process);
 
 #endif  /* SESSION2_H */

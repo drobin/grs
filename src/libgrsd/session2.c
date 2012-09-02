@@ -75,3 +75,13 @@ process_t session2_get_process(session2_t session) {
 
   return session->process;
 }
+
+int session2_set_process(session2_t session, process_t process) {
+  if (session == NULL || process == NULL) {
+    return -1;
+  }
+
+  session->process = process;
+
+  return 0;
+}
