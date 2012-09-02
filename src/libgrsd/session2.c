@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "session2.h"
 
@@ -13,7 +14,7 @@ session2_t session2_create() {
     return NULL;
   }
 
-  session->state = NOOP;
+  session->state = NEED_AUTHENTICATION;
 
   return session;
 }
@@ -44,4 +45,23 @@ int session2_set_state(session2_t session, enum session2_state state) {
   session->state = state;
 
   return 0;
+}
+
+int session2_authenticate(session2_t session,
+                           const char* username, const char* password) {
+
+  if (session == NULL || username == NULL || password == NULL) {
+    return -1;
+  }
+
+  if (session->state != NEED_AUTHENTICATION) {
+    return -1;
+  }
+
+  if (strcmp(username, password) == 0) {
+    session->state = NOOP;
+    return 0;
+  } else {
+    return -1;
+  }
 }
