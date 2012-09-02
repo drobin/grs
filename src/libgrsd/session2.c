@@ -86,7 +86,7 @@ int session2_set_process(session2_t session, process_t process) {
   }
 
   session->process = process;
-  session->state = NOOP;
+  session->state = NEED_EXEC;
 
   return 0;
 }

@@ -115,7 +115,7 @@ START_TEST(set_process_success) {
   fail_unless(session2_set_state(session, NEED_PROCESS) == 0);
   fail_unless(session2_set_process(session, process) == 0);
   fail_unless(session2_get_process(session) == process);
-  fail_unless(session2_get_state(session) == NOOP);
+  fail_unless(session2_get_state(session) == NEED_EXEC);
 }
 END_TEST
 

@@ -9,6 +9,7 @@ typedef struct _session2* session2_t;
 enum session2_state {
   NEED_AUTHENTICATION,
   NEED_PROCESS,
+  NEED_EXEC,
   NOOP
 };
 
