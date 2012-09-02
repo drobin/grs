@@ -109,11 +109,11 @@ static int handle_request_channel(session_t session, ssh_message msg,
   ssh_message_channel_request_reply_success(msg);
   log_debug("Channel request accepted");
 
-  env = process_init();
+  env = process_env_create();
   process_info = process_prepare(env, ssh_message_channel_request_command(msg));
   process_exec(env, process_info, session);
   process_info_destroy(process_info);
-  process_destroy(env);
+  process_env_destroy(env);
 
   session->state = NOP; // Finished
 

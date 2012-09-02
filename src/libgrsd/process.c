@@ -93,7 +93,7 @@ static int fork_exec(process_info_t process_info, session_t session) {
   }
 }
 
-process_env_t process_init() {
+process_env_t process_env_create() {
   struct _process_env* env;
 
   if ((env = malloc(sizeof(struct _process_env))) == NULL) {
@@ -103,7 +103,7 @@ process_env_t process_init() {
   return env;
 }
 
-int process_destroy(process_env_t env) {
+int process_env_destroy(process_env_t env) {
   if (env == NULL) {
     return -1;
   }

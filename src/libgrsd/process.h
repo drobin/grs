@@ -17,7 +17,7 @@ typedef struct _process_info* process_info_t;
  *
  * @return A new process environment
  */
-process_env_t process_init();
+process_env_t process_env_create();
 
 /**
  * Destroys the process environment again.
@@ -25,7 +25,7 @@ process_env_t process_init();
  * @param env The process environment to be destroyed.
  * @return On success <code>0</code> is returned.
  */
-int process_destroy(process_env_t env);
+int process_env_destroy(process_env_t env);
 
 /**
  * Prepares the execution of the given <code>command</code> in the environment

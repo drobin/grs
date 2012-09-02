@@ -22,18 +22,18 @@ static void setup() {
   libssh_proxy_set_option_list("ssh_message_type", "results", &type_list);
 
   fail_unless(session_handle(session) == 0);
-  fail_unless((env = process_init()) != NULL);
+  fail_unless((env = process_env_create()) != NULL);
 }
 
 static void teardown() {
-  fail_unless(process_destroy(env) == 0);
+  fail_unless(process_env_destroy(env) == 0);
   fail_unless(session_destroy(session) == 0);
   fail_unless(libssh_proxy_destroy() == 0);
   session = NULL;
 }
 
 START_TEST(destroy_null_env) {
-  fail_unless(process_destroy(NULL) == -1);
+  fail_unless(process_env_destroy(NULL) == -1);
 }
 END_TEST
 
