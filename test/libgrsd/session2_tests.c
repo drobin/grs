@@ -28,6 +28,11 @@ START_TEST(get_state_initial) {
 }
 END_TEST
 
+START_TEST(set_state_null_session) {
+  fail_unless(session2_set_state(NULL, NOOP) == -1);
+}
+END_TEST
+
 TCase* session2_tcase() {
   TCase* tc = tcase_create("session");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -35,6 +40,7 @@ TCase* session2_tcase() {
   tcase_add_test(tc, destroy_null_session);
   tcase_add_test(tc, get_state_null_session);
   tcase_add_test(tc, get_state_initial);
+  tcase_add_test(tc, set_state_null_session);
 
   return tc;
 }

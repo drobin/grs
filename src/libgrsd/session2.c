@@ -35,3 +35,13 @@ enum session2_state session2_get_state(session2_t session) {
 
   return session->state;
 }
+
+int session2_set_state(session2_t session, enum session2_state state) {
+  if (session == NULL) {
+    return -1;
+  }
+
+  session->state = state;
+
+  return 0;
+}
