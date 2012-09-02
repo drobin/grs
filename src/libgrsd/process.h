@@ -47,6 +47,14 @@ process_t process_prepare(process_env_t env, const char* command);
 int process_destroy(process_t process);
 
 /**
+ * Returns the environment of the process.
+ *
+ * @param process The process to scan
+ * @return The environment of the process
+ */
+process_env_t process_get_env(process_t process);
+
+/**
  * Returns the command to be executed of the given <code>process</code>.
  *
  * Usually this is the path of the binary or something similar.

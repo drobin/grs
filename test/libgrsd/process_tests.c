@@ -85,6 +85,20 @@ START_TEST(process_destroy_null_process) {
 }
 END_TEST
 
+START_TEST(get_env_success) {
+  process_t process;
+
+  fail_unless((process = process_prepare(env, "foobar")) != NULL);
+  fail_unless(process_get_env(process) == env);
+  fail_unless(process_destroy(process) == 0);
+}
+END_TEST
+
+START_TEST(get_env_null_process) {
+  fail_unless(process_get_env(NULL) == NULL);
+}
+END_TEST
+
 START_TEST(get_command_null_process) {
   fail_unless(process_get_command(NULL) == NULL);
 }
@@ -162,6 +176,8 @@ TCase* process_tcase() {
   tcase_add_test(tc, prepare_one_arg);
   tcase_add_test(tc, prepare_two_args);
   tcase_add_test(tc, process_destroy_null_process);
+  tcase_add_test(tc, get_env_success);
+  tcase_add_test(tc, get_env_null_process);
   tcase_add_test(tc, get_command_null_process);
   tcase_add_test(tc, get_args_null_process);
   tcase_add_test(tc, exec_null_env);

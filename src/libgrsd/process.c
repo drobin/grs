@@ -14,6 +14,7 @@ struct _process_env {
 };
 
 struct _process {
+  struct _process_env* env;
   char* raw_token;
   char* token[ARG_MAX];
 };
@@ -124,6 +125,7 @@ process_t process_prepare(process_env_t env, const char* command) {
     return NULL;
   }
 
+  process->env = env;
   process->raw_token = strdup(command);
   tokenize(process);
 
@@ -139,6 +141,14 @@ int process_destroy(process_t process) {
   free(process);
 
   return 0;
+}
+
+process_env_t process_get_env(process_t process) {
+  if (process == NULL) {
+    return NULL;
+  }
+
+  return process->env;
 }
 
 const char* process_get_command(process_t process) {
