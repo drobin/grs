@@ -119,6 +119,23 @@ START_TEST(set_process_success) {
 }
 END_TEST
 
+START_TEST(exec_null_session) {
+  fail_unless(session2_exec(NULL) == -1);
+}
+END_TEST
+
+START_TEST(exec_wrong_state) {
+  fail_unless(session2_exec(session) == -1);
+}
+END_TEST
+
+START_TEST(exec_success) {
+  fail_unless(session2_set_state(session, NEED_EXEC) == 0);
+  fail_unless(session2_exec(session) == 0);
+  fail_unless(session2_get_state(session) == NOOP);
+}
+END_TEST
+
 TCase* session2_tcase() {
   TCase* tc = tcase_create("session");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -139,6 +156,9 @@ TCase* session2_tcase() {
   tcase_add_test(tc, set_process_null_process);
   tcase_add_test(tc, set_process_wrong_state);
   tcase_add_test(tc, set_process_success);
+  tcase_add_test(tc, exec_null_session);
+  tcase_add_test(tc, exec_wrong_state);
+  tcase_add_test(tc, exec_success);
 
   return tc;
 }

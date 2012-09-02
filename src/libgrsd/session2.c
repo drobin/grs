@@ -90,3 +90,17 @@ int session2_set_process(session2_t session, process_t process) {
 
   return 0;
 }
+
+int session2_exec(session2_t session) {
+  if (session == NULL) {
+    return -1;
+  }
+
+  if (session->state != NEED_EXEC) {
+    return -1;
+  }
+
+  session->state = NOOP;
+
+  return 0;
+}

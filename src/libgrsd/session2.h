@@ -24,4 +24,5 @@ int session2_authenticate(session2_t session,
 process_t session2_get_process(session2_t session);
 int session2_set_process(session2_t session, process_t process);
 
+int session2_exec(session2_t session);
 #endif  /* SESSION2_H */
