@@ -11,8 +11,14 @@
 
 #include "session_list.h"
 
+/**
+ * Flag is set to true if you need to leave the main selection loop.
+ */
+static int leave_selection_loop = 0;
+
 static void leave_handler(int sig) {
-  log_debug("Ask to leave grsd_listen");
+  log_debug("Ask to leave selection loop");
+  leave_selection_loop = 1;
 }
 
 static void usage() {
@@ -228,6 +234,11 @@ int main(int argc, char** argv) {
     result = ssh_select(channels, outchannels, max_fd + 1, &read_fds, NULL);
 
     if (result == SSH_EINTR) {
+      if (leave_selection_loop) {
+        log_debug("Leaving selection loop");
+        break;
+      }
+
       continue;
     }
 
