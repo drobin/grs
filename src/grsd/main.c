@@ -9,6 +9,8 @@
 #include <log.h>
 #include <session.h>
 
+#include "session_list.h"
+
 static void leave_handler(int sig) {
   log_debug("Ask to leave grsd_listen");
 }
@@ -24,6 +26,7 @@ int main(int argc, char** argv) {
   char* hostkey = "";
   int port = 22;
   int ch, result;
+  struct session_head session_list;
 
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = leave_handler;
@@ -42,6 +45,8 @@ int main(int argc, char** argv) {
       usage();
     }
   }
+
+  LIST_INIT(&session_list);
 
   if ((bind = ssh_bind_new()) != NULL) {
     log_debug("SSH server bind created");
@@ -90,6 +95,7 @@ int main(int argc, char** argv) {
     }
 
     if (FD_ISSET(ssh_bind_get_fd(bind), &read_fds)) {
+      struct session_entry* entry;
       ssh_session session;
 
       log_debug("SSH server bind selected");
@@ -108,6 +114,13 @@ int main(int argc, char** argv) {
         log_err("Error in key exchange: %s", ssh_get_error(session));
       }
 
+      if ((entry = session_list_prepend(&session_list, session)) != NULL) {
+        log_debug("Session is queued");
+      } else {
+        log_err("Failed to queue session");
+      }
+
+      session_list_remove(entry);
       ssh_free(session);
       break;
     }
