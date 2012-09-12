@@ -1,5 +1,6 @@
 set(GRSD_SOURCES
   main.c
+  session_list.c
 )
 
 add_executable(grsd ${GRSD_SOURCES})
