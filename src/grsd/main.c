@@ -74,6 +74,27 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  while (1) {
+    ssh_channel channels[1], outchannels[1];
+    fd_set read_fds;
+
+    FD_ZERO(&read_fds);
+    FD_SET(ssh_bind_get_fd(bind), &read_fds);
+    channels[0] = NULL;
+
+    result = ssh_select(channels, outchannels, ssh_bind_get_fd(bind) + 1,
+      &read_fds, NULL);
+
+    if (result == SSH_EINTR) {
+      continue;
+    }
+
+    if (FD_ISSET(ssh_bind_get_fd(bind), &read_fds)) {
+      log_debug("SSH server bind selected");
+      break;
+    }
+  }
+
   ssh_bind_free(bind);
 
   return 0;
