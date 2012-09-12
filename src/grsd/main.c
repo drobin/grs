@@ -23,6 +23,7 @@ static void usage() {
 static int handle_ssh_bind(ssh_bind bind, struct session_head* slist) {
   struct session_entry* entry;
   ssh_session session;
+  session2_t grs_session;
   int result;
 
   log_debug("SSH server bind selected");
@@ -50,11 +51,20 @@ static int handle_ssh_bind(ssh_bind bind, struct session_head* slist) {
     log_debug("Key exchange done");
   }
 
+  if ((grs_session = session2_create()) == NULL) {
+    log_err("Failed to create a GRS session");
+    ssh_free(session);
+    return -1;
+  } else {
+    log_debug("GRS session created");
+  }
+
   if ((entry = session_list_prepend(slist, session)) == NULL) {
     log_err("Failed to queue session");
     ssh_free(session);
     return -1;
   } else {
+    entry->grs_session = grs_session;
     log_debug("Session is queued");
   }
 
@@ -65,6 +75,7 @@ static int handle_ssh_session(struct session_entry* entry) {
   log_debug("Session is selected");
 
   ssh_free(entry->session);
+  session2_destroy(entry->grs_session);
   session_list_remove(entry);
 
   return 0;

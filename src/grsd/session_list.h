@@ -4,9 +4,11 @@
 #include <sys/queue.h>
 
 #include <libssh/libssh.h>
+#include <session2.h>
 
 struct session_entry {
   ssh_session session;
+  session2_t grs_session;
   LIST_ENTRY(session_entry) entries;
 };
 
