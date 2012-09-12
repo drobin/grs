@@ -20,6 +20,47 @@ static void usage() {
   exit(1);
 }
 
+static int handle_ssh_bind(ssh_bind bind, struct session_head* slist) {
+  struct session_entry* entry;
+  ssh_session session;
+  int result;
+
+  log_debug("SSH server bind selected");
+
+  if ((session = ssh_new()) != NULL) {
+    log_debug("SSH session created");
+  } else {
+    log_err("Failed to create a new SSH session");
+    return -1;
+  }
+
+  if ((result = ssh_bind_accept(bind, session)) != SSH_OK) {
+    log_err("Error accepting connection: %s", ssh_get_error(bind));
+    ssh_free(session);
+    return -1;
+  } else {
+    log_debug("SSH connection accepted");
+  }
+
+  if (ssh_handle_key_exchange(session) != SSH_OK) {
+    log_err("Error in key exchange: %s", ssh_get_error(session));
+    ssh_free(session);
+    return -1;
+  } else {
+    log_debug("Key exchange done");
+  }
+
+  if ((entry = session_list_prepend(slist, session)) == NULL) {
+    log_err("Failed to queue session");
+    ssh_free(session);
+    return -1;
+  } else {
+    log_debug("Session is queued");
+  }
+
+  return 0;
+}
+
 int main(int argc, char** argv) {
   struct sigaction sa;
   ssh_bind bind;
@@ -106,30 +147,7 @@ int main(int argc, char** argv) {
     }
 
     if (FD_ISSET(ssh_bind_get_fd(bind), &read_fds)) {
-      struct session_entry* entry;
-      ssh_session session;
-
-      log_debug("SSH server bind selected");
-
-      session = ssh_new();
-
-      if ((result = ssh_bind_accept(bind, session)) == SSH_OK) {
-        log_debug("SSH connection accepted");
-      } else {
-        log_err("Error accepting connection: %s", ssh_get_error(bind));
-      }
-
-      if (ssh_handle_key_exchange(session) == SSH_OK) {
-        log_debug("Key exchange done");
-      } else {
-        log_err("Error in key exchange: %s", ssh_get_error(session));
-      }
-
-      if ((entry = session_list_prepend(&session_list, session)) != NULL) {
-        log_debug("Session is queued");
-      } else {
-        log_err("Failed to queue session");
-      }
+      handle_ssh_bind(bind, &session_list);
     } else {
       LIST_FOREACH(entry, &session_list, entries) {
         if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
