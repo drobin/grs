@@ -20,57 +20,6 @@ static void usage() {
   exit(1);
 }
 
-static int handle_ssh_bind(ssh_bind bind, struct session_head* slist) {
-  struct session_entry* entry;
-  ssh_session session;
-  session2_t grs_session;
-  int result;
-
-  log_debug("SSH server bind selected");
-
-  if ((session = ssh_new()) != NULL) {
-    log_debug("SSH session created");
-  } else {
-    log_err("Failed to create a new SSH session");
-    return -1;
-  }
-
-  if ((result = ssh_bind_accept(bind, session)) != SSH_OK) {
-    log_err("Error accepting connection: %s", ssh_get_error(bind));
-    ssh_free(session);
-    return -1;
-  } else {
-    log_debug("SSH connection accepted");
-  }
-
-  if (ssh_handle_key_exchange(session) != SSH_OK) {
-    log_err("Error in key exchange: %s", ssh_get_error(session));
-    ssh_free(session);
-    return -1;
-  } else {
-    log_debug("Key exchange done");
-  }
-
-  if ((grs_session = session2_create()) == NULL) {
-    log_err("Failed to create a GRS session");
-    ssh_free(session);
-    return -1;
-  } else {
-    log_debug("GRS session created");
-  }
-
-  if ((entry = session_list_prepend(slist, session)) == NULL) {
-    log_err("Failed to queue session");
-    ssh_free(session);
-    return -1;
-  } else {
-    entry->grs_session = grs_session;
-    log_debug("Session is queued");
-  }
-
-  return 0;
-}
-
 static int handle_ssh_authentication(session2_t session, ssh_message msg) {
   char* user;
   char* password;
@@ -139,6 +88,60 @@ static int handle_ssh_session(struct session_entry* entry) {
   }
 
   ssh_message_free(msg);
+
+  return 0;
+}
+
+static int handle_ssh_bind(ssh_bind bind, struct session_head* slist) {
+  struct session_entry* entry;
+  ssh_session session;
+  session2_t grs_session;
+  int result;
+
+  log_debug("SSH server bind selected");
+
+  if ((session = ssh_new()) != NULL) {
+    log_debug("SSH session created");
+  } else {
+    log_err("Failed to create a new SSH session");
+    return -1;
+  }
+
+  if ((result = ssh_bind_accept(bind, session)) != SSH_OK) {
+    log_err("Error accepting connection: %s", ssh_get_error(bind));
+    ssh_free(session);
+    return -1;
+  } else {
+    log_debug("SSH connection accepted");
+  }
+
+  if (ssh_handle_key_exchange(session) != SSH_OK) {
+    log_err("Error in key exchange: %s", ssh_get_error(session));
+    ssh_free(session);
+    return -1;
+  } else {
+    log_debug("Key exchange done");
+  }
+
+  if ((grs_session = session2_create()) == NULL) {
+    log_err("Failed to create a GRS session");
+    ssh_free(session);
+    return -1;
+  } else {
+    log_debug("GRS session created");
+  }
+
+  if ((entry = session_list_prepend(slist, session)) == NULL) {
+    log_err("Failed to queue session");
+    ssh_free(session);
+    return -1;
+  } else {
+    entry->grs_session = grs_session;
+    log_debug("Session is queued");
+  }
+
+  // Handle initial data for the session
+  handle_ssh_session(entry);
 
   return 0;
 }
