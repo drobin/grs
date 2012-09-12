@@ -81,14 +81,25 @@ int main(int argc, char** argv) {
 
   while (1) {
     ssh_channel channels[1], outchannels[1];
+    struct session_entry* entry;
     fd_set read_fds;
+    int max_fd;
 
     FD_ZERO(&read_fds);
     FD_SET(ssh_bind_get_fd(bind), &read_fds);
+    max_fd = ssh_bind_get_fd(bind);
+
+    LIST_FOREACH(entry, &session_list, entries) {
+      FD_SET(ssh_get_fd(entry->session), &read_fds);
+
+      if (ssh_get_fd(entry->session) > max_fd) {
+        max_fd = ssh_get_fd(entry->session);
+      }
+    }
+
     channels[0] = NULL;
 
-    result = ssh_select(channels, outchannels, ssh_bind_get_fd(bind) + 1,
-      &read_fds, NULL);
+    result = ssh_select(channels, outchannels, max_fd + 1, &read_fds, NULL);
 
     if (result == SSH_EINTR) {
       continue;
@@ -119,10 +130,15 @@ int main(int argc, char** argv) {
       } else {
         log_err("Failed to queue session");
       }
+    } else {
+      LIST_FOREACH(entry, &session_list, entries) {
+        if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
+          log_debug("Session is selected");
 
-      session_list_remove(entry);
-      ssh_free(session);
-      break;
+          ssh_free(entry->session);
+          session_list_remove(entry);
+        }
+      }
     }
   }
 
