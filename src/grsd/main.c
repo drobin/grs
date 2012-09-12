@@ -90,7 +90,25 @@ int main(int argc, char** argv) {
     }
 
     if (FD_ISSET(ssh_bind_get_fd(bind), &read_fds)) {
+      ssh_session session;
+
       log_debug("SSH server bind selected");
+
+      session = ssh_new();
+
+      if ((result = ssh_bind_accept(bind, session)) == SSH_OK) {
+        log_debug("SSH connection accepted");
+      } else {
+        log_err("Error accepting connection: %s", ssh_get_error(bind));
+      }
+
+      if (ssh_handle_key_exchange(session) == SSH_OK) {
+        log_debug("Key exchange done");
+      } else {
+        log_err("Error in key exchange: %s", ssh_get_error(session));
+      }
+
+      ssh_free(session);
       break;
     }
   }
