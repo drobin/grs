@@ -71,12 +71,74 @@ static int handle_ssh_bind(ssh_bind bind, struct session_head* slist) {
   return 0;
 }
 
+static int handle_ssh_authentication(session2_t session, ssh_message msg) {
+  char* user;
+  char* password;
+
+  log_debug("Handle authentication for session");
+
+  if (ssh_message_type(msg) != SSH_REQUEST_AUTH) {
+    log_debug("Ignoring message of type %i", ssh_message_type(msg));
+
+    ssh_message_reply_default(msg);
+
+    return 0;
+  }
+
+  if (ssh_message_subtype(msg) != SSH_AUTH_METHOD_PASSWORD) {
+    log_debug("Currently only password-authentication is supported.");
+    log_debug("Rejecting auth-type %i", ssh_message_subtype(msg));
+
+    ssh_message_auth_set_methods(msg, SSH_AUTH_METHOD_PASSWORD);
+    ssh_message_reply_default(msg);
+
+    return 0;
+  }
+
+  user = ssh_message_auth_user(msg);
+  password = ssh_message_auth_password(msg);
+  log_debug("Authentication requested with %s/%s", user, password);
+
+
+  if (session2_authenticate(session, user, password) == 0) {
+    log_debug("Authentication succeeded");
+    ssh_message_auth_reply_success(msg, 0);
+  } else {
+    log_debug("Authentication rejected");
+    ssh_message_reply_default(msg);
+  }
+
+  return 0;
+}
+
 static int handle_ssh_session(struct session_entry* entry) {
+  ssh_message msg;
+
   log_debug("Session is selected");
 
-  ssh_free(entry->session);
-  session2_destroy(entry->grs_session);
-  session_list_remove(entry);
+  if ((msg = ssh_message_get(entry->session)) == NULL) {
+    log_err("Failed to read message from session: %s",
+            ssh_get_error(entry->session));
+
+    ssh_free(entry->session);
+    session2_destroy(entry->grs_session);
+    session_list_remove(entry);
+
+    return -1;
+  }
+
+  switch (session2_get_state(entry->grs_session)) {
+    case NEED_AUTHENTICATION:
+      handle_ssh_authentication(entry->grs_session, msg);
+      break;
+    default:
+      ssh_free(entry->session);
+      session2_destroy(entry->grs_session);
+      session_list_remove(entry);
+      break;
+  }
+
+  ssh_message_free(msg);
 
   return 0;
 }
