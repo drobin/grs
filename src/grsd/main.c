@@ -61,6 +61,15 @@ static int handle_ssh_bind(ssh_bind bind, struct session_head* slist) {
   return 0;
 }
 
+static int handle_ssh_session(struct session_entry* entry) {
+  log_debug("Session is selected");
+
+  ssh_free(entry->session);
+  session_list_remove(entry);
+
+  return 0;
+}
+
 int main(int argc, char** argv) {
   struct sigaction sa;
   ssh_bind bind;
@@ -151,10 +160,7 @@ int main(int argc, char** argv) {
     } else {
       LIST_FOREACH(entry, &session_list, entries) {
         if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
-          log_debug("Session is selected");
-
-          ssh_free(entry->session);
-          session_list_remove(entry);
+          handle_ssh_session(entry);
         }
       }
     }
