@@ -9,7 +9,7 @@ struct _session {
   process_t process;
 };
 
-session2_t session2_create() {
+session_t session2_create() {
   struct _session* session;
 
   if ((session = malloc(sizeof(struct _session))) == NULL) {
@@ -22,7 +22,7 @@ session2_t session2_create() {
   return session;
 }
 
-int session2_destroy(session2_t session) {
+int session2_destroy(session_t session) {
   if (session == NULL) {
     return -1;
   }
@@ -32,7 +32,7 @@ int session2_destroy(session2_t session) {
   return 0;
 }
 
-enum session_state session2_get_state(session2_t session) {
+enum session_state session2_get_state(session_t session) {
   if (session == NULL) {
     return -1;
   }
@@ -40,7 +40,7 @@ enum session_state session2_get_state(session2_t session) {
   return session->state;
 }
 
-int session2_set_state(session2_t session, enum session_state state) {
+int session2_set_state(session_t session, enum session_state state) {
   if (session == NULL) {
     return -1;
   }
@@ -50,8 +50,8 @@ int session2_set_state(session2_t session, enum session_state state) {
   return 0;
 }
 
-int session2_authenticate(session2_t session,
-                           const char* username, const char* password) {
+int session2_authenticate(session_t session,
+                          const char* username, const char* password) {
 
   if (session == NULL || username == NULL || password == NULL) {
     return -1;
@@ -69,7 +69,7 @@ int session2_authenticate(session2_t session,
   }
 }
 
-process_t session2_get_process(session2_t session) {
+process_t session2_get_process(session_t session) {
   if (session == NULL) {
     return NULL;
   }
@@ -77,7 +77,7 @@ process_t session2_get_process(session2_t session) {
   return session->process;
 }
 
-int session2_set_process(session2_t session, process_t process) {
+int session2_set_process(session_t session, process_t process) {
   if (session == NULL || process == NULL) {
     return -1;
   }
@@ -92,7 +92,7 @@ int session2_set_process(session2_t session, process_t process) {
   return 0;
 }
 
-int session2_exec(session2_t session) {
+int session2_exec(session_t session) {
   if (session == NULL) {
     return -1;
   }

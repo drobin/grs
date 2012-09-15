@@ -2,7 +2,7 @@
 
 #include "../../src/libgrsd/session.h"
 
-static session2_t session;
+static session_t session;
 
 static void setup() {
   fail_unless((session = session2_create()) != NULL);

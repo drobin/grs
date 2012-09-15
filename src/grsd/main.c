@@ -47,7 +47,7 @@ static void close_and_free_session_entry(struct session_list* list,
   session_list_remove(list, entry);
 }
 
-static int handle_ssh_authentication(session2_t session, ssh_message msg) {
+static int handle_ssh_authentication(session_t session, ssh_message msg) {
   char* user;
   char* password;
 
@@ -184,7 +184,7 @@ static int handle_ssh_session(struct session_list* list,
 static int handle_ssh_bind(ssh_bind bind, struct session_list* slist) {
   struct session_entry* entry;
   ssh_session session;
-  session2_t grs_session;
+  session_t grs_session;
   int result;
 
   log_debug("SSH server bind selected");
