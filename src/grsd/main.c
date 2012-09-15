@@ -294,6 +294,7 @@ int main(int argc, char** argv) {
     ssh_channel channels[session_list.size + 1];
     ssh_channel outchannels[session_list.size + 1];
     int nchannels = 0;
+    int nprocesses = 0;
     struct session_entry* entry;
     fd_set read_fds;
     int max_fd;
@@ -309,6 +310,15 @@ int main(int argc, char** argv) {
         max_fd = ssh_get_fd(entry->session);
       }
 
+      if (entry->process != NULL) {
+        nprocesses++;
+        FD_SET(process_get_fd_out(entry->process), &read_fds);
+
+        if (process_get_fd_out(entry->process) > max_fd) {
+          max_fd = process_get_fd_out(entry->process);
+        }
+      }
+
       if (entry->channel != NULL) {
         channels[nchannels] = entry->channel;
         nchannels++;
@@ -319,6 +329,7 @@ int main(int argc, char** argv) {
 
     log_debug("# of queued sessions: %i", session_list.size);
     log_debug("# of queued channels: %i", nchannels);
+    log_debug("# of queued processes: %i", nprocesses);
 
     result = ssh_select(channels, outchannels, max_fd + 1, &read_fds, NULL);
 
