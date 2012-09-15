@@ -27,6 +27,14 @@ static void usage() {
 }
 
 static void close_and_free_session_entry(struct session_entry* entry) {
+  if (entry->process != NULL) {
+    process_destroy(entry->process);
+  }
+
+  if (entry->env != NULL) {
+    process_env_destroy(entry->env);
+  }
+
   if (entry->channel != NULL) {
     ssh_channel_close(entry->channel);
     ssh_channel_free(entry->channel);
@@ -101,9 +109,6 @@ static int handle_ssh_channel_open(struct session_entry* entry, ssh_message msg)
 
 static int handle_ssh_channel_request(struct session_entry* entry,
                                       ssh_message msg) {
-  process_env_t env;
-  process_t process;
-
   log_debug("Handle channel-request");
 
   if (ssh_message_type(msg) != SSH_REQUEST_CHANNEL) {
@@ -125,10 +130,9 @@ static int handle_ssh_channel_request(struct session_entry* entry,
   ssh_message_channel_request_reply_success(msg);
   log_debug("Channel request accepted");
 
-  env = process_env_create();
-  process = process_prepare(env, ssh_message_channel_request_command(msg));
-  process_destroy(process);
-  process_env_destroy(env);
+  entry->env = process_env_create();
+  entry->process = process_prepare(
+    entry->env, ssh_message_channel_request_command(msg));
 
   return 0;
 }
