@@ -255,7 +255,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  LIST_INIT(&(session_list.head));
+  SESSION_LIST_INIT(session_list);
 
   if ((bind = ssh_bind_new()) != NULL) {
     log_debug("SSH server bind created");
