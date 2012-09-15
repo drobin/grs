@@ -377,10 +377,12 @@ int main(int argc, char** argv) {
     max_fd = ssh_bind_get_fd(bind);
 
     SESSION_LIST_FOREACH(entry, session_list) {
-      FD_SET(ssh_get_fd(entry->session), &read_fds);
+      if (session2_get_state(entry->grs_session) < NEED_EXEC) {
+        FD_SET(ssh_get_fd(entry->session), &read_fds);
 
-      if (ssh_get_fd(entry->session) > max_fd) {
-        max_fd = ssh_get_fd(entry->session);
+        if (ssh_get_fd(entry->session) > max_fd) {
+          max_fd = ssh_get_fd(entry->session);
+        }
       }
 
       if (entry->process != NULL) {
