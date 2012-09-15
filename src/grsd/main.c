@@ -296,6 +296,8 @@ int main(int argc, char** argv) {
     fd_set read_fds;
     int max_fd;
 
+    log_debug("# of queued sessions: %i", session_list.size);
+
     FD_ZERO(&read_fds);
     FD_SET(ssh_bind_get_fd(bind), &read_fds);
     max_fd = ssh_bind_get_fd(bind);
