@@ -6,7 +6,7 @@
 
 #include "../../src/libgrsd/grs.h"
 
-static grsd_t handle;
+static grs_t handle;
 
 static void setup() {
   fail_unless((handle = grsd_init()) != NULL);

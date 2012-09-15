@@ -3,22 +3,22 @@
 
 #include "grs.h"
 
-struct _grsd {
+struct _grs {
 };
 
-grsd_t grsd_init() {
-  struct _grsd* handle;
+grs_t grsd_init() {
+  struct _grs* handle;
 
-  if ((handle = malloc(sizeof(struct _grsd))) == NULL) {
+  if ((handle = malloc(sizeof(struct _grs))) == NULL) {
     return NULL;
   }
 
-  memset(handle, 0, sizeof(struct _grsd));
+  memset(handle, 0, sizeof(struct _grs));
 
   return handle;
 }
 
-int grsd_destroy(grsd_t handle) {
+int grsd_destroy(grs_t handle) {
   if (handle == NULL) {
     return -1;
   }
