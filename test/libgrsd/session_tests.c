@@ -78,47 +78,6 @@ START_TEST(get_process_null_session) {
 }
 END_TEST
 
-START_TEST(set_process_null_session) {
-  process_env_t env;
-  process_t process;
-
-  fail_unless((env = process_env_create()) != NULL);
-  fail_unless((process = process_prepare(env, "foobar")) != NULL);
-  fail_unless(session_set_process(NULL, process) == -1);
-  fail_unless(process_destroy(process) == 0);
-  fail_unless(process_env_destroy(env) == 0);
-}
-END_TEST
-
-START_TEST(set_process_null_process) {
-  fail_unless(session_set_process(session, NULL) == -1);
-}
-END_TEST
-
-START_TEST(set_process_wrong_state) {
-  process_env_t env;
-  process_t process;
-
-  fail_unless((env = process_env_create()) != NULL);
-  fail_unless((process = process_prepare(env, "foobar")) != NULL);
-  fail_unless(session_set_process(session, process) == -1);
-  fail_unless(session_get_process(session) == NULL);
-}
-END_TEST
-
-START_TEST(set_process_success) {
-  process_env_t env;
-  process_t process;
-
-  fail_unless((env = process_env_create()) != NULL);
-  fail_unless((process = process_prepare(env, "foobar")) != NULL);
-  fail_unless(session_set_state(session, NEED_PROCESS) == 0);
-  fail_unless(session_set_process(session, process) == 0);
-  fail_unless(session_get_process(session) == process);
-  fail_unless(session_get_state(session) == NEED_EXEC);
-}
-END_TEST
-
 START_TEST(create_process_null_session) {
   process_env_t env;
 
@@ -201,10 +160,6 @@ TCase* session_tcase() {
   tcase_add_test(tc, authenticate_wrong_password);
   tcase_add_test(tc, authenticate_success);
   tcase_add_test(tc, get_process_null_session);
-  tcase_add_test(tc, set_process_null_session);
-  tcase_add_test(tc, set_process_null_process);
-  tcase_add_test(tc, set_process_wrong_state);
-  tcase_add_test(tc, set_process_success);
   tcase_add_test(tc, create_process_null_session);
   tcase_add_test(tc, create_process_null_env);
   tcase_add_test(tc, create_process_null_command);

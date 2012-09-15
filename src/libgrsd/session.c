@@ -81,21 +81,6 @@ process_t session_get_process(session_t session) {
   return session->process;
 }
 
-int session_set_process(session_t session, process_t process) {
-  if (session == NULL || process == NULL) {
-    return -1;
-  }
-
-  if (session->state != NEED_PROCESS) {
-    return -1;
-  }
-
-  session->process = process;
-  session->state = NEED_EXEC;
-
-  return 0;
-}
-
 process_t session_create_process(session_t session, process_env_t env,
                                  const char* command) {
   if (session == NULL || env == NULL || command == NULL) {
