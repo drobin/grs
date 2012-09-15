@@ -43,7 +43,7 @@ static void close_and_free_session_entry(struct session_list* list,
   }
 
   ssh_free(entry->session);
-  session2_destroy(entry->grs_session);
+  session_destroy(entry->grs_session);
   session_list_remove(list, entry);
 }
 
@@ -76,7 +76,7 @@ static int handle_ssh_authentication(session_t session, ssh_message msg) {
   log_debug("Authentication requested with %s/%s", user, password);
 
 
-  if (session2_authenticate(session, user, password) == 0) {
+  if (session_authenticate(session, user, password) == 0) {
     log_debug("Authentication succeeded");
     ssh_message_auth_reply_success(msg, 0);
   } else {
@@ -136,8 +136,8 @@ static int handle_ssh_channel_request(struct session_entry* entry,
   entry->process = process_prepare(
     entry->env, ssh_message_channel_request_command(msg));
 
-  session2_set_process(entry->grs_session, entry->process);
-  session2_exec(entry->grs_session);
+  session_set_process(entry->grs_session, entry->process);
+  session_exec(entry->grs_session);
 
   return 0;
 }
@@ -157,7 +157,7 @@ static int handle_ssh_session(struct session_list* list,
     return -1;
   }
 
-  switch (session2_get_state(entry->grs_session)) {
+  switch (session_get_state(entry->grs_session)) {
     case NEED_AUTHENTICATION:
       log_debug("Session state: NEED_AUTHENTICATION");
       handle_ssh_authentication(entry->grs_session, msg);
@@ -212,7 +212,7 @@ static int handle_ssh_bind(ssh_bind bind, struct session_list* slist) {
     log_debug("Key exchange done");
   }
 
-  if ((grs_session = session2_create()) == NULL) {
+  if ((grs_session = session_create()) == NULL) {
     log_err("Failed to create a GRS session");
     ssh_free(session);
     return -1;
@@ -376,7 +376,7 @@ int main(int argc, char** argv) {
     max_fd = ssh_bind_get_fd(bind);
 
     SESSION_LIST_FOREACH(entry, session_list) {
-      if (session2_get_state(entry->grs_session) < NEED_EXEC) {
+      if (session_get_state(entry->grs_session) < NEED_EXEC) {
         FD_SET(ssh_get_fd(entry->session), &read_fds);
 
         if (ssh_get_fd(entry->session) > max_fd) {

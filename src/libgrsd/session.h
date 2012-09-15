@@ -13,17 +13,17 @@ enum session_state {
   EXECUTING
 };
 
-session_t session2_create();
-int session2_destroy(session_t session);
+session_t session_create();
+int session_destroy(session_t session);
 
-enum session_state session2_get_state(session_t session);
-int session2_set_state(session_t session, enum session_state state);
+enum session_state session_get_state(session_t session);
+int session_set_state(session_t session, enum session_state state);
 
-int session2_authenticate(session_t session,
-                          const char* username, const char* password);
-process_t session2_get_process(session_t session);
-int session2_set_process(session_t session, process_t process);
+int session_authenticate(session_t session,
+                         const char* username, const char* password);
+process_t session_get_process(session_t session);
+int session_set_process(session_t session, process_t process);
 
-int session2_exec(session_t session);
+int session_exec(session_t session);
 
 #endif  /* SESSION_H */

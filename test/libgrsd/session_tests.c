@@ -5,76 +5,76 @@
 static session_t session;
 
 static void setup() {
-  fail_unless((session = session2_create()) != NULL);
+  fail_unless((session = session_create()) != NULL);
 }
 
 static void teardown() {
-  fail_unless(session2_destroy(session) == 0);
+  fail_unless(session_destroy(session) == 0);
   session = NULL;
 }
 
 START_TEST(destroy_null_session) {
-  fail_unless(session2_destroy(NULL) == -1);
+  fail_unless(session_destroy(NULL) == -1);
 }
 END_TEST
 
 START_TEST(get_state_null_session) {
-  fail_unless(session2_get_state(NULL) == -1);
+  fail_unless(session_get_state(NULL) == -1);
 }
 END_TEST
 
 START_TEST(get_state_initial) {
-  fail_unless(session2_get_state(session) == NEED_AUTHENTICATION);
+  fail_unless(session_get_state(session) == NEED_AUTHENTICATION);
 }
 END_TEST
 
 START_TEST(set_state_null_session) {
-  fail_unless(session2_set_state(NULL, EXECUTING) == -1);
+  fail_unless(session_set_state(NULL, EXECUTING) == -1);
 }
 END_TEST
 
 START_TEST(get_set_state) {
-  fail_unless(session2_get_state(session) == NEED_AUTHENTICATION);
-  fail_unless(session2_set_state(session, EXECUTING) == 0);
-  fail_unless(session2_get_state(session) == EXECUTING);
+  fail_unless(session_get_state(session) == NEED_AUTHENTICATION);
+  fail_unless(session_set_state(session, EXECUTING) == 0);
+  fail_unless(session_get_state(session) == EXECUTING);
 }
 END_TEST
 
 START_TEST(authenticate_null_session) {
-  fail_unless(session2_authenticate(NULL, "foo", "foo") == -1);
+  fail_unless(session_authenticate(NULL, "foo", "foo") == -1);
 }
 END_TEST
 
 START_TEST(authenticate_null_username) {
-  fail_unless(session2_authenticate(session, NULL, "foo") == -1);
+  fail_unless(session_authenticate(session, NULL, "foo") == -1);
 }
 END_TEST
 
 START_TEST(authenticate_null_password) {
-  fail_unless(session2_authenticate(session, "foo", NULL) == -1);
+  fail_unless(session_authenticate(session, "foo", NULL) == -1);
 }
 END_TEST
 
 START_TEST(authenticate_wrong_state) {
-  fail_unless(session2_set_state(session, EXECUTING) == 0);
-  fail_unless(session2_authenticate(session, "foo", "foo") == -1);
+  fail_unless(session_set_state(session, EXECUTING) == 0);
+  fail_unless(session_authenticate(session, "foo", "foo") == -1);
 }
 END_TEST
 
 START_TEST(authenticate_wrong_password) {
-  fail_unless(session2_authenticate(session, "foo", "bar") == -1);
-  fail_unless(session2_get_state(session) == NEED_AUTHENTICATION);
+  fail_unless(session_authenticate(session, "foo", "bar") == -1);
+  fail_unless(session_get_state(session) == NEED_AUTHENTICATION);
 }
 END_TEST
 
 START_TEST(authenticate_success) {
-  fail_unless(session2_authenticate(session, "foo", "foo") == 0);
-  fail_unless(session2_get_state(session) == NEED_PROCESS);
+  fail_unless(session_authenticate(session, "foo", "foo") == 0);
+  fail_unless(session_get_state(session) == NEED_PROCESS);
 }
 END_TEST
 
 START_TEST(get_process_null_session) {
-  fail_unless(session2_get_process(NULL) == NULL);
+  fail_unless(session_get_process(NULL) == NULL);
 }
 END_TEST
 
@@ -84,14 +84,14 @@ START_TEST(set_process_null_session) {
 
   fail_unless((env = process_env_create()) != NULL);
   fail_unless((process = process_prepare(env, "foobar")) != NULL);
-  fail_unless(session2_set_process(NULL, process) == -1);
+  fail_unless(session_set_process(NULL, process) == -1);
   fail_unless(process_destroy(process) == 0);
   fail_unless(process_env_destroy(env) == 0);
 }
 END_TEST
 
 START_TEST(set_process_null_process) {
-  fail_unless(session2_set_process(session, NULL) == -1);
+  fail_unless(session_set_process(session, NULL) == -1);
 }
 END_TEST
 
@@ -101,8 +101,8 @@ START_TEST(set_process_wrong_state) {
 
   fail_unless((env = process_env_create()) != NULL);
   fail_unless((process = process_prepare(env, "foobar")) != NULL);
-  fail_unless(session2_set_process(session, process) == -1);
-  fail_unless(session2_get_process(session) == NULL);
+  fail_unless(session_set_process(session, process) == -1);
+  fail_unless(session_get_process(session) == NULL);
 }
 END_TEST
 
@@ -112,31 +112,31 @@ START_TEST(set_process_success) {
 
   fail_unless((env = process_env_create()) != NULL);
   fail_unless((process = process_prepare(env, "foobar")) != NULL);
-  fail_unless(session2_set_state(session, NEED_PROCESS) == 0);
-  fail_unless(session2_set_process(session, process) == 0);
-  fail_unless(session2_get_process(session) == process);
-  fail_unless(session2_get_state(session) == NEED_EXEC);
+  fail_unless(session_set_state(session, NEED_PROCESS) == 0);
+  fail_unless(session_set_process(session, process) == 0);
+  fail_unless(session_get_process(session) == process);
+  fail_unless(session_get_state(session) == NEED_EXEC);
 }
 END_TEST
 
 START_TEST(exec_null_session) {
-  fail_unless(session2_exec(NULL) == -1);
+  fail_unless(session_exec(NULL) == -1);
 }
 END_TEST
 
 START_TEST(exec_wrong_state) {
-  fail_unless(session2_exec(session) == -1);
+  fail_unless(session_exec(session) == -1);
 }
 END_TEST
 
 START_TEST(exec_success) {
-  fail_unless(session2_set_state(session, NEED_EXEC) == 0);
-  fail_unless(session2_exec(session) == 0);
-  fail_unless(session2_get_state(session) == EXECUTING);
+  fail_unless(session_set_state(session, NEED_EXEC) == 0);
+  fail_unless(session_exec(session) == 0);
+  fail_unless(session_get_state(session) == EXECUTING);
 }
 END_TEST
 
-TCase* session2_tcase() {
+TCase* session_tcase() {
   TCase* tc = tcase_create("session");
   tcase_add_checked_fixture(tc, setup, teardown);
 
