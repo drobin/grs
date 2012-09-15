@@ -139,6 +139,7 @@ END_TEST
 
 START_TEST(exec_test_command) {
   process_t process;
+  int exit_status;
   char buf[64];
 
   fail_unless((process = process_prepare(env, "test")) != NULL);
@@ -146,6 +147,8 @@ START_TEST(exec_test_command) {
   fail_unless(read(process_get_fd_out(process), buf, sizeof(buf)) == 12);
   fail_unless(strncmp(buf, "Hello world!", 12) == 0);
   fail_unless(read(process_get_fd_out(process), buf, sizeof(buf)) == 0);
+  fail_unless(process_get_status(process, &exit_status) == 0);
+  fail_unless(exit_status == 0);
   fail_unless(process_destroy(process) == 0);
 }
 END_TEST
@@ -166,34 +169,72 @@ END_TEST
 
 START_TEST(exec_absolute_path) {
   process_t process;
+  int status, exit_status;
+  char buf[64];
+  size_t nread;
 
-  libssh_proxy_set_option_int("ssh_select", "readfds", 1);
   fail_unless((process = process_prepare(env, "/bin/ls -1")) != NULL);
   fail_unless(process_exec(process, session) == 0);
-  fail_unless(libssh_proxy_channel_get_size(session->channel) > 0);
+
+  while ((status = process_get_status(process, &exit_status)) != 0) {
+    fail_unless(status > 0);
+  }
+
+  while ((nread = read(process_get_fd_out(process), buf, sizeof(buf))) != 0) {
+    fail_unless(nread > 0);
+  }
+
+  fail_unless(exit_status == 0);
   fail_unless(process_destroy(process) == 0);
 }
 END_TEST
 
 START_TEST(exec_relative_path) {
   process_t process;
+  int status, exit_status;
+  char buf[64];
+  size_t nread;
 
-  libssh_proxy_set_option_int("ssh_select", "readfds", 1);
   fail_unless((process = process_prepare(env, "ls -1")) != NULL);
   fail_unless(process_exec(process, session) == 0);
-  fail_unless(libssh_proxy_channel_get_size(session->channel) > 0);
+
+  while ((status = process_get_status(process, &exit_status)) != 0) {
+    fail_unless(status > 0);
+  }
+
+  while ((nread = read(process_get_fd_out(process), buf, sizeof(buf))) != 0) {
+    fail_unless(nread > 0);
+  }
+
+  fail_unless(exit_status == 0);
   fail_unless(process_destroy(process) == 0);
 }
 END_TEST
 
 START_TEST(exec_no_such_file) {
   process_t process;
+  int status, exit_status;
+  char buf[64];
+  size_t nread;
 
-  libssh_proxy_set_option_int("ssh_select", "readfds", 1);
   fail_unless((process = process_prepare(env, "foobar")) != NULL);
-  fail_unless(process_exec(process, session) == 127);
-  fail_unless(libssh_proxy_channel_get_size(session->channel) == 0);
+  fail_unless(process_exec(process, session) == 0);
+
+  while ((status = process_get_status(process, &exit_status)) != 0) {
+    fail_unless(status > 0);
+  }
+
+  while ((nread = read(process_get_fd_out(process), buf, sizeof(buf))) != 0) {
+    fail_unless(nread > 0);
+  }
+
+  fail_unless(exit_status == 127);
   fail_unless(process_destroy(process) == 0);
+}
+END_TEST
+
+START_TEST(get_status_null_process) {
+  fail_unless(process_get_status(NULL, NULL) == -1);
 }
 END_TEST
 
@@ -222,6 +263,7 @@ TCase* process_tcase() {
   tcase_add_test(tc, exec_absolute_path);
   tcase_add_test(tc, exec_relative_path);
   tcase_add_test(tc, exec_no_such_file);
+  tcase_add_test(tc, get_status_null_process);
 
   return tc;
 }

@@ -19,6 +19,7 @@ struct _process {
   char* token[ARG_MAX];
   int in_fds[2];
   int out_fds[2];
+  pid_t pid;
 };
 
 static void tokenize(struct _process* process) {
@@ -32,27 +33,11 @@ static void tokenize(struct _process* process) {
   process->token[nargs] = NULL;
 }
 
-static void close_pipes(int pipe_in[2], int pipe_out[2]) {
-  close(pipe_in[0]);
-  close(pipe_in[1]);
-  close(pipe_out[0]);
-  close(pipe_out[1]);
-}
-
-static int fork_exec(process_t process, session_t session) {
-  int pipe_in[2];
-  int pipe_out[2];
+static int fork_exec(process_t process) {
   pid_t pid;
-
-  if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1) {
-    log_err("Failed to create a pipe: %s", strerror(errno));
-    close_pipes(pipe_in, pipe_out);
-    return -1;
-  }
 
   if ((pid = fork()) == -1) {
     log_err("Failed to fork: %s", strerror(errno));
-    close_pipes(pipe_in, pipe_out);
     return -1;
   }
 
@@ -61,38 +46,17 @@ static int fork_exec(process_t process, session_t session) {
 
     log_debug("Executing '%s'", cmd);
 
-    close(pipe_in[1]);
-    close(pipe_out[0]);
-    dup2(pipe_in[0], 0);
-    dup2(pipe_out[1], 1);
+    close(process->in_fds[1]);
+    close(process->out_fds[0]);
+    dup2(process->in_fds[0], 0);
+    dup2(process->out_fds[1], 1);
 
     execvp(cmd, process->token);
     log_err("Failed to exec: %s", strerror(errno));
     _exit(127);
   } else {
-    int result, stat_loc;
-
-    close(pipe_in[0]);
-    close(pipe_out[1]);
-
-    session_multiplex(session, pipe_out[0], pipe_in[1]);
-    result = waitpid(pid, &stat_loc, 0);
-
-    close(pipe_in[1]);
-    close(pipe_out[0]);
-
-    if (result == -1) {
-      log_err("wait_pid: %s", strerror(errno));
-    } else if (WIFEXITED(stat_loc)) {
-      log_debug("Process terminated with %i", WEXITSTATUS(stat_loc));
-    } else if (WIFSIGNALED(stat_loc)) {
-      int signal = WTERMSIG(stat_loc);
-      log_err("Process received the signal %i (%s)", signal, strsignal(signal));
-    } else {
-      log_err("Abnormal termination of process");
-    }
-
-    return WEXITSTATUS(stat_loc);
+    process->pid = pid;
+    return 0;
   }
 }
 
@@ -142,6 +106,8 @@ process_t process_prepare(process_env_t env, const char* command) {
     process_destroy(process);
     return NULL;
   }
+
+  process->pid = 0;
 
   return process;
 }
@@ -222,5 +188,47 @@ int process_exec(process_t process, session_t session) {
     }
   }
 
-  return fork_exec(process, session);
+  return fork_exec(process);
+}
+
+int process_get_status(process_t process, int* exit_status) {
+  if (process == NULL) {
+    return -1;
+  }
+
+  if (process->pid == 0) {
+    // Non-forked process, already finished
+    if (exit_status != NULL) {
+      *exit_status = 0;
+    }
+
+    return 0;
+  } else {
+    int result, stat_loc;
+
+    result = waitpid(process->pid, &stat_loc, WNOHANG);
+
+    if (result == 0) {
+      // Still running, return the pid of the (still) running process
+      return process->pid;
+    } else if (result < 0) {
+      log_err("wait_pid: %s", strerror(errno));
+      return -1;
+    } else if (WIFEXITED(stat_loc)) {
+      log_debug("Process terminated with %i", WEXITSTATUS(stat_loc));
+
+      if (exit_status != NULL) {
+        *exit_status = WEXITSTATUS(stat_loc);
+      }
+    } else if (WIFSIGNALED(stat_loc)) {
+      int signal = WTERMSIG(stat_loc);
+      log_err("Process received the signal %i (%s)", signal, strsignal(signal));
+    } else {
+      log_err("Abnormal termination of process");
+    }
+
+    close(process->out_fds[1]);
+
+    return 0;
+  }
 }

@@ -107,4 +107,17 @@ int process_get_fd_out(process_t process);
  */
 int process_exec(process_t process, session_t session);
 
+/**
+ * Returns status-information about the (possible) running process.
+ *
+ * @param process The process
+ * @param exit_status If set to non-NULL, then the function stores here the
+ *                    exit-status of the process, if the process has exited.
+ * @return If the process is still running, then the pid of the process is
+ *         returned. If the process has already exited, then <code>0</code> is
+ *         returned and <code>exit_status</code> contains the exit-status of
+ *         the process.
+ */
+int process_get_status(process_t process, int* exit_status);
+
 #endif  /* PROCESS_H */
