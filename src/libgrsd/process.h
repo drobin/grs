@@ -74,6 +74,16 @@ const char* process_get_command(process_t process);
 const char** process_get_args(process_t process);
 
 /**
+ * Returns the filedescriptor the process uses to give back some data.
+ *
+ * You need to <i>read</i> data from the filedescriptor.
+ *
+ * @param process The process
+ * @return The filedescriptor to read to receive data from the process
+ */
+int process_get_fd_out(process_t process);
+
+/**
  * Executes a process in the given <code>session</code>.
  *
  * @param process Information about the process to be executed

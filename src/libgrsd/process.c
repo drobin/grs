@@ -17,6 +17,7 @@ struct _process {
   struct _process_env* env;
   char* raw_token;
   char* token[ARG_MAX];
+  int out_fds[2];
 };
 
 static void tokenize(struct _process* process) {
@@ -129,6 +130,12 @@ process_t process_prepare(process_env_t env, const char* command) {
   process->raw_token = strdup(command);
   tokenize(process);
 
+  if (pipe(process->out_fds) != 0) {
+    log_err("Failed to create out_fds: %s", strerror(errno));
+    process_destroy(process);
+    return NULL;
+  }
+
   return process;
 }
 
@@ -138,6 +145,8 @@ int process_destroy(process_t process) {
   }
 
   free(process->raw_token);
+  close(process->out_fds[0]);
+  close(process->out_fds[1]);
   free(process);
 
   return 0;
@@ -165,6 +174,14 @@ const char** process_get_args(process_t process) {
   }
 
   return (const char**)process->token + 1;
+}
+
+int process_get_fd_out(process_t process) {
+  if (process == NULL) {
+    return -1;
+  }
+
+  return process->out_fds[0];
 }
 
 int process_exec(process_t process, session_t session) {
