@@ -3,15 +3,16 @@
 
 #include "session.h"
 
-struct _session2 {
+
+struct _session {
   enum session2_state state;
   process_t process;
 };
 
 session2_t session2_create() {
-  struct _session2* session;
+  struct _session* session;
 
-  if ((session = malloc(sizeof(struct _session2))) == NULL) {
+  if ((session = malloc(sizeof(struct _session))) == NULL) {
     return NULL;
   }
 

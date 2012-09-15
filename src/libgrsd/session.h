@@ -1,10 +1,10 @@
-#ifndef SESSION2_H
-#define SESSION2_H
+#ifndef SESSION_H
+#define SESSION_H
 
 #include "process.h"
 
-struct _session2;
-typedef struct _session2* session2_t;
+struct _session;
+typedef struct _session* session2_t;
 
 enum session2_state {
   NEED_AUTHENTICATION,
@@ -25,4 +25,5 @@ process_t session2_get_process(session2_t session);
 int session2_set_process(session2_t session, process_t process);
 
 int session2_exec(session2_t session);
-#endif  /* SESSION2_H */
+
+#endif  /* SESSION_H */
