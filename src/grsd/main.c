@@ -276,6 +276,34 @@ static int process2channel(struct session_list* list,
   return 0;
 }
 
+static int channel2process(struct session_list* list,
+                           struct session_entry* entry) {
+  char buf[512];
+  size_t nread, nwritten;
+
+  nread = ssh_channel_read(entry->channel, buf, sizeof(buf), 0);
+  if (nread == SSH_ERROR) {
+    log_err("Failed to read from channel: %s", ssh_get_error(entry->channel));
+    return -1;
+  } else {
+    log_debug("%i bytes read from channel", nread);
+  }
+
+  if (entry->process == NULL) {
+    log_err("You don't have a destination process");
+    return -1;
+  }
+
+  nwritten = write(process_get_fd_in(entry->process), buf, nread);
+  if (nwritten > 0) {
+    log_debug("%i bytes written into process", nwritten);
+    return 0;
+  } else {
+    log_err("Failed to write into process: %s", strerror(errno));
+    return -1;
+  }
+}
+
 int main(int argc, char** argv) {
   struct sigaction sa;
   ssh_bind bind;
@@ -398,6 +426,18 @@ int main(int argc, char** argv) {
               process_get_status(entry->process, NULL) == 0) {
             close_and_free_session_entry(&session_list, entry);
             break;
+          }
+        }
+
+        if (entry->channel != NULL) {
+          int i;
+          for (i = 0; outchannels[i] != NULL; i++) {
+            if (entry->channel == outchannels[i]) {
+              if (channel2process(&session_list, entry) != 0) {
+                close_and_free_session_entry(&session_list, entry);
+                break;
+              }
+            }
           }
         }
 
