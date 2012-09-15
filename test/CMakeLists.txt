@@ -1,6 +1,4 @@
 SET(GRS_TEST_SOURCES
-  libssh.c
-  libssh_proxy.c
   suite.c
   libgrsd/grsd_tests.c
   libgrsd/process_tests.c
