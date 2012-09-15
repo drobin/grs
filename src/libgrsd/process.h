@@ -74,6 +74,18 @@ const char* process_get_command(process_t process);
 const char** process_get_args(process_t process);
 
 /**
+ * Returns the filedescriptor to give data to the process.
+ *
+ * You you want to give some data to the process, then use this filedescriptor
+ * write into it.
+ *
+ * @param process The process
+ * @return The filedescriptor you need write into it to give some data to the
+ *         process.
+ */
+int process_get_fd_in(process_t process);
+
+/**
  * Returns the filedescriptor the process uses to give back some data.
  *
  * You need to <i>read</i> data from the filedescriptor.

@@ -109,6 +109,20 @@ START_TEST(get_args_null_process) {
 }
 END_TEST
 
+START_TEST(get_fd_in_null_process) {
+  fail_unless(process_get_fd_in(NULL) == -1);
+}
+END_TEST
+
+START_TEST(get_fd_in) {
+  process_t process;
+
+  fail_unless((process = process_prepare(env, "foobar")) != NULL);
+  fail_unless(process_get_fd_in(process) > 0);
+  fail_unless(process_destroy(process) == 0);
+}
+END_TEST
+
 START_TEST(get_fd_out_null_process) {
   fail_unless(process_get_fd_out(NULL) == -1);
 }
@@ -198,6 +212,8 @@ TCase* process_tcase() {
   tcase_add_test(tc, get_env_null_process);
   tcase_add_test(tc, get_command_null_process);
   tcase_add_test(tc, get_args_null_process);
+  tcase_add_test(tc, get_fd_in_null_process);
+  tcase_add_test(tc, get_fd_in);
   tcase_add_test(tc, get_fd_out_null_process);
   tcase_add_test(tc, get_fd_out);
   tcase_add_test(tc, exec_test_command);
