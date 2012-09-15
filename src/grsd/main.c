@@ -27,6 +27,11 @@ static void usage() {
 }
 
 static void close_and_free_session_entry(struct session_entry* entry) {
+  if (entry->channel != NULL) {
+    ssh_channel_close(entry->channel);
+    ssh_channel_free(entry->channel);
+  }
+
   ssh_free(entry->session);
   session2_destroy(entry->grs_session);
   session_list_remove(entry);
@@ -72,6 +77,28 @@ static int handle_ssh_authentication(session2_t session, ssh_message msg) {
   return 0;
 }
 
+static int handle_ssh_channel_open(struct session_entry* entry, ssh_message msg) {
+  log_debug("Handle open-request for a channel");
+
+  if (ssh_message_type(msg) != SSH_REQUEST_CHANNEL_OPEN) {
+    log_debug("Ignoring message of type %i", ssh_message_type(msg));
+
+    ssh_message_reply_default(msg);
+
+    return 0;
+  }
+
+  entry->channel = ssh_message_channel_request_open_reply_accept(msg);
+  if (entry->channel != NULL) {
+    log_debug("Channel is open");
+
+    return 0;
+  } else {
+    log_err("Failed to open channel: %s", ssh_get_error(entry->session));
+    return -1;
+  }
+}
+
 static int handle_ssh_session(struct session_entry* entry) {
   ssh_message msg;
 
@@ -88,9 +115,17 @@ static int handle_ssh_session(struct session_entry* entry) {
 
   switch (session2_get_state(entry->grs_session)) {
     case NEED_AUTHENTICATION:
+      log_debug("Session state: NEED_AUTHENTICATION");
       handle_ssh_authentication(entry->grs_session, msg);
       break;
+    case NEED_PROCESS:
+      log_debug("Session state: NEED_PROCESS");
+      if (entry->channel == NULL) {
+        handle_ssh_channel_open(entry, msg);
+        break;
+      }
     default:
+      log_debug("Session state: default");
       close_and_free_session_entry(entry);
       break;
   }
