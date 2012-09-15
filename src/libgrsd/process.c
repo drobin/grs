@@ -189,6 +189,12 @@ int process_exec(process_t process, session_t session) {
     return -1;
   }
 
+  if (strcmp(process->token[0], "test") == 0) {
+    write(process->out_fds[1], "Hello world!", 12);
+    close(process->out_fds[1]);
+    return 0;
+  }
+
   if (strcmp(process->token[0], "git-upload-pack") == 0 ||
       strcmp(process->token[0], "git-receive-pack") == 0) {
     char* repository = process->token[1];

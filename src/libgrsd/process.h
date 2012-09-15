@@ -86,6 +86,8 @@ int process_get_fd_out(process_t process);
 /**
  * Executes a process in the given <code>session</code>.
  *
+ * The process runs until reading from process_get_fd_out() return EOF.
+ *
  * @param process Information about the process to be executed
  * @param session The target session, where the process is executed
  * @return The exit-code of the process. Usually an exit-code of <code>0</code>

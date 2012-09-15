@@ -123,6 +123,19 @@ START_TEST(get_fd_out) {
 }
 END_TEST
 
+START_TEST(exec_test_command) {
+  process_t process;
+  char buf[64];
+
+  fail_unless((process = process_prepare(env, "test")) != NULL);
+  fail_unless(process_exec(process, session) == 0);
+  fail_unless(read(process_get_fd_out(process), buf, sizeof(buf)) == 12);
+  fail_unless(strncmp(buf, "Hello world!", 12) == 0);
+  fail_unless(read(process_get_fd_out(process), buf, sizeof(buf)) == 0);
+  fail_unless(process_destroy(process) == 0);
+}
+END_TEST
+
 START_TEST(exec_null_process) {
   fail_unless(process_exec(NULL, session) == -1);
 }
@@ -187,6 +200,7 @@ TCase* process_tcase() {
   tcase_add_test(tc, get_args_null_process);
   tcase_add_test(tc, get_fd_out_null_process);
   tcase_add_test(tc, get_fd_out);
+  tcase_add_test(tc, exec_test_command);
   tcase_add_test(tc, exec_null_process);
   tcase_add_test(tc, exec_null_session);
   tcase_add_test(tc, exec_absolute_path);
