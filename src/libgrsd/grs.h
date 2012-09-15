@@ -9,18 +9,18 @@ struct _grs;
 typedef struct _grs* grs_t;
 
 /*
- * Creates a new grsd-handle.
+ * Creates a new grs-handle.
  *
- * @return A new grsd-handle or <code>NULL</code> on error.
+ * @return A new grs-handle or <code>NULL</code> on error.
  */
-grs_t grsd_init();
+grs_t grs_init();
 
 /**
- * Destroys the grsd-handle again.
+ * Destroys the grs-handle again.
  *
  * @param handle The handle to be destroyed.
  * @return On success <code>0</code> is returned, on error <code>-1</code>.
  */
-int grsd_destroy(grs_t handle);
+int grs_destroy(grs_t handle);
 
 #endif /* GRSD_H */

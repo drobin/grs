@@ -9,21 +9,21 @@
 static grs_t handle;
 
 static void setup() {
-  fail_unless((handle = grsd_init()) != NULL);
+  fail_unless((handle = grs_init()) != NULL);
 }
 
 static void teardown() {
-  fail_unless(grsd_destroy(handle) == 0);
+  fail_unless(grs_destroy(handle) == 0);
   handle = NULL;
 }
 
 START_TEST(destroy_null_handle) {
-  fail_unless(grsd_destroy(NULL) == -1);
+  fail_unless(grs_destroy(NULL) == -1);
 }
 END_TEST
 
-TCase* grsd_tcase() {
-  TCase* tc = tcase_create("grsd");
+TCase* grs_tcase() {
+  TCase* tc = tcase_create("grs");
   tcase_add_checked_fixture(tc, setup, teardown);
 
   tcase_add_test(tc, destroy_null_handle);
