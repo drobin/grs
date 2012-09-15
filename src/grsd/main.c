@@ -26,6 +26,12 @@ static void usage() {
   exit(1);
 }
 
+static void close_and_free_session_entry(struct session_entry* entry) {
+  ssh_free(entry->session);
+  session2_destroy(entry->grs_session);
+  session_list_remove(entry);
+}
+
 static int handle_ssh_authentication(session2_t session, ssh_message msg) {
   char* user;
   char* password;
@@ -75,9 +81,7 @@ static int handle_ssh_session(struct session_entry* entry) {
     log_err("Failed to read message from session: %s",
             ssh_get_error(entry->session));
 
-    ssh_free(entry->session);
-    session2_destroy(entry->grs_session);
-    session_list_remove(entry);
+    close_and_free_session_entry(entry);
 
     return -1;
   }
@@ -87,9 +91,7 @@ static int handle_ssh_session(struct session_entry* entry) {
       handle_ssh_authentication(entry->grs_session, msg);
       break;
     default:
-      ssh_free(entry->session);
-      session2_destroy(entry->grs_session);
-      session_list_remove(entry);
+      close_and_free_session_entry(entry);
       break;
   }
 
