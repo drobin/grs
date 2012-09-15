@@ -235,7 +235,7 @@ int main(int argc, char** argv) {
   char* hostkey = "";
   int port = 22;
   int ch, result;
-  struct session_head session_list;
+  struct session_list session_list;
 
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = leave_handler;
@@ -255,7 +255,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  LIST_INIT(&session_list);
+  LIST_INIT(&(session_list.head));
 
   if ((bind = ssh_bind_new()) != NULL) {
     log_debug("SSH server bind created");
@@ -298,7 +298,7 @@ int main(int argc, char** argv) {
     FD_SET(ssh_bind_get_fd(bind), &read_fds);
     max_fd = ssh_bind_get_fd(bind);
 
-    LIST_FOREACH(entry, &session_list, entries) {
+    LIST_FOREACH(entry, &(session_list.head), entries) {
       FD_SET(ssh_get_fd(entry->session), &read_fds);
 
       if (ssh_get_fd(entry->session) > max_fd) {
@@ -320,9 +320,9 @@ int main(int argc, char** argv) {
     }
 
     if (FD_ISSET(ssh_bind_get_fd(bind), &read_fds)) {
-      handle_ssh_bind(bind, &session_list);
+      handle_ssh_bind(bind, &(session_list.head));
     } else {
-      LIST_FOREACH(entry, &session_list, entries) {
+      LIST_FOREACH(entry, &(session_list.head), entries) {
         if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
           handle_ssh_session(entry);
         }

@@ -18,6 +18,10 @@ struct session_entry {
 
 LIST_HEAD(session_head, session_entry);
 
+struct session_list {
+  struct session_head head;
+};
+
 struct session_entry* session_list_prepend(
   struct session_head* head, ssh_session session);
 int session_list_remove(struct session_entry* entry);
