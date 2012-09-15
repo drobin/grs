@@ -421,31 +421,35 @@ int main(int argc, char** argv) {
       handle_ssh_bind(bind, &session_list);
     } else {
       SESSION_LIST_FOREACH(entry, session_list) {
-        if (entry->process != NULL &&
-            FD_ISSET(process_get_fd_out(entry->process), &read_fds)) {
-
-          if (process2channel(&session_list, entry) != 0 ||
-              process_get_status(entry->process, NULL) == 0) {
-            close_and_free_session_entry(&session_list, entry);
-            break;
-          }
+        if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
+          handle_ssh_session(&session_list, entry);
         }
 
+        if (entry->process == NULL) {
+          log_warn("No process available for session, skipping");
+          continue;
+        }
+
+        // Test if there are data available from the process
+        if (FD_ISSET(process_get_fd_out(entry->process), &read_fds) &&
+            process2channel(&session_list, entry) != 0) {
+          close_and_free_session_entry(&session_list, entry);
+          continue;
+        }
+
+        // Test if there are data available from the channel
         if (entry->channel != NULL) {
           int i;
           for (i = 0; outchannels[i] != NULL; i++) {
-            if (entry->channel == outchannels[i]) {
-              if (channel2process(&session_list, entry) != 0) {
-                close_and_free_session_entry(&session_list, entry);
-                break;
-              }
+            if (entry->channel == outchannels[i] &&
+                channel2process(&session_list, entry) != 0) {
+              close_and_free_session_entry(&session_list, entry);
+              continue;
             }
           }
         }
 
-        if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
-          handle_ssh_session(&session_list, entry);
-        }
+        process_update_status(entry->process);
       }
     }
   }
