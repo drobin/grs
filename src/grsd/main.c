@@ -99,6 +99,40 @@ static int handle_ssh_channel_open(struct session_entry* entry, ssh_message msg)
   }
 }
 
+static int handle_ssh_channel_request(struct session_entry* entry,
+                                      ssh_message msg) {
+  process_env_t env;
+  process_t process;
+
+  log_debug("Handle channel-request");
+
+  if (ssh_message_type(msg) != SSH_REQUEST_CHANNEL) {
+    log_debug("Ignoring message of type %i", ssh_message_type(msg));
+
+    ssh_message_reply_default(msg);
+
+    return 0;
+  }
+
+  if (ssh_message_subtype(msg) != SSH_CHANNEL_REQUEST_EXEC) {
+    log_debug("Ignoring channel-type %i", ssh_message_subtype(msg));
+
+    ssh_message_reply_default(msg);
+
+    return 0;
+  }
+
+  ssh_message_channel_request_reply_success(msg);
+  log_debug("Channel request accepted");
+
+  env = process_env_create();
+  process = process_prepare(env, ssh_message_channel_request_command(msg));
+  process_destroy(process);
+  process_env_destroy(env);
+
+  return 0;
+}
+
 static int handle_ssh_session(struct session_entry* entry) {
   ssh_message msg;
 
@@ -123,6 +157,8 @@ static int handle_ssh_session(struct session_entry* entry) {
       if (entry->channel == NULL) {
         handle_ssh_channel_open(entry, msg);
         break;
+      } else {
+        handle_ssh_channel_request(entry, msg);
       }
     default:
       log_debug("Session state: default");
