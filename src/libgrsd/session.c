@@ -5,7 +5,7 @@
 
 
 struct _session {
-  enum session2_state state;
+  enum session_state state;
   process_t process;
 };
 
@@ -32,7 +32,7 @@ int session2_destroy(session2_t session) {
   return 0;
 }
 
-enum session2_state session2_get_state(session2_t session) {
+enum session_state session2_get_state(session2_t session) {
   if (session == NULL) {
     return -1;
   }
@@ -40,7 +40,7 @@ enum session2_state session2_get_state(session2_t session) {
   return session->state;
 }
 
-int session2_set_state(session2_t session, enum session2_state state) {
+int session2_set_state(session2_t session, enum session_state state) {
   if (session == NULL) {
     return -1;
   }
