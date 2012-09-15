@@ -27,6 +27,9 @@ struct session_list {
   LIST_INIT(&(l.head)); \
 }
 
+#define SESSION_LIST_FOREACH(e, l) \
+  LIST_FOREACH(e, &(l.head), entries)
+
 struct session_entry* session_list_prepend(
   struct session_head* head, ssh_session session);
 int session_list_remove(struct session_entry* entry);

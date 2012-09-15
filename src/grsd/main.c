@@ -298,7 +298,7 @@ int main(int argc, char** argv) {
     FD_SET(ssh_bind_get_fd(bind), &read_fds);
     max_fd = ssh_bind_get_fd(bind);
 
-    LIST_FOREACH(entry, &(session_list.head), entries) {
+    SESSION_LIST_FOREACH(entry, session_list) {
       FD_SET(ssh_get_fd(entry->session), &read_fds);
 
       if (ssh_get_fd(entry->session) > max_fd) {
@@ -322,7 +322,7 @@ int main(int argc, char** argv) {
     if (FD_ISSET(ssh_bind_get_fd(bind), &read_fds)) {
       handle_ssh_bind(bind, &(session_list.head));
     } else {
-      LIST_FOREACH(entry, &(session_list.head), entries) {
+      SESSION_LIST_FOREACH(entry, session_list) {
         if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
           handle_ssh_session(entry);
         }
