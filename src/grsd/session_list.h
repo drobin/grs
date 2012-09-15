@@ -8,6 +8,7 @@
 
 struct session_entry {
   ssh_session session;
+  ssh_channel channel;
   session2_t grs_session;
   LIST_ENTRY(session_entry) entries;
 };
