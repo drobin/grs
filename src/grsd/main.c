@@ -8,6 +8,7 @@
 #include <libssh/libssh.h>
 #include <libssh/server.h>
 
+#include <grs.h>
 #include <log.h>
 
 #include "session_list.h"
@@ -309,6 +310,7 @@ int main(int argc, char** argv) {
   char* hostkey = "";
   int port = 22;
   int ch, result;
+  grs_t grs;
   struct session_list session_list;
 
   memset(&sa, 0, sizeof(struct sigaction));
@@ -329,6 +331,7 @@ int main(int argc, char** argv) {
     }
   }
 
+  grs = grs_init();
   SESSION_LIST_INIT(session_list);
 
   if ((bind = ssh_bind_new()) != NULL) {
@@ -454,6 +457,7 @@ int main(int argc, char** argv) {
   }
 
   ssh_bind_free(bind);
+  grs_destroy(grs);
 
   return 0;
 }
