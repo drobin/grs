@@ -34,10 +34,6 @@ static void close_and_free_session_entry(struct session_list* list,
     process_destroy(entry->process);
   }
 
-  if (entry->env != NULL) {
-    process_env_destroy(entry->env);
-  }
-
   if (entry->channel != NULL) {
     ssh_channel_close(entry->channel);
     ssh_channel_free(entry->channel);
@@ -111,7 +107,7 @@ static int handle_ssh_channel_open(struct session_entry* entry, ssh_message msg)
 }
 
 static int handle_ssh_channel_request(struct session_entry* entry,
-                                      ssh_message msg) {
+                                      ssh_message msg, grs_t grs) {
   log_debug("Handle channel-request");
 
   if (ssh_message_type(msg) != SSH_REQUEST_CHANNEL) {
@@ -133,9 +129,8 @@ static int handle_ssh_channel_request(struct session_entry* entry,
   ssh_message_channel_request_reply_success(msg);
   log_debug("Channel request accepted");
 
-  entry->env = process_env_create();
-  entry->process = process_prepare(
-    entry->env, ssh_message_channel_request_command(msg));
+  entry->process = process_prepare(grs_get_process_env(grs),
+    ssh_message_channel_request_command(msg));
 
   session_set_process(entry->grs_session, entry->process);
   session_exec(entry->grs_session);
@@ -144,7 +139,7 @@ static int handle_ssh_channel_request(struct session_entry* entry,
 }
 
 static int handle_ssh_session(struct session_list* list,
-                              struct session_entry* entry) {
+                              struct session_entry* entry, grs_t grs) {
   ssh_message msg;
 
   log_debug("Session is selected");
@@ -168,7 +163,7 @@ static int handle_ssh_session(struct session_list* list,
       if (entry->channel == NULL) {
         handle_ssh_channel_open(entry, msg);
       } else {
-        handle_ssh_channel_request(entry, msg);
+        handle_ssh_channel_request(entry, msg, grs);
       }
       break;
     default:
@@ -182,7 +177,8 @@ static int handle_ssh_session(struct session_list* list,
   return 0;
 }
 
-static int handle_ssh_bind(ssh_bind bind, struct session_list* slist) {
+static int handle_ssh_bind(ssh_bind bind, struct session_list* slist,
+                           grs_t grs) {
   struct session_entry* entry;
   ssh_session session;
   session_t grs_session;
@@ -231,7 +227,7 @@ static int handle_ssh_bind(ssh_bind bind, struct session_list* slist) {
   }
 
   // Handle initial data for the session
-  handle_ssh_session(slist, entry);
+  handle_ssh_session(slist, entry, grs);
 
   return 0;
 }
@@ -420,11 +416,11 @@ int main(int argc, char** argv) {
     }
 
     if (FD_ISSET(ssh_bind_get_fd(bind), &read_fds)) {
-      handle_ssh_bind(bind, &session_list);
+      handle_ssh_bind(bind, &session_list, grs);
     } else {
       SESSION_LIST_FOREACH(entry, session_list) {
         if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
-          handle_ssh_session(&session_list, entry);
+          handle_ssh_session(&session_list, entry, grs);
         }
 
         if (entry->process == NULL) {
