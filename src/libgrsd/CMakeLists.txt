@@ -4,7 +4,6 @@ SET(LIBGRSD_SOURCES
   process.c
   session.c
   session2.c
-  slist.c
 )
 
 add_library(libgrsd STATIC ${LIBGRSD_SOURCES})
