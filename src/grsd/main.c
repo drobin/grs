@@ -175,7 +175,7 @@ static int handle_ssh_session(struct session_entry* entry) {
   return 0;
 }
 
-static int handle_ssh_bind(ssh_bind bind, struct session_head* slist) {
+static int handle_ssh_bind(ssh_bind bind, struct session_list* slist) {
   struct session_entry* entry;
   ssh_session session;
   session2_t grs_session;
@@ -320,7 +320,7 @@ int main(int argc, char** argv) {
     }
 
     if (FD_ISSET(ssh_bind_get_fd(bind), &read_fds)) {
-      handle_ssh_bind(bind, &(session_list.head));
+      handle_ssh_bind(bind, &session_list);
     } else {
       SESSION_LIST_FOREACH(entry, session_list) {
         if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {

@@ -4,11 +4,11 @@
 #include "session_list.h"
 
 struct session_entry* session_list_prepend(
-  struct session_head* head, ssh_session session) {
+  struct session_list* list, ssh_session session) {
 
   struct session_entry* entry;
 
-  if (head == NULL || session == NULL) {
+  if (list == NULL || session == NULL) {
     return NULL;
   }
 
@@ -18,7 +18,7 @@ struct session_entry* session_list_prepend(
 
   memset(entry, 0, sizeof(struct session_entry));
   entry->session = session;
-  LIST_INSERT_HEAD(head, entry, entries);
+  LIST_INSERT_HEAD(&(list->head), entry, entries);
 
   return entry;
 }
