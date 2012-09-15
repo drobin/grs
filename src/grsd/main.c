@@ -231,12 +231,11 @@ static int handle_ssh_bind(ssh_bind bind, struct session_list* slist,
 static int process2channel(struct session_list* list,
                            struct session_entry* entry) {
   process_t process;
-  char buf[512];
   size_t nread;
   size_t nwritten = 0;
 
   process = session_get_process(entry->grs_session);
-  nread = read(process_get_fd_out(process), buf, 512);
+  nread = read(process_get_fd_out(process), list->buffer, sizeof(list->buffer));
 
   if (nread == 0) {
     log_debug("EOF from fd_out");
@@ -255,7 +254,7 @@ static int process2channel(struct session_list* list,
 
   while (nwritten < nread) {
     int nbytes = ssh_channel_write(entry->channel,
-                                   buf + nwritten, nread - nwritten);
+                                   list->buffer + nwritten, nread - nwritten);
 
     if (nbytes == SSH_ERROR) {
       log_err("Failed to write into channel: %s",
@@ -273,10 +272,9 @@ static int process2channel(struct session_list* list,
 static int channel2process(struct session_list* list,
                            struct session_entry* entry) {
   process_t process;
-  char buf[512];
   size_t nread, nwritten;
 
-  nread = ssh_channel_read(entry->channel, buf, sizeof(buf), 0);
+  nread = ssh_channel_read(entry->channel, list->buffer, sizeof(list->buffer), 0);
   if (nread == SSH_ERROR) {
     log_err("Failed to read from channel: %s", ssh_get_error(entry->channel));
     return -1;
@@ -289,7 +287,7 @@ static int channel2process(struct session_list* list,
     return -1;
   }
 
-  nwritten = write(process_get_fd_in(process), buf, nread);
+  nwritten = write(process_get_fd_in(process), list->buffer, nread);
   if (nwritten > 0) {
     log_debug("%i bytes written into process", nwritten);
     return 0;

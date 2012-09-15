@@ -19,6 +19,7 @@ LIST_HEAD(session_head, session_entry);
 struct session_list {
   struct session_head head;
   int size;
+  char buffer[2048];
 };
 
 #define SESSION_LIST_INIT(l) { \
