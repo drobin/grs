@@ -11,7 +11,6 @@ struct session_entry {
   ssh_session session;
   ssh_channel channel;
   session_t grs_session;
-  process_t process;
   LIST_ENTRY(session_entry) entries;
 };
 

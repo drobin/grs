@@ -30,10 +30,6 @@ static void usage() {
 
 static void close_and_free_session_entry(struct session_list* list,
                                          struct session_entry* entry) {
-  if (entry->process != NULL) {
-    process_destroy(entry->process);
-  }
-
   if (entry->channel != NULL) {
     ssh_channel_close(entry->channel);
     ssh_channel_free(entry->channel);
@@ -108,6 +104,8 @@ static int handle_ssh_channel_open(struct session_entry* entry, ssh_message msg)
 
 static int handle_ssh_channel_request(struct session_entry* entry,
                                       ssh_message msg, grs_t grs) {
+  process_t process;
+
   log_debug("Handle channel-request");
 
   if (ssh_message_type(msg) != SSH_REQUEST_CHANNEL) {
@@ -129,10 +127,8 @@ static int handle_ssh_channel_request(struct session_entry* entry,
   ssh_message_channel_request_reply_success(msg);
   log_debug("Channel request accepted");
 
-  entry->process = process_prepare(grs_get_process_env(grs),
+  process = session_create_process(entry->grs_session, grs_get_process_env(grs),
     ssh_message_channel_request_command(msg));
-
-  session_set_process(entry->grs_session, entry->process);
   session_exec(entry->grs_session);
 
   return 0;
@@ -234,11 +230,13 @@ static int handle_ssh_bind(ssh_bind bind, struct session_list* slist,
 
 static int process2channel(struct session_list* list,
                            struct session_entry* entry) {
+  process_t process;
   char buf[512];
   size_t nread;
   size_t nwritten = 0;
 
-  nread = read(process_get_fd_out(entry->process), buf, 512);
+  process = session_get_process(entry->grs_session);
+  nread = read(process_get_fd_out(process), buf, 512);
 
   if (nread == 0) {
     log_debug("EOF from fd_out");
@@ -274,6 +272,7 @@ static int process2channel(struct session_list* list,
 
 static int channel2process(struct session_list* list,
                            struct session_entry* entry) {
+  process_t process;
   char buf[512];
   size_t nread, nwritten;
 
@@ -285,12 +284,12 @@ static int channel2process(struct session_list* list,
     log_debug("%i bytes read from channel", nread);
   }
 
-  if (entry->process == NULL) {
+  if ((process = session_get_process(entry->grs_session)) == NULL) {
     log_err("You don't have a destination process");
     return -1;
   }
 
-  nwritten = write(process_get_fd_in(entry->process), buf, nread);
+  nwritten = write(process_get_fd_in(process), buf, nread);
   if (nwritten > 0) {
     log_debug("%i bytes written into process", nwritten);
     return 0;
@@ -375,6 +374,8 @@ int main(int argc, char** argv) {
     max_fd = ssh_bind_get_fd(bind);
 
     SESSION_LIST_FOREACH(entry, session_list) {
+      process_t process;
+
       if (session_get_state(entry->grs_session) < NEED_EXEC) {
         FD_SET(ssh_get_fd(entry->session), &read_fds);
 
@@ -383,12 +384,12 @@ int main(int argc, char** argv) {
         }
       }
 
-      if (entry->process != NULL) {
+      if ((process = session_get_process(entry->grs_session)) != NULL) {
         nprocesses++;
-        FD_SET(process_get_fd_out(entry->process), &read_fds);
+        FD_SET(process_get_fd_out(process), &read_fds);
 
-        if (process_get_fd_out(entry->process) > max_fd) {
-          max_fd = process_get_fd_out(entry->process);
+        if (process_get_fd_out(process) > max_fd) {
+          max_fd = process_get_fd_out(process);
         }
       }
 
@@ -419,17 +420,19 @@ int main(int argc, char** argv) {
       handle_ssh_bind(bind, &session_list, grs);
     } else {
       SESSION_LIST_FOREACH(entry, session_list) {
+        process_t process;
+
         if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
           handle_ssh_session(&session_list, entry, grs);
         }
 
-        if (entry->process == NULL) {
+        if ((process = session_get_process(entry->grs_session)) == NULL) {
           log_warn("No process available for session, skipping");
           continue;
         }
 
         // Test if there are data available from the process
-        if (FD_ISSET(process_get_fd_out(entry->process), &read_fds) &&
+        if (FD_ISSET(process_get_fd_out(process), &read_fds) &&
             process2channel(&session_list, entry) != 0) {
           close_and_free_session_entry(&session_list, entry);
           continue;
@@ -447,7 +450,7 @@ int main(int argc, char** argv) {
           }
         }
 
-        process_update_status(entry->process);
+        process_update_status(process);
       }
     }
   }
