@@ -2,7 +2,6 @@
 
 extern TCase* grsd_tcase();
 extern TCase* process_tcase();
-extern TCase* session_tcase();
 extern TCase* session2_tcase();
 
 static Suite* grs_suite() {
@@ -10,7 +9,6 @@ static Suite* grs_suite() {
 
   suite_add_tcase(s, grsd_tcase());
   suite_add_tcase(s, process_tcase());
-  suite_add_tcase(s, session_tcase());
   suite_add_tcase(s, session2_tcase());
 
   return s;

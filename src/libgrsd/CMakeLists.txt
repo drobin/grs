@@ -2,7 +2,6 @@ SET(LIBGRSD_SOURCES
   grsd.c
   log.c
   process.c
-  session.c
   session2.c
 )
 

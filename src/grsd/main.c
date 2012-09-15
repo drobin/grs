@@ -9,7 +9,6 @@
 #include <libssh/server.h>
 
 #include <log.h>
-#include <session.h>
 
 #include "session_list.h"
 
