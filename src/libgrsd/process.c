@@ -13,13 +13,19 @@
 struct _process_env {
 };
 
+struct process_info {
+  pid_t pid;
+  int exited;
+  int exit_status;
+};
+
 struct _process {
   struct _process_env* env;
   char* raw_token;
   char* token[ARG_MAX];
   int in_fds[2];
   int out_fds[2];
-  pid_t pid;
+  struct process_info info;
 };
 
 static void tokenize(struct _process* process) {
@@ -55,7 +61,7 @@ static int fork_exec(process_t process) {
     log_err("Failed to exec: %s", strerror(errno));
     _exit(127);
   } else {
-    process->pid = pid;
+    process->info.pid = pid;
     return 0;
   }
 }
@@ -91,6 +97,8 @@ process_t process_prepare(process_env_t env, const char* command) {
     return NULL;
   }
 
+  memset(process, 0, sizeof(struct _process));
+
   process->env = env;
   process->raw_token = strdup(command);
   tokenize(process);
@@ -106,8 +114,6 @@ process_t process_prepare(process_env_t env, const char* command) {
     process_destroy(process);
     return NULL;
   }
-
-  process->pid = 0;
 
   return process;
 }
@@ -191,44 +197,80 @@ int process_exec(process_t process) {
   return fork_exec(process);
 }
 
-int process_get_status(process_t process, int* exit_status) {
+int process_update_status(process_t process) {
   if (process == NULL) {
     return -1;
   }
 
-  if (process->pid == 0) {
+  if (process->info.pid == 0) {
     // Non-forked process, already finished
-    if (exit_status != NULL) {
-      *exit_status = 0;
-    }
-
+    process->info.exited = 1;
+    process->info.exit_status = 0;
+    close(process->out_fds[1]);
     return 0;
   } else {
+    // This is a forked process, check with waitpid
     int result, stat_loc;
 
-    result = waitpid(process->pid, &stat_loc, WNOHANG);
+    if (process->info.exited) {
+      // Already exited, nothing to check here
+      return 0;
+    }
+
+    result = waitpid(process->info.pid, &stat_loc, WNOHANG);
 
     if (result == 0) {
-      // Still running, return the pid of the (still) running process
-      return process->pid;
+      // Still running
+      return 0;
     } else if (result < 0) {
       log_err("wait_pid: %s", strerror(errno));
       return -1;
-    } else if (WIFEXITED(stat_loc)) {
-      log_debug("Process terminated with %i", WEXITSTATUS(stat_loc));
-
-      if (exit_status != NULL) {
-        *exit_status = WEXITSTATUS(stat_loc);
-      }
-    } else if (WIFSIGNALED(stat_loc)) {
-      int signal = WTERMSIG(stat_loc);
-      log_err("Process received the signal %i (%s)", signal, strsignal(signal));
     } else {
-      log_err("Abnormal termination of process");
+      process->info.exited = 1;
+      close(process->out_fds[1]);
+
+      if (WIFEXITED(stat_loc)) {
+        process->info.exit_status = WEXITSTATUS(stat_loc);
+        log_debug("Process terminated with %i", WEXITSTATUS(stat_loc));
+      } else if (WIFSIGNALED(stat_loc)) {
+        int signal = WTERMSIG(stat_loc);
+        log_err("Process received the signal %i (%s)",
+                signal, strsignal(signal));
+      } else {
+        log_err("Abnormal termination of process");
+      }
     }
 
     close(process->out_fds[1]);
 
     return 0;
+  }
+}
+
+int process_is_exited(process_t process) {
+  if (process == NULL) {
+    return -1;
+  }
+
+  if (process_update_status(process) != 0) {
+    return -1;
+  }
+
+  return process->info.exited;
+}
+
+int process_get_exit_status(process_t process) {
+  if (process == NULL) {
+    return -1;
+  }
+
+  if (process_update_status(process) != 0) {
+    return -1;
+  }
+
+  if (process->info.exited) {
+    return process->info.exit_status;
+  } else {
+    return -1;
   }
 }

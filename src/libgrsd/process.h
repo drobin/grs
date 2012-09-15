@@ -105,16 +105,33 @@ int process_get_fd_out(process_t process);
 int process_exec(process_t process);
 
 /**
- * Returns status-information about the (possible) running process.
+ * Updates the status-information about a (possible) running process.
+ *
+ * Call this function before you want to read from process_get_fd_out().
+ * Otherwise you might never read an EOF from the file-descriptor.
  *
  * @param process The process
- * @param exit_status If set to non-NULL, then the function stores here the
- *                    exit-status of the process, if the process has exited.
- * @return If the process is still running, then the pid of the process is
- *         returned. If the process has already exited, then <code>0</code> is
- *         returned and <code>exit_status</code> contains the exit-status of
- *         the process.
+ * @return On success <code>0</code> is returned. It tells you nothing about
+ *         the status of the process. For this you need to call
+ *         process_get_status().
  */
-int process_get_status(process_t process, int* exit_status);
+int process_update_status(process_t process);
+
+/**
+ * Checks if the running process has already exited.
+ *
+ * @param process The process to ask
+ * @return If the process has already exited, then true is returned.
+ */
+int process_is_exited(process_t process);
+
+/**
+ * If the process has already exited, then the function returns the exit-status
+ * of the process.
+ *
+ * @param process The process to ask
+ * @return The exit-status of the process
+ */
+int process_get_exit_status(process_t process);
 
 #endif  /* PROCESS_H */
