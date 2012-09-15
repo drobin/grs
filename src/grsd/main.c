@@ -1,3 +1,5 @@
+#include <sys/errno.h>
+#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -135,6 +137,9 @@ static int handle_ssh_channel_request(struct session_entry* entry,
   entry->process = process_prepare(
     entry->env, ssh_message_channel_request_command(msg));
 
+  session2_set_process(entry->grs_session, entry->process);
+  session2_exec(entry->grs_session);
+
   return 0;
 }
 
@@ -162,10 +167,10 @@ static int handle_ssh_session(struct session_list* list,
       log_debug("Session state: NEED_PROCESS");
       if (entry->channel == NULL) {
         handle_ssh_channel_open(entry, msg);
-        break;
       } else {
         handle_ssh_channel_request(entry, msg);
       }
+      break;
     default:
       log_debug("Session state: default");
       close_and_free_session_entry(list, entry);
@@ -227,6 +232,46 @@ static int handle_ssh_bind(ssh_bind bind, struct session_list* slist) {
 
   // Handle initial data for the session
   handle_ssh_session(slist, entry);
+
+  return 0;
+}
+
+static int process2channel(struct session_list* list,
+                           struct session_entry* entry) {
+  char buf[512];
+  size_t nread;
+  size_t nwritten = 0;
+
+  nread = read(process_get_fd_out(entry->process), buf, 512);
+
+  if (nread == 0) {
+    log_debug("EOF from fd_out");
+    return -1;
+  } else if (nread < 0) {
+    log_err("Error occured while reading from process: %s", strerror(errno));
+    return -1;
+  }
+
+  if (entry->channel == NULL) {
+    log_err("You don't have a destination-channel");
+    return -1;
+  }
+
+  log_debug("%i bytes read from process", nread);
+
+  while (nwritten < nread) {
+    int nbytes = ssh_channel_write(entry->channel,
+                                   buf + nwritten, nread - nwritten);
+
+    if (nbytes == SSH_ERROR) {
+      log_err("Failed to write into channel: %s",
+              ssh_get_error(entry->channel));
+      return -1;
+    }
+
+    nwritten += nbytes;
+    log_debug("%i bytes written into channel", nbytes);
+  }
 
   return 0;
 }
@@ -346,6 +391,13 @@ int main(int argc, char** argv) {
       handle_ssh_bind(bind, &session_list);
     } else {
       SESSION_LIST_FOREACH(entry, session_list) {
+        if (entry->process != NULL &&
+            FD_ISSET(process_get_fd_out(entry->process), &read_fds) &&
+            process2channel(&session_list, entry) != 0) {
+          close_and_free_session_entry(&session_list, entry);
+          break;
+        }
+
         if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
           handle_ssh_session(&session_list, entry);
         }
