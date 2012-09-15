@@ -23,8 +23,9 @@ struct session_entry* session_list_prepend(
   return entry;
 }
 
-int session_list_remove(struct session_entry* entry) {
-  if (entry == NULL) {
+int session_list_remove(struct session_list* list,
+                        struct session_entry* entry) {
+  if (list == NULL || entry == NULL) {
     return -1;
   }
 

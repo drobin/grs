@@ -26,7 +26,8 @@ static void usage() {
   exit(1);
 }
 
-static void close_and_free_session_entry(struct session_entry* entry) {
+static void close_and_free_session_entry(struct session_list* list,
+                                         struct session_entry* entry) {
   if (entry->process != NULL) {
     process_destroy(entry->process);
   }
@@ -42,7 +43,7 @@ static void close_and_free_session_entry(struct session_entry* entry) {
 
   ssh_free(entry->session);
   session2_destroy(entry->grs_session);
-  session_list_remove(entry);
+  session_list_remove(list, entry);
 }
 
 static int handle_ssh_authentication(session2_t session, ssh_message msg) {
@@ -137,7 +138,8 @@ static int handle_ssh_channel_request(struct session_entry* entry,
   return 0;
 }
 
-static int handle_ssh_session(struct session_entry* entry) {
+static int handle_ssh_session(struct session_list* list,
+                              struct session_entry* entry) {
   ssh_message msg;
 
   log_debug("Session is selected");
@@ -146,7 +148,7 @@ static int handle_ssh_session(struct session_entry* entry) {
     log_err("Failed to read message from session: %s",
             ssh_get_error(entry->session));
 
-    close_and_free_session_entry(entry);
+    close_and_free_session_entry(list, entry);
 
     return -1;
   }
@@ -166,7 +168,7 @@ static int handle_ssh_session(struct session_entry* entry) {
       }
     default:
       log_debug("Session state: default");
-      close_and_free_session_entry(entry);
+      close_and_free_session_entry(list, entry);
       break;
   }
 
@@ -224,7 +226,7 @@ static int handle_ssh_bind(ssh_bind bind, struct session_list* slist) {
   }
 
   // Handle initial data for the session
-  handle_ssh_session(entry);
+  handle_ssh_session(slist, entry);
 
   return 0;
 }
@@ -324,7 +326,7 @@ int main(int argc, char** argv) {
     } else {
       SESSION_LIST_FOREACH(entry, session_list) {
         if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
-          handle_ssh_session(entry);
+          handle_ssh_session(&session_list, entry);
         }
       }
     }

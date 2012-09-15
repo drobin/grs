@@ -32,6 +32,7 @@ struct session_list {
 
 struct session_entry* session_list_prepend(
   struct session_list* list, ssh_session session);
-int session_list_remove(struct session_entry* entry);
+int session_list_remove(struct session_list* list,
+                        struct session_entry* entry);
 
 #endif  /* SESSION_LIST_H */
