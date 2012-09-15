@@ -100,7 +100,7 @@ int session2_exec(session2_t session) {
     return -1;
   }
 
-  process_exec(session->process, (session_t)session);
+  process_exec(session->process);
   session->state = EXECUTING;
 
   return 0;

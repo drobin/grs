@@ -1,8 +1,6 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
-#include "session.h"
-
 struct _process_env;
 struct _process;
 
@@ -101,11 +99,10 @@ int process_get_fd_out(process_t process);
  * The process runs until reading from process_get_fd_out() return EOF.
  *
  * @param process Information about the process to be executed
- * @param session The target session, where the process is executed
  * @return The exit-code of the process. Usually an exit-code of <code>0</code>
  *         means success.
  */
-int process_exec(process_t process, session_t session);
+int process_exec(process_t process);
 
 /**
  * Returns status-information about the (possible) running process.

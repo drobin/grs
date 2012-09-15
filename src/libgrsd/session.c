@@ -111,7 +111,7 @@ static int handle_request_channel(session_t session, ssh_message msg,
 
   env = process_env_create();
   process = process_prepare(env, ssh_message_channel_request_command(msg));
-  process_exec(process, session);
+  process_exec(process);
   process_destroy(process);
   process_env_destroy(env);
 

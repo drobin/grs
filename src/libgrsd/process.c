@@ -167,8 +167,8 @@ int process_get_fd_out(process_t process) {
   return process->out_fds[0];
 }
 
-int process_exec(process_t process, session_t session) {
-  if (process == NULL || session == NULL) {
+int process_exec(process_t process) {
+  if (process == NULL) {
     return -1;
   }
 
