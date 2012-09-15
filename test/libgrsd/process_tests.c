@@ -6,6 +6,9 @@
 
 #include "../../src/libgrsd/process.h"
 
+static int sample_command_hook_1(process_t process) { return 0; }
+static int sample_command_hook_2(process_t process) { return 0; }
+
 static process_env_t env;
 
 static void setup() {
@@ -15,6 +18,55 @@ static void setup() {
 static void teardown() {
   fail_unless(process_env_destroy(env) == 0);
 }
+
+START_TEST(env_register_command_null_env) {
+  command_hook hook;
+  fail_unless(process_env_register_command(NULL, "foobar", hook) == -1);
+}
+END_TEST
+
+START_TEST(env_register_command_null_command) {
+  command_hook hook;
+  fail_unless(process_env_register_command(env, NULL, hook) == -1);
+}
+END_TEST
+
+START_TEST(env_register_command_null_hook) {
+  fail_unless(process_env_register_command(env, "foobar", NULL) == -1);
+}
+END_TEST
+
+START_TEST(env_get_command_null_env) {
+  fail_unless(process_env_get_command(NULL, "foobar") == NULL);
+}
+END_TEST
+
+START_TEST(env_get_command_null_command) {
+  fail_unless(process_env_get_command(env, NULL) == NULL);
+}
+END_TEST
+
+START_TEST(env_get_command_found) {
+  command_hook h1 = sample_command_hook_1;
+  command_hook h2 = sample_command_hook_2;
+
+  fail_unless(process_env_register_command(env, "hook1", h1) == 0);
+  fail_unless(process_env_register_command(env, "hook2", h2) == 0);
+  fail_unless(process_env_get_command(env, "hook1") == h1);
+  fail_unless(process_env_get_command(env, "hook2") == h2);
+}
+END_TEST
+
+
+START_TEST(env_get_command_not_found) {
+  command_hook h1 = sample_command_hook_1;
+  command_hook h2 = sample_command_hook_2;
+
+  fail_unless(process_env_register_command(env, "hook1", h1) == 0);
+  fail_unless(process_env_register_command(env, "hook2", h2) == 0);
+  fail_unless(process_env_get_command(env, "hook3") == NULL);
+}
+END_TEST
 
 START_TEST(destroy_null_env) {
   fail_unless(process_env_destroy(NULL) == -1);
@@ -217,6 +269,13 @@ TCase* process_tcase() {
   TCase* tc = tcase_create("process");
   tcase_add_checked_fixture(tc, setup, teardown);
 
+  tcase_add_test(tc, env_register_command_null_env);
+  tcase_add_test(tc, env_register_command_null_command);
+  tcase_add_test(tc, env_register_command_null_hook);
+  tcase_add_test(tc, env_get_command_null_env);
+  tcase_add_test(tc, env_get_command_null_command);
+  tcase_add_test(tc, env_get_command_found);
+  tcase_add_test(tc, env_get_command_not_found);
   tcase_add_test(tc, destroy_null_env);
   tcase_add_test(tc, prepare_null_env);
   tcase_add_test(tc, prepare_null_command);

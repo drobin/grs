@@ -6,6 +6,7 @@ struct _process;
 
 typedef struct _process_env* process_env_t;
 typedef struct _process* process_t;
+typedef int (*command_hook)(process_t);
 
 /**
  * Initializes the process module.
@@ -24,6 +25,30 @@ process_env_t process_env_create();
  * @return On success <code>0</code> is returned.
  */
 int process_env_destroy(process_env_t env);
+
+/**
+ * Register a command-hook at the process-environment.
+ *
+ * If <code>command</code> should be executed, then the given <code>hook</code>
+ * is invoked.
+ *
+ * @param env The destination environment
+ * @param command The command, where the hook should be registered
+ * @param hook The hook which gets invoked
+ * @return On success <code>0</code> is returned.
+ */
+int process_env_register_command(process_env_t env, const char* command,
+                                 command_hook hook);
+
+/**
+ * Receives the hook of an already registered command.
+ *
+ * @param env The destination environment
+ * @param command The requested command
+ * @return The hook registered for the given command. If no such command is
+ *         registered, <code>NULL</code> is returned.
+ */
+command_hook process_env_get_command(process_env_t env, const char* command);
 
 /**
  * Prepares the execution of the given <code>command</code> in the environment

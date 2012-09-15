@@ -1,4 +1,5 @@
 #include <sys/errno.h>
+#include <sys/queue.h>
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -10,7 +11,16 @@
 #include "log.h"
 #include "process.h"
 
+struct command_entry {
+  char* command;
+  command_hook hook;
+  LIST_ENTRY(command_entry) entries;
+};
+
+LIST_HEAD(command_head, command_entry);
+
 struct _process_env {
+  struct command_head cmd_head;
 };
 
 struct process_info {
@@ -73,17 +83,61 @@ process_env_t process_env_create() {
     return NULL;
   }
 
+  LIST_INIT(&env->cmd_head);
+
   return env;
 }
 
 int process_env_destroy(process_env_t env) {
+  struct command_entry* entry;
+
   if (env == NULL) {
     return -1;
+  }
+
+  while ((entry = LIST_FIRST(&(env->cmd_head))) != NULL) {
+    LIST_REMOVE(entry, entries);
+    free(entry->command);
+    free(entry);
   }
 
   free(env);
 
   return 0;
+}
+
+int process_env_register_command(process_env_t env, const char* command,
+                                 command_hook hook) {
+  struct command_entry* entry;
+
+  if (env == NULL || command == NULL || hook == NULL) {
+    return -1;
+  }
+
+  if ((entry = malloc(sizeof(struct command_entry))) == NULL) {
+    return -1;
+  }
+
+  entry->command = strdup(command);
+  entry->hook = hook;
+  LIST_INSERT_HEAD(&(env->cmd_head), entry, entries);
+
+  return 0;
+}
+
+command_hook process_env_get_command(process_env_t env, const char* command) {
+  struct command_entry* entry;
+  if (env == NULL || command == NULL) {
+    return NULL;
+  }
+
+  LIST_FOREACH(entry, &(env->cmd_head), entries) {
+    if (strcmp(entry->command, command) == 0) {
+      return entry->hook;
+    }
+  }
+
+  return NULL;
 }
 
 process_t process_prepare(process_env_t env, const char* command) {
