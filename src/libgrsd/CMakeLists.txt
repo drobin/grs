@@ -6,6 +6,3 @@ SET(LIBGRSD_SOURCES
 )
 
 add_library(libgrsd STATIC ${LIBGRSD_SOURCES})
-include_directories(
-  ${LIBSSH_INCLUDE_DIR}
-)
