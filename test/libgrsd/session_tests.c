@@ -1,6 +1,6 @@
 #include <check.h>
 
-#include "../../src/libgrsd/session2.h"
+#include "../../src/libgrsd/session.h"
 
 static session2_t session;
 

@@ -5,7 +5,7 @@
 
 #include <libssh/libssh.h>
 #include <process.h>
-#include <session2.h>
+#include <session.h>
 
 struct session_entry {
   ssh_session session;

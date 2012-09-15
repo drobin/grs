@@ -4,7 +4,7 @@ SET(GRS_TEST_SOURCES
   suite.c
   libgrsd/grsd_tests.c
   libgrsd/process_tests.c
-  libgrsd/session2_tests.c
+  libgrsd/session_tests.c
 )
 
 add_executable(grs_test ${GRS_TEST_SOURCES})

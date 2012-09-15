@@ -2,7 +2,7 @@ SET(LIBGRSD_SOURCES
   grsd.c
   log.c
   process.c
-  session2.c
+  session.c
 )
 
 add_library(libgrsd STATIC ${LIBGRSD_SOURCES})

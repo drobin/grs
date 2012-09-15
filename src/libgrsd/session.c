@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "session2.h"
+#include "session.h"
 
 struct _session2 {
   enum session2_state state;
