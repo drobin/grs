@@ -392,10 +392,13 @@ int main(int argc, char** argv) {
     } else {
       SESSION_LIST_FOREACH(entry, session_list) {
         if (entry->process != NULL &&
-            FD_ISSET(process_get_fd_out(entry->process), &read_fds) &&
-            process2channel(&session_list, entry) != 0) {
-          close_and_free_session_entry(&session_list, entry);
-          break;
+            FD_ISSET(process_get_fd_out(entry->process), &read_fds)) {
+
+          if (process2channel(&session_list, entry) != 0 ||
+              process_get_status(entry->process, NULL) == 0) {
+            close_and_free_session_entry(&session_list, entry);
+            break;
+          }
         }
 
         if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
