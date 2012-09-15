@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "grsd.h"
+#include "grs.h"
 
 struct _grsd {
 };

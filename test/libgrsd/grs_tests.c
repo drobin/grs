@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include <libssh/libssh.h>
-
-#include "../../src/libgrsd/grsd.h"
+#include "../../src/libgrsd/grs.h"
 
 static grsd_t handle;
 
