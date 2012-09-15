@@ -27,6 +27,10 @@ int session_destroy(session_t session) {
     return -1;
   }
 
+  if (session->process != NULL) {
+    process_destroy(session->process);
+  }
+
   free(session);
 
   return 0;
@@ -90,6 +94,22 @@ int session_set_process(session_t session, process_t process) {
   session->state = NEED_EXEC;
 
   return 0;
+}
+
+process_t session_create_process(session_t session, process_env_t env,
+                                 const char* command) {
+  if (session == NULL || env == NULL || command == NULL) {
+    return NULL;
+  }
+
+  if (session->state != NEED_PROCESS) {
+    return NULL;
+  }
+
+  session->process = process_prepare(env, command);
+  session->state = NEED_EXEC;
+
+  return session->process;
 }
 
 int session_exec(session_t session) {

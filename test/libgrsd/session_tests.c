@@ -119,6 +119,55 @@ START_TEST(set_process_success) {
 }
 END_TEST
 
+START_TEST(create_process_null_session) {
+  process_env_t env;
+
+  fail_unless((env = process_env_create()) != NULL);
+  fail_unless(session_create_process(NULL, env, "foobar") == NULL);
+  fail_unless(session_get_process(session) == NULL);
+  fail_unless(process_env_destroy(env) == 0);
+}
+END_TEST
+
+START_TEST(create_process_null_env) {
+  fail_unless(session_create_process(session, NULL, "foobar") == NULL);
+  fail_unless(session_get_process(session) == NULL);
+}
+END_TEST
+
+START_TEST(create_process_null_command) {
+  process_env_t env;
+
+  fail_unless((env = process_env_create()) != NULL);
+  fail_unless(session_create_process(session, env, NULL) == NULL);
+  fail_unless(session_get_process(session) == NULL);
+  fail_unless(process_env_destroy(env) == 0);
+}
+END_TEST
+
+START_TEST(create_process_wrong_state) {
+  process_env_t env;
+
+  fail_unless((env = process_env_create()) != NULL);
+  fail_unless(session_create_process(session, env, "foobar") == NULL);
+  fail_unless(session_get_process(session) == NULL);
+  fail_unless(process_env_destroy(env) == 0);
+}
+END_TEST
+
+START_TEST(create_process_success) {
+  process_env_t env;
+  process_t process;
+
+  fail_unless((env = process_env_create()) != NULL);
+  fail_unless(session_set_state(session, NEED_PROCESS) == 0);
+  fail_unless((process = session_create_process(session, env, "foobar")) != NULL);
+  fail_unless(session_get_process(session) == process);
+  fail_unless(session_get_state(session) == NEED_EXEC);
+  fail_unless(process_env_destroy(env) == 0);
+}
+END_TEST
+
 START_TEST(exec_null_session) {
   fail_unless(session_exec(NULL) == -1);
 }
@@ -156,6 +205,11 @@ TCase* session_tcase() {
   tcase_add_test(tc, set_process_null_process);
   tcase_add_test(tc, set_process_wrong_state);
   tcase_add_test(tc, set_process_success);
+  tcase_add_test(tc, create_process_null_session);
+  tcase_add_test(tc, create_process_null_env);
+  tcase_add_test(tc, create_process_null_command);
+  tcase_add_test(tc, create_process_wrong_state);
+  tcase_add_test(tc, create_process_success);
   tcase_add_test(tc, exec_null_session);
   tcase_add_test(tc, exec_wrong_state);
   tcase_add_test(tc, exec_success);

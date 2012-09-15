@@ -23,6 +23,8 @@ int session_authenticate(session_t session,
                          const char* username, const char* password);
 process_t session_get_process(session_t session);
 int session_set_process(session_t session, process_t process);
+process_t session_create_process(session_t session, process_env_t env,
+                                 const char* command);
 
 int session_exec(session_t session);
 
