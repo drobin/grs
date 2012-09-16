@@ -173,6 +173,68 @@ START_TEST(get_fd_out) {
 }
 END_TEST
 
+START_TEST(fork_null_process) {
+  fail_unless(process_fork(NULL) == -1);
+}
+END_TEST
+
+START_TEST(fork_absolute_path) {
+  process_t process;
+  char buf[64];
+  size_t nread;
+
+  fail_unless((process = process_prepare(env, "/bin/ls -1")) != NULL);
+  fail_unless(process_fork(process) == 0);
+
+  while (!process_is_exited(process));
+  fail_unless(process_get_exit_status(process) == 0);
+
+  while ((nread = read(process_get_fd_out(process), buf, sizeof(buf))) != 0) {
+    fail_unless(nread > 0);
+  }
+
+  fail_unless(process_destroy(process) == 0);
+}
+END_TEST
+
+START_TEST(fork_relative_path) {
+  process_t process;
+  char buf[64];
+  size_t nread;
+
+  fail_unless((process = process_prepare(env, "ls -1")) != NULL);
+  fail_unless(process_fork(process) == 0);
+
+  while (!process_is_exited(process));
+  fail_unless(process_get_exit_status(process) == 0);
+
+  while ((nread = read(process_get_fd_out(process), buf, sizeof(buf))) != 0) {
+    fail_unless(nread > 0);
+  }
+
+  fail_unless(process_destroy(process) == 0);
+}
+END_TEST
+
+START_TEST(fork_no_such_file) {
+  process_t process;
+  char buf[64];
+  size_t nread;
+
+  fail_unless((process = process_prepare(env, "foobar")) != NULL);
+  fail_unless(process_fork(process) == 0);
+
+  while (!process_is_exited(process));
+  fail_unless(process_get_exit_status(process) == 127);
+
+  while ((nread = read(process_get_fd_out(process), buf, sizeof(buf))) != 0) {
+    fail_unless(nread > 0);
+  }
+
+  fail_unless(process_destroy(process) == 0);
+}
+END_TEST
+
 START_TEST(exec_test_command) {
   process_t process;
   char buf[64];
@@ -291,6 +353,10 @@ TCase* process_tcase() {
   tcase_add_test(tc, get_fd_in);
   tcase_add_test(tc, get_fd_out_null_process);
   tcase_add_test(tc, get_fd_out);
+  tcase_add_test(tc, fork_null_process);
+  tcase_add_test(tc, fork_absolute_path);
+  tcase_add_test(tc, fork_relative_path);
+  tcase_add_test(tc, fork_no_such_file);
   tcase_add_test(tc, exec_test_command);
   tcase_add_test(tc, exec_null_process);
   tcase_add_test(tc, exec_absolute_path);

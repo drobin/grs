@@ -49,33 +49,6 @@ static void tokenize(struct _process* process) {
   process->token[nargs] = NULL;
 }
 
-static int fork_exec(process_t process) {
-  pid_t pid;
-
-  if ((pid = fork()) == -1) {
-    log_err("Failed to fork: %s", strerror(errno));
-    return -1;
-  }
-
-  if (pid == 0) { // The child executes the command
-    const char* cmd = process_get_command(process);
-
-    log_debug("Executing '%s'", cmd);
-
-    close(process->in_fds[1]);
-    close(process->out_fds[0]);
-    dup2(process->in_fds[0], 0);
-    dup2(process->out_fds[1], 1);
-
-    execvp(cmd, process->token);
-    log_err("Failed to exec: %s", strerror(errno));
-    _exit(127);
-  } else {
-    process->info.pid = pid;
-    return 0;
-  }
-}
-
 process_env_t process_env_create() {
   struct _process_env* env;
 
@@ -227,6 +200,37 @@ int process_get_fd_out(process_t process) {
   return process->out_fds[0];
 }
 
+int process_fork(process_t process) {
+  pid_t pid;
+
+  if (process == NULL) {
+    return -1;
+  }
+
+  if ((pid = fork()) == -1) {
+    log_err("Failed to fork: %s", strerror(errno));
+    return -1;
+  }
+
+  if (pid == 0) { // The child executes the command
+    const char* cmd = process_get_command(process);
+
+    log_debug("Executing '%s'", cmd);
+
+    close(process->in_fds[1]);
+    close(process->out_fds[0]);
+    dup2(process->in_fds[0], 0);
+    dup2(process->out_fds[1], 1);
+
+    execvp(cmd, process->token);
+    log_err("Failed to exec: %s", strerror(errno));
+    _exit(127);
+  } else {
+    process->info.pid = pid;
+    return 0;
+  }
+}
+
 int process_exec(process_t process) {
   if (process == NULL) {
     return -1;
@@ -248,7 +252,7 @@ int process_exec(process_t process) {
     }
   }
 
-  return fork_exec(process);
+  return process_fork(process);
 }
 
 int process_update_status(process_t process) {

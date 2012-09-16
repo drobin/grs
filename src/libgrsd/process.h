@@ -119,6 +119,16 @@ int process_get_fd_in(process_t process);
 int process_get_fd_out(process_t process);
 
 /**
+ * Runs a command by forking it.
+ *
+ * This function can be used by a command_hook to execute an external binary.
+ *
+ * @param process The process to fork
+ * @param On success <code>0</code> is returned.
+ */
+int process_fork(process_t process);
+
+/**
  * Executes a process in the given <code>session</code>.
  *
  * The process runs until reading from process_get_fd_out() return EOF.
