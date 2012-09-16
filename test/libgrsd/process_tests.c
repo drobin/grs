@@ -9,6 +9,10 @@
 static int sample_command_hook_1(process_t process) { return 0; }
 static int sample_command_hook_2(process_t process) { return 0; }
 
+static int ls_hook(process_t process) {
+  return process_fork(process);
+}
+
 static process_env_t env;
 
 static void setup() {
@@ -239,13 +243,15 @@ START_TEST(exec_test_command) {
   process_t process;
   char buf[64];
 
-  fail_unless((process = process_prepare(env, "test")) != NULL);
+  fail_unless((process = process_prepare(env, "hello")) != NULL);
   fail_unless(process_exec(process) == 0);
+
+  while (!process_is_exited(process));
+  fail_unless(process_get_exit_status(process) == 0);
+
   fail_unless(read(process_get_fd_out(process), buf, sizeof(buf)) == 12);
   fail_unless(strncmp(buf, "Hello world!", 12) == 0);
-  fail_unless(read(process_get_fd_out(process), buf, sizeof(buf)) == 0);
-  fail_unless(process_update_status(process) == 0);
-  fail_unless(process_get_exit_status(process) == 0);
+
   fail_unless(process_destroy(process) == 0);
 }
 END_TEST
@@ -260,6 +266,7 @@ START_TEST(exec_absolute_path) {
   char buf[64];
   size_t nread;
 
+  fail_unless(process_env_register_command(env, "/bin/ls", ls_hook) == 0);
   fail_unless((process = process_prepare(env, "/bin/ls -1")) != NULL);
   fail_unless(process_exec(process) == 0);
 
@@ -279,6 +286,7 @@ START_TEST(exec_relative_path) {
   char buf[64];
   size_t nread;
 
+  fail_unless(process_env_register_command(env, "ls", ls_hook) == 0);
   fail_unless((process = process_prepare(env, "ls -1")) != NULL);
   fail_unless(process_exec(process) == 0);
 
@@ -293,21 +301,11 @@ START_TEST(exec_relative_path) {
 }
 END_TEST
 
-START_TEST(exec_no_such_file) {
+START_TEST(exec_no_hook) {
   process_t process;
-  char buf[64];
-  size_t nread;
 
   fail_unless((process = process_prepare(env, "foobar")) != NULL);
-  fail_unless(process_exec(process) == 0);
-
-  while (!process_is_exited(process));
-  fail_unless(process_get_exit_status(process) == 127);
-
-  while ((nread = read(process_get_fd_out(process), buf, sizeof(buf))) != 0) {
-    fail_unless(nread > 0);
-  }
-
+  fail_unless(process_exec(process) == -1);
   fail_unless(process_destroy(process) == 0);
 }
 END_TEST
@@ -361,7 +359,7 @@ TCase* process_tcase() {
   tcase_add_test(tc, exec_null_process);
   tcase_add_test(tc, exec_absolute_path);
   tcase_add_test(tc, exec_relative_path);
-  tcase_add_test(tc, exec_no_such_file);
+  tcase_add_test(tc, exec_no_hook);
   tcase_add_test(tc, update_status_null_process);
   tcase_add_test(tc, is_exited_null_process);
   tcase_add_test(tc, get_exit_status_null_process);

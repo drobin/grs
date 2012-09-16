@@ -38,6 +38,23 @@ struct _process {
   struct process_info info;
 };
 
+static int hello_command(process_t process) {
+  write(process->out_fds[1], "Hello world!", 12);
+  close(process->out_fds[1]);
+  return 0;
+}
+
+static int git_pack_command(process_t process) {
+  char* repository = process->token[1];
+
+  if (repository[0] == '\'' && repository[strlen(repository) - 1] == '\'') {
+    repository[strlen(repository) - 1] = '\0';
+    process->token[1] = repository + 1;
+  }
+
+  return process_fork(process);
+}
+
 static void tokenize(struct _process* process) {
   char* token;
   int nargs = 0;
@@ -57,6 +74,9 @@ process_env_t process_env_create() {
   }
 
   LIST_INIT(&env->cmd_head);
+  process_env_register_command(env, "hello", hello_command);
+  process_env_register_command(env, "git-upload-pack", git_pack_command);
+  process_env_register_command(env, "git-receive-pack", git_pack_command);
 
   return env;
 }
@@ -232,27 +252,18 @@ int process_fork(process_t process) {
 }
 
 int process_exec(process_t process) {
+  command_hook hook;
+
   if (process == NULL) {
     return -1;
   }
 
-  if (strcmp(process->token[0], "test") == 0) {
-    write(process->out_fds[1], "Hello world!", 12);
-    close(process->out_fds[1]);
-    return 0;
+  hook = process_env_get_command(process->env, process->token[0]);
+  if (hook != NULL) {
+    return hook(process);
+  } else {
+    return -1;
   }
-
-  if (strcmp(process->token[0], "git-upload-pack") == 0 ||
-      strcmp(process->token[0], "git-receive-pack") == 0) {
-    char* repository = process->token[1];
-
-    if (repository[0] == '\'' && repository[strlen(repository) - 1] == '\'') {
-      repository[strlen(repository) - 1] = '\0';
-      process->token[1] = repository + 1;
-    }
-  }
-
-  return process_fork(process);
 }
 
 int process_update_status(process_t process) {
