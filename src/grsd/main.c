@@ -30,6 +30,7 @@
 #include <grs.h>
 #include <log.h>
 
+#include "io.h"
 #include "session_list.h"
 
 /**
@@ -245,75 +246,6 @@ static int handle_ssh_bind(ssh_bind bind, struct session_list* slist,
   handle_ssh_session(slist, entry, grs);
 
   return 0;
-}
-
-static int process2channel(struct session_list* list,
-                           struct session_entry* entry) {
-  process_t process;
-  size_t nread;
-  size_t nwritten = 0;
-
-  process = session_get_process(entry->grs_session);
-  nread = read(process_get_fd_out(process), list->buffer, sizeof(list->buffer));
-
-  if (nread == 0) {
-    log_debug("EOF from fd_out");
-    return -1;
-  } else if (nread < 0) {
-    log_err("Error occured while reading from process: %s", strerror(errno));
-    return -1;
-  }
-
-  if (entry->channel == NULL) {
-    log_err("You don't have a destination-channel");
-    return -1;
-  }
-
-  log_debug("%i bytes read from process", nread);
-
-  while (nwritten < nread) {
-    int nbytes = ssh_channel_write(entry->channel,
-                                   list->buffer + nwritten, nread - nwritten);
-
-    if (nbytes == SSH_ERROR) {
-      log_err("Failed to write into channel: %s",
-              ssh_get_error(entry->channel));
-      return -1;
-    }
-
-    nwritten += nbytes;
-    log_debug("%i bytes written into channel", nbytes);
-  }
-
-  return 0;
-}
-
-static int channel2process(struct session_list* list,
-                           struct session_entry* entry) {
-  process_t process;
-  size_t nread, nwritten;
-
-  nread = ssh_channel_read(entry->channel, list->buffer, sizeof(list->buffer), 0);
-  if (nread == SSH_ERROR) {
-    log_err("Failed to read from channel: %s", ssh_get_error(entry->channel));
-    return -1;
-  } else {
-    log_debug("%i bytes read from channel", nread);
-  }
-
-  if ((process = session_get_process(entry->grs_session)) == NULL) {
-    log_err("You don't have a destination process");
-    return -1;
-  }
-
-  nwritten = write(process_get_fd_in(process), list->buffer, nread);
-  if (nwritten > 0) {
-    log_debug("%i bytes written into process", nwritten);
-    return 0;
-  } else {
-    log_err("Failed to write into process: %s", strerror(errno));
-    return -1;
-  }
 }
 
 int main(int argc, char** argv) {
