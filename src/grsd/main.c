@@ -24,11 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <libgrsd/grs.h>
+#include <libgrsd/log.h>
 #include <libssh/libssh.h>
 #include <libssh/server.h>
-
-#include <grs.h>
-#include <log.h>
 
 #include "io.h"
 #include "session_list.h"

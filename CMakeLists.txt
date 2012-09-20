@@ -51,7 +51,7 @@ if(ENABLE_DEBUG)
 endif(ENABLE_DEBUG)
 
 # define some useful helper-variables
-set(LIBGRSD_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src/libgrsd)
+set(LIBGRSD_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src)
 
 add_subdirectory(src)
 add_subdirectory(test)

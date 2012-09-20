@@ -22,9 +22,9 @@
 
 #include <sys/queue.h>
 
+#include <libgrsd/process.h>
+#include <libgrsd/session.h>
 #include <libssh/libssh.h>
-#include <process.h>
-#include <session.h>
 
 struct session_entry {
   ssh_session session;
