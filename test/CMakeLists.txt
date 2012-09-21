@@ -19,6 +19,7 @@
 
 SET(GRS_TEST_SOURCES
   suite.c
+  libgrsd/acl_tests.c
   libgrsd/grs_tests.c
   libgrsd/process_tests.c
   libgrsd/session_tests.c

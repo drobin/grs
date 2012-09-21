@@ -19,36 +19,28 @@
 
 #include <check.h>
 
-extern TCase* acl_tcase();
-extern TCase* grs_tcase();
-extern TCase* process_tcase();
-extern TCase* session_tcase();
+#include "../../src/libgrsd/acl.h"
 
-static Suite* grs_suite() {
-  Suite* s = suite_create("grs_test");
+static acl_t acl;
 
-  suite_add_tcase(s, acl_tcase());
-  suite_add_tcase(s, grs_tcase());
-  suite_add_tcase(s, process_tcase());
-  suite_add_tcase(s, session_tcase());
-
-  return s;
+static void setup() {
+  fail_unless((acl = acl_init()) != NULL);
 }
 
-int main(int argc, char** argv) {
-  int nfailed;
+static void teardown() {
+  fail_unless(acl_destroy(acl) == 0);
+}
 
-  Suite* s = grs_suite();
-  SRunner* sr = srunner_create(s);
+START_TEST(destroy_null_acl) {
+  fail_unless(acl_destroy(NULL) == -1);
+}
+END_TEST
 
-  #ifdef ENABLE_DEBUG
-  srunner_set_fork_status(sr, CK_NOFORK);
-  #endif
+TCase* acl_tcase() {
+  TCase* tc = tcase_create("acl");
+  tcase_add_checked_fixture(tc, setup, teardown);
 
-  srunner_run_all(sr, CK_NORMAL);
+  tcase_add_test(tc, destroy_null_acl);
 
-  nfailed = srunner_ntests_failed(sr);
-  srunner_free(sr);
-
-  return (nfailed == 0) ? 0 : 1;
+  return tc;
 }

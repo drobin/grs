@@ -17,38 +17,29 @@
  *
  ******************************************************************************/
 
-#include <check.h>
+#include <stdlib.h>
 
-extern TCase* acl_tcase();
-extern TCase* grs_tcase();
-extern TCase* process_tcase();
-extern TCase* session_tcase();
+#include "acl.h"
 
-static Suite* grs_suite() {
-  Suite* s = suite_create("grs_test");
+struct _acl {
+};
 
-  suite_add_tcase(s, acl_tcase());
-  suite_add_tcase(s, grs_tcase());
-  suite_add_tcase(s, process_tcase());
-  suite_add_tcase(s, session_tcase());
+acl_t acl_init() {
+  struct _acl* acl;
 
-  return s;
+  if ((acl = malloc(sizeof(struct _acl))) == NULL) {
+    return NULL;
+  }
+
+  return acl;
 }
 
-int main(int argc, char** argv) {
-  int nfailed;
+int acl_destroy(acl_t acl) {
+  if (acl == NULL) {
+    return -1;
+  }
 
-  Suite* s = grs_suite();
-  SRunner* sr = srunner_create(s);
+  free(acl);
 
-  #ifdef ENABLE_DEBUG
-  srunner_set_fork_status(sr, CK_NOFORK);
-  #endif
-
-  srunner_run_all(sr, CK_NORMAL);
-
-  nfailed = srunner_ntests_failed(sr);
-  srunner_free(sr);
-
-  return (nfailed == 0) ? 0 : 1;
+  return 0;
 }
