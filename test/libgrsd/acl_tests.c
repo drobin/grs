@@ -53,6 +53,12 @@ START_TEST(get_node_root) {
 
   fail_unless((root = acl_get_node(acl, path)) != NULL);
   fail_unless(acl_get_node(acl, path) == root);
+  fail_unless(acl_node_get_name(root) == NULL);
+}
+END_TEST
+
+START_TEST(node_get_name_null_node) {
+  fail_unless(acl_node_get_name(NULL) == NULL);
 }
 END_TEST
 
@@ -64,6 +70,7 @@ TCase* acl_tcase() {
   tcase_add_test(tc, get_node_null_acl);
   tcase_add_test(tc, get_node_null_path);
   tcase_add_test(tc, get_node_root);
+  tcase_add_test(tc, node_get_name_null_node);
 
   return tc;
 }

@@ -97,3 +97,11 @@ acl_node_t acl_get_node(acl_t acl, const char** path) {
     return NULL;
   }
 }
+
+const char* acl_node_get_name(acl_node_t node) {
+  if (node == NULL) {
+    return NULL;
+  }
+
+  return node->name;
+}

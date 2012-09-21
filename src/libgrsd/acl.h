@@ -54,4 +54,15 @@ int acl_destroy(acl_t acl);
  */
 acl_node_t acl_get_node(acl_t acl, const char** path);
 
+/**
+ * Returns the name of the given node.
+ *
+ * Usually this is a path-component. For the root-node the name is
+ * <code>NULL</code>.
+ *
+ * @param node The requested node
+ * @return The name of the node
+ */
+const char* acl_node_get_name(acl_node_t node);
+
 #endif  /* ACL_H */
