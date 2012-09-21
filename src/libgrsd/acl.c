@@ -27,9 +27,27 @@ struct _acl {
 };
 
 struct _acl_node {
+  char* name;
 };
 
-static int acl_node_destroy(acl_node_t node) {
+static struct _acl_node* acl_node_get_or_create(const char* name) {
+  struct _acl_node* node;
+
+  if ((node = malloc(sizeof(struct _acl_node))) == NULL) {
+    return NULL;
+  }
+
+  memset(node, 0, sizeof(struct _acl_node));
+
+  if (name != NULL) {
+    node->name = strdup(name);
+  }
+
+  return node;
+}
+
+static int acl_node_destroy(struct _acl_node* node) {
+  free(node->name);
   free(node);
 
   return 0;
@@ -68,7 +86,7 @@ acl_node_t acl_get_node(acl_t acl, const char** path) {
 
   if (acl->root == NULL) {
     // First, create the root-node
-    if ((acl->root = malloc(sizeof(struct _acl_node))) == NULL) {
+    if ((acl->root = acl_node_get_or_create(NULL)) == NULL) {
       return NULL;
     }
   }
