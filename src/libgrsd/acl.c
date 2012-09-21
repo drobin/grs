@@ -27,11 +27,31 @@ struct _acl {
 };
 
 struct _acl_node {
+  struct _acl_node* first_child;
+  struct _acl_node* next;
   char* name;
 };
 
-static struct _acl_node* acl_node_get_or_create(const char* name) {
-  struct _acl_node* node;
+static struct _acl_node* acl_node_get_or_create(struct _acl_node* parent,
+                                                const char* name) {
+  struct _acl_node* node = NULL;
+
+  if (parent != NULL) {
+    node = parent->first_child;
+  }
+
+  // Search for the node in the list of all children
+  while (node != NULL) {
+    if (strcmp(node->name, name) == 0) {
+      // Node found -> return
+      return node;
+    }
+
+    node = node->next;
+  }
+
+  // The node was not found, create it now and assign the new node the the
+  // list of children
 
   if ((node = malloc(sizeof(struct _acl_node))) == NULL) {
     return NULL;
@@ -43,10 +63,24 @@ static struct _acl_node* acl_node_get_or_create(const char* name) {
     node->name = strdup(name);
   }
 
+  if (parent != NULL) {
+    node->next = parent->first_child;
+    parent->first_child = node;
+  }
+
   return node;
 }
 
 static int acl_node_destroy(struct _acl_node* node) {
+  struct _acl_node* child = node->first_child;
+
+  while (child != NULL) {
+    struct _acl_node* next = child->next;
+
+    acl_node_destroy(child);
+    child = next;
+  }
+
   free(node->name);
   free(node);
 
@@ -80,22 +114,25 @@ int acl_destroy(acl_t acl) {
 }
 
 acl_node_t acl_get_node(acl_t acl, const char** path) {
+  struct _acl_node* node;
+  int i;
+
   if (acl == NULL || path == NULL) {
     return NULL;
   }
 
   if (acl->root == NULL) {
     // First, create the root-node
-    if ((acl->root = acl_node_get_or_create(NULL)) == NULL) {
+    if ((acl->root = acl_node_get_or_create(NULL, NULL)) == NULL) {
       return NULL;
     }
   }
 
-  if (path[0] == NULL) {
-    return acl->root;
-  } else {
-    return NULL;
+  for (node = acl->root, i = 0; path[i] != NULL; i++) {
+    node = acl_node_get_or_create(node, path[i]);
   }
+
+  return node;
 }
 
 const char* acl_node_get_name(acl_node_t node) {
