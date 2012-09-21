@@ -36,11 +36,34 @@ START_TEST(destroy_null_acl) {
 }
 END_TEST
 
+START_TEST(get_node_null_acl) {
+  const char* path[] = { "foo", NULL };
+  fail_unless(acl_get_node(NULL, path) == NULL);
+}
+END_TEST
+
+START_TEST(get_node_null_path) {
+  fail_unless(acl_get_node(acl, NULL) == NULL);
+}
+END_TEST
+
+START_TEST(get_node_root) {
+  const char* path[] = { NULL };
+  acl_node_t root;
+
+  fail_unless((root = acl_get_node(acl, path)) != NULL);
+  fail_unless(acl_get_node(acl, path) == root);
+}
+END_TEST
+
 TCase* acl_tcase() {
   TCase* tc = tcase_create("acl");
   tcase_add_checked_fixture(tc, setup, teardown);
 
   tcase_add_test(tc, destroy_null_acl);
+  tcase_add_test(tc, get_node_null_acl);
+  tcase_add_test(tc, get_node_null_path);
+  tcase_add_test(tc, get_node_root);
 
   return tc;
 }

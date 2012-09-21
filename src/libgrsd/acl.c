@@ -18,11 +18,22 @@
  ******************************************************************************/
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "acl.h"
 
 struct _acl {
+  acl_node_t root;
 };
+
+struct _acl_node {
+};
+
+static int acl_node_destroy(acl_node_t node) {
+  free(node);
+
+  return 0;
+}
 
 acl_t acl_init() {
   struct _acl* acl;
@@ -30,6 +41,8 @@ acl_t acl_init() {
   if ((acl = malloc(sizeof(struct _acl))) == NULL) {
     return NULL;
   }
+
+  memset(acl, 0, sizeof(struct _acl));
 
   return acl;
 }
@@ -39,7 +52,30 @@ int acl_destroy(acl_t acl) {
     return -1;
   }
 
+  if (acl->root != NULL) {
+    acl_node_destroy(acl->root);
+  }
+
   free(acl);
 
   return 0;
+}
+
+acl_node_t acl_get_node(acl_t acl, const char** path) {
+  if (acl == NULL || path == NULL) {
+    return NULL;
+  }
+
+  if (acl->root == NULL) {
+    // First, create the root-node
+    if ((acl->root = malloc(sizeof(struct _acl_node))) == NULL) {
+      return NULL;
+    }
+  }
+
+  if (path[0] == NULL) {
+    return acl->root;
+  } else {
+    return NULL;
+  }
 }

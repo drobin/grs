@@ -21,7 +21,10 @@
 #define ACL_H
 
 struct _acl;
+struct _acl_node;
+
 typedef struct _acl* acl_t;
+typedef struct _acl_node* acl_node_t;
 
 /**
  * Initializes the ACL-module.
@@ -37,5 +40,18 @@ acl_t acl_init();
  * @return On success <code>0</code> is returned.
  */
 int acl_destroy(acl_t acl);
+
+/**
+ * Returns the node of the given path.
+ *
+ * The node is created, if it doesn't alredy exists. If the path is empty,
+ * then the root-node is returned.
+ *
+ * @param acl The ACL-handle
+ * @param path The path of the node to be returned. The last element of the
+ *             array is <code>NULL</code> to mark the end of the array.
+ * @return The node of the requested path.
+ */
+acl_node_t acl_get_node(acl_t acl, const char** path);
 
 #endif  /* ACL_H */
