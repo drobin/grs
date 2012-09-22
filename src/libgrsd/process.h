@@ -143,9 +143,13 @@ int process_get_fd_out(process_t process);
  * This function can be used by a command_hook to execute an external binary.
  *
  * @param process The process to fork
+ * @param argv An array of that represent the argument list available to the
+ *             new program. The first argument should point to the file name
+ *             associated with the file being executed. The array must be
+ *             terminated by <code>NULL</code>.
  * @param On success <code>0</code> is returned.
  */
-int process_fork(process_t process);
+int process_fork(process_t process, char* const argv[]);
 
 /**
  * Executes a process in the given <code>session</code>.

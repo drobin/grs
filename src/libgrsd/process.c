@@ -64,14 +64,18 @@ static int hello_command(process_t process) {
 }
 
 static int git_pack_command(process_t process) {
-  char* repository = process->token[1];
+  char* argv[] = {
+    process->token[0],
+    process->token[1],
+    NULL
+  };
 
-  if (repository[0] == '\'' && repository[strlen(repository) - 1] == '\'') {
-    repository[strlen(repository) - 1] = '\0';
-    process->token[1] = repository + 1;
+  if (argv[1][0] == '\'' && argv[1][strlen(argv[1]) - 1] == '\'') {
+    argv[1][strlen(argv[1]) - 1] = '\0';
+    argv[1] = argv[1] + 1;
   }
 
-  return process_fork(process);
+  return process_fork(process, argv);
 }
 
 static void tokenize(struct _process* process) {
@@ -239,10 +243,10 @@ int process_get_fd_out(process_t process) {
   return process->out_fds[0];
 }
 
-int process_fork(process_t process) {
+int process_fork(process_t process, char* const argv[]) {
   pid_t pid;
 
-  if (process == NULL) {
+  if (process == NULL || argv == NULL || argv[0] == NULL) {
     return -1;
   }
 
@@ -252,16 +256,14 @@ int process_fork(process_t process) {
   }
 
   if (pid == 0) { // The child executes the command
-    const char* cmd = process_get_command(process);
-
-    log_debug("Executing '%s'", cmd);
+    log_debug("Executing '%s'", argv[0]);
 
     close(process->in_fds[1]);
     close(process->out_fds[0]);
     dup2(process->in_fds[0], 0);
     dup2(process->out_fds[1], 1);
 
-    execvp(cmd, process->token);
+    execvp(argv[0], argv);
     log_err("Failed to exec: %s", strerror(errno));
     _exit(127);
   } else {

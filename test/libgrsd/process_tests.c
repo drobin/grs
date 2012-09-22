@@ -29,7 +29,10 @@ static int sample_command_hook_1(process_t process) { return 0; }
 static int sample_command_hook_2(process_t process) { return 0; }
 
 static int ls_hook(process_t process) {
-  return process_fork(process);
+  char* arg = (char*)process_get_args(process)[0];
+  char* argv[] = { "ls", arg, NULL };
+
+  return process_fork(process, argv);
 }
 
 static process_env_t env;
@@ -197,17 +200,34 @@ START_TEST(get_fd_out) {
 END_TEST
 
 START_TEST(fork_null_process) {
-  fail_unless(process_fork(NULL) == -1);
+  char* argv[] = { "ls", "-1", NULL };
+  fail_unless(process_fork(NULL, argv) == -1);
+}
+END_TEST
+
+START_TEST(fork_null_argv) {
+  process_t process;
+
+  fail_unless(process_fork(process, NULL) == -1);
+}
+END_TEST
+
+START_TEST(fork_null_element) {
+  char* argv[] = { NULL };
+  process_t process;
+
+  fail_unless(process_fork(process, argv) == -1);
 }
 END_TEST
 
 START_TEST(fork_absolute_path) {
+  char* argv[] = { "/bin/ls", "-1", NULL };
   process_t process;
   char buf[64];
   size_t nread;
 
-  fail_unless((process = process_prepare(env, "/bin/ls -1")) != NULL);
-  fail_unless(process_fork(process) == 0);
+  fail_unless((process = process_prepare(env, "foobar")) != NULL);
+  fail_unless(process_fork(process, argv) == 0);
 
   while (!process_is_exited(process));
   fail_unless(process_get_exit_status(process) == 0);
@@ -221,12 +241,13 @@ START_TEST(fork_absolute_path) {
 END_TEST
 
 START_TEST(fork_relative_path) {
+  char* argv[] = { "ls", "-1", NULL };
   process_t process;
   char buf[64];
   size_t nread;
 
-  fail_unless((process = process_prepare(env, "ls -1")) != NULL);
-  fail_unless(process_fork(process) == 0);
+  fail_unless((process = process_prepare(env, "foobar")) != NULL);
+  fail_unless(process_fork(process, argv) == 0);
 
   while (!process_is_exited(process));
   fail_unless(process_get_exit_status(process) == 0);
@@ -240,12 +261,13 @@ START_TEST(fork_relative_path) {
 END_TEST
 
 START_TEST(fork_no_such_file) {
+  char* argv[] = { "foobar", NULL };
   process_t process;
   char buf[64];
   size_t nread;
 
-  fail_unless((process = process_prepare(env, "foobar")) != NULL);
-  fail_unless(process_fork(process) == 0);
+  fail_unless((process = process_prepare(env, "ls -1")) != NULL);
+  fail_unless(process_fork(process, argv) == 0);
 
   while (!process_is_exited(process));
   fail_unless(process_get_exit_status(process) == 127);
@@ -371,6 +393,8 @@ TCase* process_tcase() {
   tcase_add_test(tc, get_fd_out_null_process);
   tcase_add_test(tc, get_fd_out);
   tcase_add_test(tc, fork_null_process);
+  tcase_add_test(tc, fork_null_argv);
+  tcase_add_test(tc, fork_null_element);
   tcase_add_test(tc, fork_absolute_path);
   tcase_add_test(tc, fork_relative_path);
   tcase_add_test(tc, fork_no_such_file);
