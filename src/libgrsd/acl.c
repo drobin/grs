@@ -131,9 +131,11 @@ int acl_can(acl_t acl, const char** path, int len) {
     acl_node_t node;
     struct acl_node_value* value;
 
-    if ((node = acl_get_node(acl, path, idx)) == NULL) {
+    if (!acl_has_node(acl, path, idx)) {
       continue;
     }
+
+    node = acl_get_node(acl, path, idx);
 
     if ((value = acl_node_get_value(node, 0)) == NULL) {
       continue;
