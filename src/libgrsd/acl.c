@@ -35,7 +35,7 @@ struct _acl_node {
 };
 
 static struct _acl_node* acl_node_get_or_create(struct _acl_node* parent,
-                                                const char* name) {
+                                                const char* name, int create) {
   struct _acl_node* node = NULL;
 
   if (parent != NULL) {
@@ -55,21 +55,23 @@ static struct _acl_node* acl_node_get_or_create(struct _acl_node* parent,
   // The node was not found, create it now and assign the new node the the
   // list of children
 
-  if ((node = malloc(sizeof(struct _acl_node))) == NULL) {
-    return NULL;
-  }
+  if (create) {
+    if ((node = malloc(sizeof(struct _acl_node))) == NULL) {
+      return NULL;
+    }
 
-  memset(node, 0, sizeof(struct _acl_node));
+    memset(node, 0, sizeof(struct _acl_node));
 
-  if (name != NULL) {
-    node->name = strdup(name);
-  }
+    if (name != NULL) {
+      node->name = strdup(name);
+    }
 
-  node->parent = parent;
+    node->parent = parent;
 
-  if (parent != NULL) {
-    node->next = parent->first_child;
-    parent->first_child = node;
+    if (parent != NULL) {
+      node->next = parent->first_child;
+      parent->first_child = node;
+    }
   }
 
   return node;
@@ -153,16 +155,40 @@ acl_node_t acl_get_node(acl_t acl, const char** path, int len) {
 
   if (acl->root == NULL) {
     // First, create the root-node
-    if ((acl->root = acl_node_get_or_create(NULL, NULL)) == NULL) {
+    if ((acl->root = acl_node_get_or_create(NULL, NULL, 1)) == NULL) {
       return NULL;
     }
   }
 
   for (node = acl->root, i = 0; i < len; i++) {
-    node = acl_node_get_or_create(node, path[i]);
+    node = acl_node_get_or_create(node, path[i], 1);
   }
 
   return node;
+}
+
+int acl_has_node(acl_t acl, const char** path, int len) {
+  struct _acl_node* node;
+  int i;
+
+  if (acl == NULL || path == NULL || len < 0) {
+    return -1;
+  }
+
+  if (acl->root == NULL) {
+    // First, create the root-node
+    if ((acl->root = acl_node_get_or_create(NULL, NULL, 1)) == NULL) {
+      return -1;
+    }
+  }
+
+  for (node = acl->root, i = 0; i < len; i++) {
+    if ((node = acl_node_get_or_create(node, path[i], 0)) == NULL) {
+      return 0;
+    }
+  }
+
+  return 1;
 }
 
 acl_node_t acl_node_get_parent(acl_node_t node) {

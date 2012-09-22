@@ -80,6 +80,16 @@ int acl_can(acl_t acl, const char** path, int len);
 acl_node_t acl_get_node(acl_t acl, const char** path, int len);
 
 /**
+ * Tests whether you have a node for the given path.
+ *
+ * @param acl The ACL-handle
+ * @param path The path to check
+ * @param len Number of path-elements in <code>path</code>.
+ * @return If you have such a node, then <code>true</code> is returned.
+ */
+int acl_has_node(acl_t acl, const char** path, int len);
+
+/**
  * Return the parent of the given node.
  *
  * Note, for the root-node the parent is <code>NULL</code>!

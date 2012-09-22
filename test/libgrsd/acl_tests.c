@@ -252,6 +252,37 @@ START_TEST(get_node_f) {
 }
 END_TEST
 
+START_TEST(has_node_null_acl) {
+  fail_unless(acl_has_node(NULL, c_path, 2) == -1);
+}
+END_TEST
+
+START_TEST(has_node_null_path) {
+  fail_unless(acl_has_node(acl, NULL, 2) == -1);
+}
+END_TEST
+
+START_TEST(has_node_negative_len) {
+  fail_unless(acl_has_node(acl, c_path, -1) == -1);
+}
+END_TEST
+
+START_TEST(has_node_root) {
+  fail_unless(acl_has_node(acl, c_path, 0));
+}
+END_TEST
+
+START_TEST(has_node_has) {
+  fail_unless(acl_get_node(acl, c_path, 2) != NULL);
+  fail_unless(acl_has_node(acl, c_path, 2));
+}
+END_TEST
+
+START_TEST(has_node_has_not) {
+  fail_unless(!acl_has_node(acl, c_path, 2));
+}
+END_TEST
+
 START_TEST(node_get_parent_null_node) {
   fail_unless(acl_node_get_parent(NULL) == NULL);
 }
@@ -310,6 +341,12 @@ TCase* acl_tcase() {
   tcase_add_test(tc, get_node_d);
   tcase_add_test(tc, get_node_e);
   tcase_add_test(tc, get_node_f);
+  tcase_add_test(tc, has_node_null_acl);
+  tcase_add_test(tc, has_node_null_path);
+  tcase_add_test(tc, has_node_negative_len);
+  tcase_add_test(tc, has_node_root);
+  tcase_add_test(tc, has_node_has);
+  tcase_add_test(tc, has_node_has_not);
   tcase_add_test(tc, node_get_name_null_node);
   tcase_add_test(tc, node_get_parent_null_node);
   tcase_add_test(tc, node_get_value_null_node);
