@@ -67,61 +67,79 @@ START_TEST(get_node_root) {
 
   fail_unless((root = acl_get_node(acl, root_path)) != NULL);
   fail_unless(acl_get_node(acl, root_path) == root);
+  fail_unless(acl_node_get_parent(root) == NULL);
   fail_unless(acl_node_get_name(root) == NULL);
 }
 END_TEST
 
 START_TEST(get_node_a) {
-  acl_node_t node;
+  acl_node_t node, parent;
 
   fail_unless((node = acl_get_node(acl, a_path)) != NULL);
+  fail_unless((parent = acl_get_node(acl, root_path)) != NULL);
   fail_unless(acl_get_node(acl, a_path) == node);
+  fail_unless(acl_node_get_parent(node) == parent);
   fail_unless(strcmp(acl_node_get_name(node), "a") == 0);
 }
 END_TEST
 
 START_TEST(get_node_b) {
-  acl_node_t node;
+  acl_node_t node, parent;
 
   fail_unless((node = acl_get_node(acl, b_path)) != NULL);
+  fail_unless((parent = acl_get_node(acl, root_path)) != NULL);
   fail_unless(acl_get_node(acl, b_path) == node);
+  fail_unless(acl_node_get_parent(node) == parent);
   fail_unless(strcmp(acl_node_get_name(node), "b") == 0);
 }
 END_TEST
 
 START_TEST(get_node_c) {
-  acl_node_t node;
+  acl_node_t node, parent;
 
   fail_unless((node = acl_get_node(acl, c_path)) != NULL);
+  fail_unless((parent = acl_get_node(acl, a_path)) != NULL);
   fail_unless(acl_get_node(acl, c_path) == node);
+  fail_unless(acl_node_get_parent(node) == parent);
   fail_unless(strcmp(acl_node_get_name(node), "c") == 0);
 }
 END_TEST
 
 START_TEST(get_node_d) {
-  acl_node_t node;
+  acl_node_t node, parent;
 
   fail_unless((node = acl_get_node(acl, d_path)) != NULL);
+  fail_unless((parent = acl_get_node(acl, a_path)) != NULL);
   fail_unless(acl_get_node(acl, d_path) == node);
+  fail_unless(acl_node_get_parent(node) == parent);
   fail_unless(strcmp(acl_node_get_name(node), "d") == 0);
 }
 END_TEST
 
 START_TEST(get_node_e) {
-  acl_node_t node;
+  acl_node_t node, parent;
 
   fail_unless((node = acl_get_node(acl, e_path)) != NULL);
+  fail_unless((parent = acl_get_node(acl, b_path)) != NULL);
   fail_unless(acl_get_node(acl, e_path) == node);
+  fail_unless(acl_node_get_parent(node) == parent);
   fail_unless(strcmp(acl_node_get_name(node), "e") == 0);
 }
 END_TEST
 
 START_TEST(get_node_f) {
-  acl_node_t node;
+  acl_node_t node, parent;
 
   fail_unless((node = acl_get_node(acl, f_path)) != NULL);
+  fail_unless((parent = acl_get_node(acl, b_path)) != NULL);
   fail_unless(acl_get_node(acl, f_path) == node);
+  fail_unless(acl_node_get_parent(node) == parent);
   fail_unless(strcmp(acl_node_get_name(node), "f") == 0);
+}
+END_TEST
+
+START_TEST(node_get_parent_null_node) {
+  fail_unless(acl_node_get_parent(NULL) == NULL);
 }
 END_TEST
 
@@ -145,6 +163,7 @@ TCase* acl_tcase() {
   tcase_add_test(tc, get_node_e);
   tcase_add_test(tc, get_node_f);
   tcase_add_test(tc, node_get_name_null_node);
+  tcase_add_test(tc, node_get_parent_null_node);
 
   return tc;
 }

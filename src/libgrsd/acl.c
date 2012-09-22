@@ -28,6 +28,7 @@ struct _acl {
 
 struct _acl_node {
   struct _acl_node* first_child;
+  struct _acl_node* parent;
   struct _acl_node* next;
   char* name;
 };
@@ -62,6 +63,8 @@ static struct _acl_node* acl_node_get_or_create(struct _acl_node* parent,
   if (name != NULL) {
     node->name = strdup(name);
   }
+
+  node->parent = parent;
 
   if (parent != NULL) {
     node->next = parent->first_child;
@@ -133,6 +136,14 @@ acl_node_t acl_get_node(acl_t acl, const char** path) {
   }
 
   return node;
+}
+
+acl_node_t acl_node_get_parent(acl_node_t node) {
+  if (node == NULL) {
+    return NULL;
+  }
+
+  return node->parent;
 }
 
 const char* acl_node_get_name(acl_node_t node) {

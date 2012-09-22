@@ -55,6 +55,16 @@ int acl_destroy(acl_t acl);
 acl_node_t acl_get_node(acl_t acl, const char** path);
 
 /**
+ * Return the parent of the given node.
+ *
+ * Note, for the root-node the parent is <code>NULL</code>!
+ *
+ * @param node The requested node
+ * @return The parent of the node (if any)
+ */
+acl_node_t acl_node_get_parent(acl_node_t node);
+
+/**
  * Returns the name of the given node.
  *
  * Usually this is a path-component. For the root-node the name is
