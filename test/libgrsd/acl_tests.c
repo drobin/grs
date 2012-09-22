@@ -148,6 +148,30 @@ START_TEST(node_get_name_null_node) {
 }
 END_TEST
 
+START_TEST(node_get_value_null_node) {
+  fail_unless(acl_node_get_value(NULL, 0) == NULL);
+}
+END_TEST
+
+START_TEST(node_get_value_no_create) {
+  acl_node_t node;
+
+  fail_unless((node = acl_get_node(acl, a_path)) != NULL);
+  fail_unless(acl_node_get_value(node, 0) == NULL);
+}
+END_TEST
+
+START_TEST(node_get_value_create) {
+  acl_node_t node;
+  struct acl_node_value* value;
+
+  fail_unless((node = acl_get_node(acl, a_path)) != NULL);
+  fail_unless((value = acl_node_get_value(node, 1)) != NULL);
+  fail_unless(acl_node_get_value(node, 0) == value);
+  fail_unless(acl_node_get_value(node, 1) == value);
+}
+END_TEST
+
 TCase* acl_tcase() {
   TCase* tc = tcase_create("acl");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -164,6 +188,9 @@ TCase* acl_tcase() {
   tcase_add_test(tc, get_node_f);
   tcase_add_test(tc, node_get_name_null_node);
   tcase_add_test(tc, node_get_parent_null_node);
+  tcase_add_test(tc, node_get_value_null_node);
+  tcase_add_test(tc, node_get_value_no_create);
+  tcase_add_test(tc, node_get_value_create);
 
   return tc;
 }

@@ -31,6 +31,7 @@ struct _acl_node {
   struct _acl_node* parent;
   struct _acl_node* next;
   char* name;
+  struct acl_node_value* value;
 };
 
 static struct _acl_node* acl_node_get_or_create(struct _acl_node* parent,
@@ -85,6 +86,7 @@ static int acl_node_destroy(struct _acl_node* node) {
   }
 
   free(node->name);
+  free(node->value);
   free(node);
 
   return 0;
@@ -152,4 +154,17 @@ const char* acl_node_get_name(acl_node_t node) {
   }
 
   return node->name;
+}
+
+struct acl_node_value* acl_node_get_value(acl_node_t node, int create) {
+  if (node == NULL) {
+    return NULL;
+  }
+
+  if (node->value == NULL && create) {
+    node->value = malloc(sizeof(struct acl_node_value));
+    memset(node->value, 0, sizeof(struct acl_node_value));
+  }
+
+  return node->value;
 }

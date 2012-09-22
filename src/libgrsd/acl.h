@@ -26,6 +26,14 @@ struct _acl_node;
 typedef struct _acl* acl_t;
 typedef struct _acl_node* acl_node_t;
 
+struct acl_node_value {
+  /**
+   * The flag describes whether you can access the node or not. This is the
+   * simpliest way of access-controll.
+   */
+  int flag;
+};
+
 /**
  * Initializes the ACL-module.
  *
@@ -74,5 +82,20 @@ acl_node_t acl_node_get_parent(acl_node_t node);
  * @return The name of the node
  */
 const char* acl_node_get_name(acl_node_t node);
+
+/**
+ * Returns the value of the node.
+ *
+ * The value can be <code>NULL</code>! In this case no value-structure is
+ * assigned to the node. If you pass <code>true</code> to the
+ * <code>create</code> argument, the the value-structure is created, if such a
+ * structure does not already exists for the node.
+ *
+ * @param node The requested node
+ * @param create If set to <code>true</code>, then the structure is created, if
+ *               such a structure doesn't already exist for the node.
+ * @return The value-structure of the node (if any)
+ */
+struct acl_node_value* acl_node_get_value(acl_node_t node, int create);
 
 #endif  /* ACL_H */
