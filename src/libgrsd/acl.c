@@ -118,6 +118,31 @@ int acl_destroy(acl_t acl) {
   return 0;
 }
 
+int acl_can(acl_t acl, const char** path, int len) {
+  int idx;
+
+  if (acl == NULL || path == NULL || len <= 0) {
+    return -1;
+  }
+
+  for (idx = len - 1; idx >= 0; idx--) {
+    acl_node_t node;
+    struct acl_node_value* value;
+
+    if ((node = acl_get_node(acl, path, idx)) == NULL) {
+      continue;
+    }
+
+    if ((value = acl_node_get_value(node, 0)) == NULL) {
+      continue;
+    }
+
+    return value->flag;
+  }
+
+  return 0;
+}
+
 acl_node_t acl_get_node(acl_t acl, const char** path, int len) {
   struct _acl_node* node;
   int i;

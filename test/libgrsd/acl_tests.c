@@ -48,6 +48,119 @@ START_TEST(destroy_null_acl) {
 }
 END_TEST
 
+START_TEST(can_null_acl) {
+  fail_unless(acl_can(NULL, c_path, 2) == -1);
+}
+END_TEST
+
+START_TEST(can_null_path) {
+  fail_unless(acl_can(acl, NULL, 2) == -1);
+}
+END_TEST
+
+START_TEST(can_zero_len) {
+  fail_unless(acl_can(acl, c_path, 0) == -1);
+}
+END_TEST
+
+START_TEST(can_empty_tree_len_1) {
+  acl_node_t root;
+  struct acl_node_value* value;
+
+  fail_unless(!acl_can(acl, c_path, 1));
+
+  fail_unless((root = acl_get_node(acl, c_path, 0)) != NULL);
+  fail_unless((value = acl_node_get_value(root, 1)) != NULL);
+  value->flag = 1;
+
+  fail_unless(acl_can(acl, c_path, 1));
+}
+END_TEST
+
+START_TEST(can_empty_tree_len_2) {
+  acl_node_t root;
+  struct acl_node_value* value;
+
+  fail_unless(!acl_can(acl, c_path, 2));
+
+  fail_unless((root = acl_get_node(acl, c_path, 0)) != NULL);
+  fail_unless((value = acl_node_get_value(root, 1)) != NULL);
+  value->flag = 1;
+
+  fail_unless(acl_can(acl, c_path, 2));
+}
+END_TEST
+
+START_TEST(can_with_tree_len_shorter) {
+  acl_node_t root, node;
+  struct acl_node_value* value;
+
+  fail_unless((node = acl_get_node(acl, c_path, 2)) != NULL);
+  fail_unless(!acl_can(acl, c_path, 1));
+
+  fail_unless((root = acl_get_node(acl, c_path, 0)) != NULL);
+  fail_unless((value = acl_node_get_value(root, 1)) != NULL);
+  value->flag = 1;
+
+  fail_unless(acl_can(acl, c_path, 1));
+}
+END_TEST
+
+START_TEST(can_with_tree_len_longer) {
+  acl_node_t root, node;
+  struct acl_node_value* value;
+
+  fail_unless((node = acl_get_node(acl, c_path, 1)) != NULL);
+  fail_unless(!acl_can(acl, c_path, 2));
+
+  fail_unless((root = acl_get_node(acl, c_path, 0)) != NULL);
+  fail_unless((value = acl_node_get_value(root, 1)) != NULL);
+  value->flag = 1;
+
+  fail_unless(acl_can(acl, c_path, 2));
+}
+END_TEST
+
+START_TEST(can_with_tree_value_len_shorter) {
+  acl_node_t node;
+  struct acl_node_value* value;
+
+  fail_unless((node = acl_get_node(acl, c_path, 2)) != NULL);
+  fail_unless((value = acl_node_get_value(node, 1)) != NULL);
+  value->flag = 1;
+
+  fail_unless(!acl_can(acl, c_path, 1));
+
+  value->flag = 0;
+
+  fail_unless((node = acl_get_node(acl, c_path, 0)) != NULL);
+  fail_unless((value = acl_node_get_value(node, 1)) != NULL);
+  value->flag = 1;
+
+  fail_unless(acl_can(acl, c_path, 1));
+}
+END_TEST
+
+START_TEST(can_with_tree_value_len_longer) {
+  acl_node_t node;
+  struct acl_node_value* value;
+
+  fail_unless((node = acl_get_node(acl, c_path, 1)) != NULL);
+  fail_unless((value = acl_node_get_value(node, 1)) != NULL);
+  value->flag = 1;
+
+  fail_unless(acl_can(acl, c_path, 2));
+
+  value->flag = 0;
+
+  fail_unless((node = acl_get_node(acl, c_path, 0)) != NULL);
+  fail_unless((value = acl_node_get_value(node, 1)) != NULL);
+  value->flag = 1;
+
+  fail_unless(!acl_can(acl, c_path, 2));
+}
+END_TEST
+
 START_TEST(get_node_null_acl) {
   fail_unless(acl_get_node(NULL, c_path, 2) == NULL);
 }
@@ -178,6 +291,15 @@ TCase* acl_tcase() {
   tcase_add_checked_fixture(tc, setup, teardown);
 
   tcase_add_test(tc, destroy_null_acl);
+  tcase_add_test(tc, can_null_acl);
+  tcase_add_test(tc, can_null_path);
+  tcase_add_test(tc, can_zero_len);
+  tcase_add_test(tc, can_empty_tree_len_1);
+  tcase_add_test(tc, can_empty_tree_len_2);
+  tcase_add_test(tc, can_with_tree_len_shorter);
+  tcase_add_test(tc, can_with_tree_len_longer);
+  tcase_add_test(tc, can_with_tree_value_len_shorter);
+  tcase_add_test(tc, can_with_tree_value_len_longer);
   tcase_add_test(tc, get_node_null_acl);
   tcase_add_test(tc, get_node_null_path);
   tcase_add_test(tc, get_node_negative_len);

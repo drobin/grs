@@ -50,6 +50,23 @@ acl_t acl_init();
 int acl_destroy(acl_t acl);
 
 /**
+ * Tests whether you can access the given path.
+ *
+ * It walks througth the tree of acl-nodes starting from the end of path up to
+ * the root-node and stops at the node, where some ACL-information are stored.
+ * So you can overwrite the ACL from the more general nodes at or near the
+ * root of the node-tree and the concrete nodes near the leave(s) of the tree.
+ *
+ * @param acl The ACL-handle
+ * @param path The path to check.
+ * @param len Number of path-elements in <code>path</code>. Note, that you need
+ *            at least one element!
+ * @return When you are allowed to access the given <code>path</code>, then
+ *         <code>true</code> is returned.
+ */
+int acl_can(acl_t acl, const char** path, int len);
+
+/**
  * Returns the node of the given path.
  *
  * The node is created, if it doesn't alredy exists. If the path is empty,
