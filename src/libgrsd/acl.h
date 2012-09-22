@@ -56,11 +56,11 @@ int acl_destroy(acl_t acl);
  * then the root-node is returned.
  *
  * @param acl The ACL-handle
- * @param path The path of the node to be returned. The last element of the
- *             array is <code>NULL</code> to mark the end of the array.
+ * @param path The path of the node to be returned.
+ * @param len Number of path-elements in <code>path</code>.
  * @return The node of the requested path.
  */
-acl_node_t acl_get_node(acl_t acl, const char** path);
+acl_node_t acl_get_node(acl_t acl, const char** path, int len);
 
 /**
  * Return the parent of the given node.

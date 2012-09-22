@@ -118,11 +118,11 @@ int acl_destroy(acl_t acl) {
   return 0;
 }
 
-acl_node_t acl_get_node(acl_t acl, const char** path) {
+acl_node_t acl_get_node(acl_t acl, const char** path, int len) {
   struct _acl_node* node;
   int i;
 
-  if (acl == NULL || path == NULL) {
+  if (acl == NULL || path == NULL || len < 0) {
     return NULL;
   }
 
@@ -133,7 +133,7 @@ acl_node_t acl_get_node(acl_t acl, const char** path) {
     }
   }
 
-  for (node = acl->root, i = 0; path[i] != NULL; i++) {
+  for (node = acl->root, i = 0; i < len; i++) {
     node = acl_node_get_or_create(node, path[i]);
   }
 
