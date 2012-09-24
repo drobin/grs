@@ -20,6 +20,7 @@
 #ifndef SESSION_H
 #define SESSION_H
 
+#include "grs.h"
 #include "process.h"
 
 struct _session;
@@ -32,7 +33,7 @@ enum session_state {
   EXECUTING
 };
 
-session_t session_create();
+session_t session_create(grs_t grs);
 int session_destroy(session_t session);
 
 enum session_state session_get_state(session_t session);

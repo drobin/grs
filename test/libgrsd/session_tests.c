@@ -21,16 +21,25 @@
 
 #include "../../src/libgrsd/session.h"
 
+static grs_t grs;
 static session_t session;
 
 static void setup() {
-  fail_unless((session = session_create()) != NULL);
+  fail_unless((grs = grs_init()) != NULL);
+  fail_unless((session = session_create(grs)) != NULL);
 }
 
 static void teardown() {
   fail_unless(session_destroy(session) == 0);
+  fail_unless(grs_destroy(grs) == 0);
   session = NULL;
+  grs = NULL;
 }
+
+START_TEST(create_null_grs) {
+  fail_unless(session_create(NULL) == NULL);
+}
+END_TEST
 
 START_TEST(destroy_null_session) {
   fail_unless(session_destroy(NULL) == -1);
@@ -167,6 +176,7 @@ TCase* session_tcase() {
   TCase* tc = tcase_create("session");
   tcase_add_checked_fixture(tc, setup, teardown);
 
+  tcase_add_test(tc, create_null_grs);
   tcase_add_test(tc, destroy_null_session);
   tcase_add_test(tc, get_state_null_session);
   tcase_add_test(tc, get_state_initial);

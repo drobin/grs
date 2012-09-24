@@ -24,17 +24,23 @@
 
 
 struct _session {
+  grs_t grs;
   enum session_state state;
   process_t process;
 };
 
-session_t session_create() {
+session_t session_create(grs_t grs) {
   struct _session* session;
+
+  if (grs == NULL) {
+    return NULL;
+  }
 
   if ((session = malloc(sizeof(struct _session))) == NULL) {
     return NULL;
   }
 
+  session->grs = grs;
   session->state = NEED_AUTHENTICATION;
   session->process = NULL;
 

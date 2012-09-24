@@ -224,7 +224,7 @@ static int handle_ssh_bind(ssh_bind bind, struct session_list* slist,
     log_debug("Key exchange done");
   }
 
-  if ((grs_session = session_create()) == NULL) {
+  if ((grs_session = session_create(grs)) == NULL) {
     log_err("Failed to create a GRS session");
     ssh_free(session);
     return -1;
