@@ -23,6 +23,7 @@
 #include "grs.h"
 
 struct _grs {
+  acl_t acl;
   process_env_t process_env;
 };
 
@@ -35,7 +36,12 @@ grs_t grs_init() {
 
   memset(handle, 0, sizeof(struct _grs));
 
+  if ((handle->acl = acl_init()) == NULL) {
+    free(handle);
+  }
+
   if ((handle->process_env = process_env_create()) == NULL) {
+    acl_destroy(handle->acl);
     free(handle);
   }
 
@@ -47,10 +53,19 @@ int grs_destroy(grs_t handle) {
     return -1;
   }
 
+  acl_destroy(handle->acl);
   process_env_destroy(handle->process_env);
   free(handle);
 
   return 0;
+}
+
+acl_t grs_get_acl(grs_t handle) {
+  if (handle == NULL) {
+    return NULL;
+  }
+
+  return handle->acl;
 }
 
 process_env_t grs_get_process_env(grs_t handle) {

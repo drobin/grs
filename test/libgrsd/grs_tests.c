@@ -41,6 +41,16 @@ START_TEST(destroy_null_handle) {
 }
 END_TEST
 
+START_TEST(get_acl_null_handle) {
+  fail_unless(grs_get_acl(NULL) == NULL);
+}
+END_TEST
+
+START_TEST(get_acl) {
+  fail_unless(grs_get_acl(handle) != NULL);
+}
+END_TEST
+
 START_TEST(get_process_env_null_handle) {
   fail_unless(grs_get_process_env(NULL) == NULL);
 }
@@ -56,6 +66,8 @@ TCase* grs_tcase() {
   tcase_add_checked_fixture(tc, setup, teardown);
 
   tcase_add_test(tc, destroy_null_handle);
+  tcase_add_test(tc, get_acl_null_handle);
+  tcase_add_test(tc, get_acl);
   tcase_add_test(tc, get_process_env_null_handle);
   tcase_add_test(tc, get_process_env);
 

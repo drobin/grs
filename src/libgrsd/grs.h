@@ -20,6 +20,7 @@
 #ifndef GRSD_H
 #define GRSD_H
 
+#include "acl.h"
 #include "process.h"
 
 struct _grs;
@@ -43,6 +44,14 @@ grs_t grs_init();
  * @return On success <code>0</code> is returned, on error <code>-1</code>.
  */
 int grs_destroy(grs_t handle);
+
+/**
+ * Returns the ACL-system assigned to rge grs-handle.
+ *
+ * @param handle The handle
+ * @return The ACL-system assigned to this grs-handle
+ */
+acl_t grs_get_acl(grs_t handle);
 
 /**
  * Returns the process-environment assigned to the grs-handle.
