@@ -61,6 +61,14 @@ int session_destroy(session_t session) {
   return 0;
 }
 
+grs_t session_get_grs(session_t session) {
+  if (session == NULL) {
+    return NULL;
+  }
+
+  return session->grs;
+}
+
 enum session_state session_get_state(session_t session) {
   if (session == NULL) {
     return -1;

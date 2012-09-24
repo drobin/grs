@@ -35,6 +35,7 @@ enum session_state {
 
 session_t session_create(grs_t grs);
 int session_destroy(session_t session);
+grs_t session_get_grs(session_t session);
 
 enum session_state session_get_state(session_t session);
 int session_set_state(session_t session, enum session_state state);

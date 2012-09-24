@@ -46,6 +46,16 @@ START_TEST(destroy_null_session) {
 }
 END_TEST
 
+START_TEST(get_grs_null_session) {
+  fail_unless(session_get_grs(NULL) == NULL);
+}
+END_TEST
+
+START_TEST(get_grs) {
+  fail_unless(session_get_grs(session) == grs);
+}
+END_TEST
+
 START_TEST(get_state_null_session) {
   fail_unless(session_get_state(NULL) == -1);
 }
@@ -178,6 +188,8 @@ TCase* session_tcase() {
 
   tcase_add_test(tc, create_null_grs);
   tcase_add_test(tc, destroy_null_session);
+  tcase_add_test(tc, get_grs_null_session);
+  tcase_add_test(tc, get_grs);
   tcase_add_test(tc, get_state_null_session);
   tcase_add_test(tc, get_state_initial);
   tcase_add_test(tc, set_state_null_session);
