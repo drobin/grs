@@ -67,10 +67,17 @@ int acl_destroy(acl_t acl);
 int acl_can(acl_t acl, const char** path, int len);
 
 /**
+ * Returns the root-node of the ACL-system.
+ *
+ * @param acl The ACL-handle
+ * @return The root-node of the ACL-system
+ */
+acl_node_t acl_get_root_node(acl_t acl);
+
+/**
  * Returns the node of the given path.
  *
- * The node is created, if it doesn't alredy exists. If the path is empty,
- * then the root-node is returned.
+ * The node is created, if it doesn't alredy exists.
  *
  * @param acl The ACL-handle
  * @param path The path of the node to be returned.

@@ -147,11 +147,8 @@ int acl_can(acl_t acl, const char** path, int len) {
   return 0;
 }
 
-acl_node_t acl_get_node(acl_t acl, const char** path, int len) {
-  struct _acl_node* node;
-  int i;
-
-  if (acl == NULL || path == NULL || len < 0) {
+acl_node_t acl_get_root_node(acl_t acl) {
+  if (acl == NULL) {
     return NULL;
   }
 
@@ -162,7 +159,18 @@ acl_node_t acl_get_node(acl_t acl, const char** path, int len) {
     }
   }
 
-  for (node = acl->root, i = 0; i < len; i++) {
+  return acl->root;
+}
+
+acl_node_t acl_get_node(acl_t acl, const char** path, int len) {
+  struct _acl_node* node;
+  int i;
+
+  if (acl == NULL || path == NULL || len < 0) {
+    return NULL;
+  }
+
+  for (node = acl_get_root_node(acl), i = 0; i < len; i++) {
     node = acl_node_get_or_create(node, path[i], 1);
   }
 
@@ -177,14 +185,7 @@ int acl_has_node(acl_t acl, const char** path, int len) {
     return -1;
   }
 
-  if (acl->root == NULL) {
-    // First, create the root-node
-    if ((acl->root = acl_node_get_or_create(NULL, NULL, 1)) == NULL) {
-      return -1;
-    }
-  }
-
-  for (node = acl->root, i = 0; i < len; i++) {
+  for (node = acl_get_root_node(acl), i = 0; i < len; i++) {
     if ((node = acl_node_get_or_create(node, path[i], 0)) == NULL) {
       return 0;
     }

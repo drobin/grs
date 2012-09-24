@@ -161,6 +161,21 @@ START_TEST(can_with_tree_value_len_longer) {
 }
 END_TEST
 
+START_TEST(get_root_node_null_acl) {
+  fail_unless(acl_get_root_node(NULL) == NULL);
+}
+END_TEST
+
+START_TEST(get_root_node) {
+  acl_node_t root;
+
+  fail_unless((root = acl_get_root_node(acl)) != NULL);
+  fail_unless(acl_get_root_node(acl) == root);
+  fail_unless(acl_node_get_parent(root) == NULL);
+  fail_unless(acl_node_get_name(root) == NULL);
+}
+END_TEST
+
 START_TEST(get_node_null_acl) {
   fail_unless(acl_get_node(NULL, c_path, 2) == NULL);
 }
@@ -331,6 +346,8 @@ TCase* acl_tcase() {
   tcase_add_test(tc, can_with_tree_len_longer);
   tcase_add_test(tc, can_with_tree_value_len_shorter);
   tcase_add_test(tc, can_with_tree_value_len_longer);
+  tcase_add_test(tc, get_root_node_null_acl);
+  tcase_add_test(tc, get_root_node);
   tcase_add_test(tc, get_node_null_acl);
   tcase_add_test(tc, get_node_null_path);
   tcase_add_test(tc, get_node_negative_len);
