@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include <check.h>
+#include <unistd.h>
 
 extern TCase* acl_tcase();
 extern TCase* grs_tcase();
@@ -37,13 +38,25 @@ static Suite* grs_suite() {
 
 int main(int argc, char** argv) {
   int nfailed;
+  int c;
+  int enable_debug = 0;
+
+  while ((c = getopt(argc, argv, "d")) != -1) {
+    switch (c) {
+      case 'd':
+        enable_debug = 1;
+        break;
+      default:
+        return 1;
+    }
+  }
 
   Suite* s = grs_suite();
   SRunner* sr = srunner_create(s);
 
-  #ifdef ENABLE_DEBUG
-  srunner_set_fork_status(sr, CK_NOFORK);
-  #endif
+  if (enable_debug) {
+    srunner_set_fork_status(sr, CK_NOFORK);
+  }
 
   srunner_run_all(sr, CK_NORMAL);
 
