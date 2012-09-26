@@ -135,7 +135,11 @@ int acl_can(acl_t acl, const char** path, int len) {
       continue;
     }
 
-    node = acl_get_node(acl, path, idx);
+    if (idx > 0) {
+      node = acl_get_node(acl, path, idx);
+    } else {
+      node = acl_get_root_node(acl);
+    }
 
     if ((value = acl_node_get_value(node, 0)) == NULL) {
       continue;
@@ -166,7 +170,7 @@ acl_node_t acl_get_node(acl_t acl, const char** path, int len) {
   struct _acl_node* node;
   int i;
 
-  if (acl == NULL || path == NULL || len < 0) {
+  if (acl == NULL || path == NULL || len < 1) {
     return NULL;
   }
 

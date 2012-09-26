@@ -69,7 +69,7 @@ START_TEST(can_empty_tree_len_1) {
 
   fail_unless(!acl_can(acl, c_path, 1));
 
-  fail_unless((root = acl_get_node(acl, c_path, 0)) != NULL);
+  fail_unless((root = acl_get_root_node(acl)) != NULL);
   fail_unless((value = acl_node_get_value(root, 1)) != NULL);
   value->flag = 1;
 
@@ -83,7 +83,7 @@ START_TEST(can_empty_tree_len_2) {
 
   fail_unless(!acl_can(acl, c_path, 2));
 
-  fail_unless((root = acl_get_node(acl, c_path, 0)) != NULL);
+  fail_unless((root = acl_get_root_node(acl)) != NULL);
   fail_unless((value = acl_node_get_value(root, 1)) != NULL);
   value->flag = 1;
 
@@ -98,7 +98,7 @@ START_TEST(can_with_tree_len_shorter) {
   fail_unless((node = acl_get_node(acl, c_path, 2)) != NULL);
   fail_unless(!acl_can(acl, c_path, 1));
 
-  fail_unless((root = acl_get_node(acl, c_path, 0)) != NULL);
+  fail_unless((root = acl_get_root_node(acl)) != NULL);
   fail_unless((value = acl_node_get_value(root, 1)) != NULL);
   value->flag = 1;
 
@@ -113,7 +113,7 @@ START_TEST(can_with_tree_len_longer) {
   fail_unless((node = acl_get_node(acl, c_path, 1)) != NULL);
   fail_unless(!acl_can(acl, c_path, 2));
 
-  fail_unless((root = acl_get_node(acl, c_path, 0)) != NULL);
+  fail_unless((root = acl_get_root_node(acl)) != NULL);
   fail_unless((value = acl_node_get_value(root, 1)) != NULL);
   value->flag = 1;
 
@@ -133,7 +133,7 @@ START_TEST(can_with_tree_value_len_shorter) {
 
   value->flag = 0;
 
-  fail_unless((node = acl_get_node(acl, c_path, 0)) != NULL);
+  fail_unless((node = acl_get_root_node(acl)) != NULL);
   fail_unless((value = acl_node_get_value(node, 1)) != NULL);
   value->flag = 1;
 
@@ -153,7 +153,7 @@ START_TEST(can_with_tree_value_len_longer) {
 
   value->flag = 0;
 
-  fail_unless((node = acl_get_node(acl, c_path, 0)) != NULL);
+  fail_unless((node = acl_get_root_node(acl)) != NULL);
   fail_unless((value = acl_node_get_value(node, 1)) != NULL);
   value->flag = 1;
 
@@ -191,21 +191,11 @@ START_TEST(get_node_negative_len) {
 }
 END_TEST
 
-START_TEST(get_node_root) {
-  acl_node_t root;
-
-  fail_unless((root = acl_get_node(acl, c_path, 0)) != NULL);
-  fail_unless(acl_get_node(acl, c_path, 0) == root);
-  fail_unless(acl_node_get_parent(root) == NULL);
-  fail_unless(acl_node_get_name(root) == NULL);
-}
-END_TEST
-
 START_TEST(get_node_a) {
   acl_node_t node, parent;
 
   fail_unless((node = acl_get_node(acl, c_path, 1)) != NULL);
-  fail_unless((parent = acl_get_node(acl, c_path, 0)) != NULL);
+  fail_unless((parent = acl_get_root_node(acl)) != NULL);
   fail_unless(acl_get_node(acl, c_path, 1) == node);
   fail_unless(acl_node_get_parent(node) == parent);
   fail_unless(strcmp(acl_node_get_name(node), "a") == 0);
@@ -216,7 +206,7 @@ START_TEST(get_node_b) {
   acl_node_t node, parent;
 
   fail_unless((node = acl_get_node(acl, e_path, 1)) != NULL);
-  fail_unless((parent = acl_get_node(acl, e_path, 0)) != NULL);
+  fail_unless((parent = acl_get_root_node(acl)) != NULL);
   fail_unless(acl_get_node(acl, e_path, 1) == node);
   fail_unless(acl_node_get_parent(node) == parent);
   fail_unless(strcmp(acl_node_get_name(node), "b") == 0);
@@ -351,7 +341,6 @@ TCase* acl_tcase() {
   tcase_add_test(tc, get_node_null_acl);
   tcase_add_test(tc, get_node_null_path);
   tcase_add_test(tc, get_node_negative_len);
-  tcase_add_test(tc, get_node_root);
   tcase_add_test(tc, get_node_a);
   tcase_add_test(tc, get_node_b);
   tcase_add_test(tc, get_node_c);
