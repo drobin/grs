@@ -155,6 +155,7 @@ static int handle_ssh_channel_request(struct session_entry* entry,
 
 static int handle_ssh_session(struct session_list* list,
                               struct session_entry* entry, grs_t grs) {
+  int result = 0;
   ssh_message msg;
 
   log_debug("Session is selected");
@@ -171,20 +172,25 @@ static int handle_ssh_session(struct session_list* list,
   switch (session_get_state(entry->grs_session)) {
     case NEED_AUTHENTICATION:
       log_debug("Session state: NEED_AUTHENTICATION");
-      handle_ssh_authentication(entry->grs_session, msg);
+      result = handle_ssh_authentication(entry->grs_session, msg);
       break;
     case NEED_PROCESS:
       log_debug("Session state: NEED_PROCESS");
       if (entry->channel == NULL) {
-        handle_ssh_channel_open(entry, msg);
+        result = handle_ssh_channel_open(entry, msg);
       } else {
-        handle_ssh_channel_request(entry, msg, grs);
+        result = handle_ssh_channel_request(entry, msg, grs);
       }
       break;
     default:
       log_debug("Session state: default");
-      close_and_free_session_entry(list, entry);
+      result = -1;
       break;
+  }
+
+  if (result != 0) {
+    log_debug("Asked to close and free the session");
+    close_and_free_session_entry(list, entry);
   }
 
   ssh_message_free(msg);
