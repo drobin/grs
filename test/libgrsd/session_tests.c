@@ -25,8 +25,18 @@ static grs_t grs;
 static session_t session;
 
 static void setup() {
+  acl_t acl;
+  acl_node_t node;
+  struct acl_node_value* value;
+
   fail_unless((grs = grs_init()) != NULL);
   fail_unless((session = session_create(grs)) != NULL);
+
+  // Setup ACL-system, that everybody can do everything
+  fail_unless((acl = grs_get_acl(session_get_grs(session))) != NULL);
+  fail_unless((node = acl_get_root_node(acl)) != NULL);
+  fail_unless((value = acl_node_get_value(node, 1)) != NULL);
+  value->flag = 1;
 }
 
 static void teardown() {
@@ -175,6 +185,28 @@ START_TEST(exec_wrong_state) {
 }
 END_TEST
 
+START_TEST(exec_no_access) {
+  acl_t acl;
+  acl_node_t node;
+  struct acl_node_value* value;
+  process_env_t env;
+  process_t process;
+
+  fail_unless((acl = grs_get_acl(session_get_grs(session))) != NULL);
+  fail_unless((node = acl_get_root_node(acl)) != NULL);
+  fail_unless((value = acl_node_get_value(node, 1)) != NULL);
+  value->flag = 0;
+
+  fail_unless((env = process_env_create()) != NULL);
+  fail_unless(session_set_state(session, NEED_PROCESS) == 0);
+  fail_unless((process = session_create_process(session, env, "foobar")) != NULL);
+  fail_unless(session_exec(session) == -1);
+  fail_unless(session_get_state(session) == NEED_EXEC);
+
+  fail_unless(process_env_destroy(env) == 0);
+}
+END_TEST
+
 START_TEST(exec_success) {
   fail_unless(session_set_state(session, NEED_EXEC) == 0);
   fail_unless(session_exec(session) == 0);
@@ -208,6 +240,7 @@ TCase* session_tcase() {
   tcase_add_test(tc, create_process_success);
   tcase_add_test(tc, exec_null_session);
   tcase_add_test(tc, exec_wrong_state);
+  tcase_add_test(tc, exec_no_access);
   tcase_add_test(tc, exec_success);
 
   return tc;

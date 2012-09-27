@@ -131,6 +131,8 @@ process_t session_create_process(session_t session, process_env_t env,
 }
 
 int session_exec(session_t session) {
+  const char* command;
+
   if (session == NULL) {
     return -1;
   }
@@ -139,8 +141,14 @@ int session_exec(session_t session) {
     return -1;
   }
 
-  process_exec(session->process);
-  session->state = EXECUTING;
+  command = process_get_command(session->process);
 
-  return 0;
+  if (acl_can(grs_get_acl(session->grs), &command, 1)) {
+    process_exec(session->process);
+    session->state = EXECUTING;
+
+    return 0;
+  } else {
+    return -1;
+  }
 }
