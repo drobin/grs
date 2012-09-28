@@ -127,7 +127,7 @@ int acl_can(acl_t acl, const char** path, int len) {
     return -1;
   }
 
-  for (idx = len - 1; idx >= 0; idx--) {
+  for (idx = len; idx >= 0; idx--) {
     acl_node_t node;
     struct acl_node_value* value;
 
