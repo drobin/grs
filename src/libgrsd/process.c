@@ -274,9 +274,15 @@ int process_fork(process_t process, char* const argv[]) {
 
 int process_exec(process_t process) {
   command_hook hook;
+  int idx;
 
   if (process == NULL) {
     return -1;
+  }
+
+  log_debug("Executing process");
+  for (idx = 0; process->token[idx] != NULL; idx++) {
+    log_debug("Token %i: %s", idx, process->token[idx]);
   }
 
   hook = process_env_get_command(process->env, process->token[0]);
