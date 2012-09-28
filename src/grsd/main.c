@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <libgrsd/acl.h>
 #include <libgrsd/grs.h>
 #include <libgrsd/log.h>
 #include <libssh/libssh.h>
@@ -45,6 +46,24 @@ static void leave_handler(int sig) {
 static void usage() {
   printf("USAGE\n");
   exit(1);
+}
+
+static void setup_acl(grs_t grs, int writable) {
+  acl_t acl;
+  acl_node_t node;
+  struct acl_node_value* value;
+
+  acl = grs_get_acl(grs);
+  node = acl_get_root_node(acl);
+  value = acl_node_get_value(node, 1);
+  value->flag = 1; // Default: you have access
+
+  if (!writable) {
+    const char* path = "git-receive-pack";
+    node = acl_get_node(acl, &path, 1);
+    value = acl_node_get_value(node, 1);
+    value->flag = 0; // Forbit git-receive-pack if read-only
+  }
 }
 
 static void close_and_free_session_entry(struct session_list* list,
@@ -148,7 +167,11 @@ static int handle_ssh_channel_request(struct session_entry* entry,
 
   process = session_create_process(entry->grs_session, grs_get_process_env(grs),
     ssh_message_channel_request_command(msg));
-  session_exec(entry->grs_session);
+
+  if (session_exec(entry->grs_session) != 0) {
+    log_debug("Failed to exec command");
+    return -1;
+  }
 
   return 0;
 }
@@ -258,6 +281,7 @@ int main(int argc, char** argv) {
   ssh_bind bind;
   char* hostkey = "";
   int port = 22;
+  int writable = 0;
   int ch, result;
   grs_t grs;
   struct session_list session_list;
@@ -267,7 +291,7 @@ int main(int argc, char** argv) {
 
   sigaction(SIGINT, &sa, NULL);
 
-  while ((ch = getopt(argc, argv, "p:k:?")) != -1) {
+  while ((ch = getopt(argc, argv, "p:k:w?")) != -1) {
     switch (ch) {
     case 'p':
       port = atoi(optarg);
@@ -275,6 +299,9 @@ int main(int argc, char** argv) {
     case 'k':
       hostkey = optarg;
       break;
+      case 'w':
+        writable = 1;
+        break;
     default:
       usage();
     }
@@ -282,6 +309,8 @@ int main(int argc, char** argv) {
 
   grs = grs_init();
   SESSION_LIST_INIT(session_list);
+
+  setup_acl(grs, writable);
 
   if ((bind = ssh_bind_new()) != NULL) {
     log_debug("SSH server bind created");
