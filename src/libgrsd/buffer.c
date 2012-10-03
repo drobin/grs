@@ -67,6 +67,14 @@ int buffer_get_size(buffer_t buffer) {
   return buffer->size;
 }
 
+char* buffer_get_data(buffer_t buffer) {
+  if (buffer == NULL) {
+    return NULL;
+  }
+
+  return buffer->buf;
+}
+
 int buffer_append(buffer_t buffer, char* data, unsigned int nbytes) {
   if (buffer == NULL || data == NULL) {
     return -1;

@@ -62,6 +62,18 @@ int buffer_get_capacity(buffer_t buffer);
 int buffer_get_size(buffer_t buffer);
 
 /**
+ * Returns the data of the buffer.
+ *
+ * If the buffer is empty, then an undefined data-pointer is returned. It can
+ * be <code>NULL</code> but also can be an arbitrary pointer. So check the
+ * size of the array before calling this function.
+ *
+ * @param buffer The requested buffer
+ * @return If the buffer is not empty, then the data-pointer is returned.
+ */
+char* buffer_get_data(buffer_t buffer);
+
+/**
  * Appends data onto the buffer.
  *
  * If the capacity of the buffer is not big enough to hold all the data, then
