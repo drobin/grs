@@ -25,5 +25,6 @@ void log_warn(const char* format, ...);
 void log_err(const char* format, ...);
 void log_fatal(const char* format, ...);
 void log_debug(const char* format, ...);
+void log_data(const char* prefix, const char* buf, size_t nbytes);
 
 #endif  /* LOG_H */

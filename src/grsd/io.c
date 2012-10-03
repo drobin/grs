@@ -47,6 +47,7 @@ int process2channel(struct session_list* list, struct session_entry* entry) {
   }
 
   log_debug("%i bytes read from process", nread);
+  log_data("P2C", list->buffer, nread);
 
   while (nwritten < nread) {
     int nbytes = ssh_channel_write(entry->channel,
@@ -76,6 +77,8 @@ int channel2process(struct session_list* list, struct session_entry* entry) {
   } else {
     log_debug("%i bytes read from channel", nread);
   }
+
+  log_data("C2P", list->buffer, nread);
 
   if ((process = session_get_process(entry->grs_session)) == NULL) {
     log_err("You don't have a destination process");

@@ -17,9 +17,11 @@
  *
  ******************************************************************************/
 
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "log.h"
 
@@ -89,4 +91,51 @@ void log_debug(const char* format, ...) {
   va_start(ap, format);
   do_log(LOG_DEBUG, format, ap);
   va_end(ap);
+}
+
+inline static char buf2char(char buf) {
+  if (isalnum(buf)) {
+    return buf;
+  } else {
+    return '?';
+  }
+}
+
+void log_data(const char* prefix, const char* buf, size_t nbytes) {
+  const int block_size = 16;
+  int i, block, nblocks;
+  char hex_block[block_size * 10];
+  char ascii_block[block_size * 10];
+
+  nblocks = nbytes / block_size;
+  if (nbytes % block_size > 0) {
+    nblocks++;
+  }
+
+  for (block = 0; block < nblocks; block++) {
+    hex_block[0] = '\0';
+    ascii_block[0] = '\0';
+
+    for (i = 0; i < block_size; i++) {
+      int idx = block * block_size + i;
+
+      if (idx >= nbytes) {
+        break;
+      }
+
+      if (i == 0) {
+        sprintf(hex_block, "%02X", (buf[idx] & 0xFF));
+        sprintf(ascii_block, "%c", buf2char(buf[idx]));
+      } else {
+        sprintf(hex_block, "%s %02X", hex_block, (buf[idx] & 0xFF));
+        sprintf(ascii_block, "%s%c", ascii_block, buf2char(buf[idx]));
+      }
+    }
+
+    while (strlen(hex_block) < 3 * block_size) {
+      strncat(hex_block, " ", 1);
+    }
+
+    fprintf(stdout, "[%s] %s%s\n", prefix, hex_block, ascii_block);
+  }
 }
