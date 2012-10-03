@@ -41,6 +41,17 @@ buffer_t buffer_create();
 int buffer_destroy(buffer_t buffer);
 
 /**
+ * Returns the capacity of the buffer.
+ *
+ * This is the amount of data you can store in the buffer without reorganizing
+ * it.
+ *
+ * @param buffer The requested buffer
+ * @return The capacity of the buffer.
+ */
+int buffer_get_capacity(buffer_t buffer);
+
+/**
  * Returns the size of the buffer.
  *
  * This is the number of bytes actually stored in the buffer.

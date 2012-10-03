@@ -23,6 +23,7 @@
 #include "buffer.h"
 
 struct _buffer {
+  unsigned int capacity;
   unsigned int size;
 };
 
@@ -46,6 +47,14 @@ int buffer_destroy(buffer_t buffer) {
   free(buffer);
 
   return 0;
+}
+
+int buffer_get_capacity(buffer_t buffer) {
+  if (buffer == NULL) {
+    return -1;
+  }
+
+  return buffer->capacity;
 }
 
 int buffer_get_size(buffer_t buffer) {
