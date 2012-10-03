@@ -27,6 +27,7 @@ struct _session {
   grs_t grs;
   enum session_state state;
   process_t process;
+  buffer_t in_buf;
 };
 
 session_t session_create(grs_t grs) {
@@ -43,6 +44,7 @@ session_t session_create(grs_t grs) {
   session->grs = grs;
   session->state = NEED_AUTHENTICATION;
   session->process = NULL;
+  session->in_buf = buffer_create();
 
   return session;
 }
@@ -56,6 +58,7 @@ int session_destroy(session_t session) {
     process_destroy(session->process);
   }
 
+  buffer_destroy(session->in_buf);
   free(session);
 
   return 0;
@@ -128,6 +131,14 @@ process_t session_create_process(session_t session, process_env_t env,
   session->state = NEED_EXEC;
 
   return session->process;
+}
+
+buffer_t session_get_in_buffer(session_t session) {
+  if (session == NULL) {
+    return NULL;
+  }
+
+  return session->in_buf;
 }
 
 int session_exec(session_t session) {

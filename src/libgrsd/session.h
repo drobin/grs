@@ -20,6 +20,7 @@
 #ifndef SESSION_H
 #define SESSION_H
 
+#include "buffer.h"
 #include "grs.h"
 #include "process.h"
 
@@ -45,6 +46,16 @@ int session_authenticate(session_t session,
 process_t session_get_process(session_t session);
 process_t session_create_process(session_t session, process_env_t env,
                                  const char* command);
+
+/**
+ * Returns the buffer, which is consumed by the session-process.
+ *
+ * You put data into this buffer and the process consumes the data.
+ *
+ * @param session The requested session
+ * @return The buffer you have to fill with data.
+ */
+buffer_t session_get_in_buffer(session_t session);
 
 int session_exec(session_t session);
 
