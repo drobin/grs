@@ -86,4 +86,16 @@ char* buffer_get_data(buffer_t buffer);
  */
 int buffer_append(buffer_t buffer, char* data, unsigned int nbytes);
 
+/**
+ * Removes data from the beginning of the buffer.
+ *
+ * Maximum <code>nbytes</code> are removed. The the size of the buffer is less
+ * then <code>nbytes</code>, then the whole buffer is cleared.
+ *
+ * @param buffer The destination buffer
+ * @param nbytes Number of bytes to removed from the buffer
+ * @return On success <code>0</code> is returned.
+ */
+int buffer_remove(buffer_t buffer, unsigned int nbytes);
+
 #endif  /* BUFFER_H */

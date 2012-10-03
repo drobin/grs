@@ -100,6 +100,76 @@ START_TEST(append_multiple) {
 }
 END_TEST
 
+START_TEST(remove_null_buffer) {
+  fail_unless(buffer_remove(NULL, 3) == -1);
+}
+END_TEST
+
+START_TEST(remove_not_empty) {
+  fail_unless(buffer_append(buffer, "12345", 5) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 5);
+  fail_unless(buffer_get_size(buffer) == 5);
+  fail_unless(memcmp(buffer_get_data(buffer), "12345", 5) == 0);
+
+  fail_unless(buffer_remove(buffer, 3) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 5);
+  fail_unless(buffer_get_size(buffer) == 2);
+  fail_unless(memcmp(buffer_get_data(buffer), "45", 2) == 0);
+}
+END_TEST
+
+START_TEST(remove_empty) {
+  fail_unless(buffer_append(buffer, "12345", 5) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 5);
+  fail_unless(buffer_get_size(buffer) == 5);
+  fail_unless(memcmp(buffer_get_data(buffer), "12345", 5) == 0);
+
+  fail_unless(buffer_remove(buffer, 5) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 5);
+  fail_unless(buffer_get_size(buffer) == 0);
+}
+END_TEST
+
+START_TEST(remove_over_size) {
+  fail_unless(buffer_append(buffer, "12345", 5) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 5);
+  fail_unless(buffer_get_size(buffer) == 5);
+  fail_unless(memcmp(buffer_get_data(buffer), "12345", 5) == 0);
+
+  fail_unless(buffer_remove(buffer, 50) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 5);
+  fail_unless(buffer_get_size(buffer) == 0);
+}
+END_TEST
+
+START_TEST(add_remove) {
+  fail_unless(buffer_append(buffer, "123", 3) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 3);
+  fail_unless(buffer_get_size(buffer) == 3);
+  fail_unless(memcmp(buffer_get_data(buffer), "123", 3) == 0);
+
+  fail_unless(buffer_remove(buffer, 2) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 3);
+  fail_unless(buffer_get_size(buffer) == 1);
+  fail_unless(memcmp(buffer_get_data(buffer), "3", 1) == 0);
+
+  fail_unless(buffer_append(buffer, "456", 3) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 4);
+  fail_unless(buffer_get_size(buffer) == 4);
+  fail_unless(memcmp(buffer_get_data(buffer), "3456", 4) == 0);
+
+  fail_unless(buffer_remove(buffer, 2) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 4);
+  fail_unless(buffer_get_size(buffer) == 2);
+  fail_unless(memcmp(buffer_get_data(buffer), "56", 2) == 0);
+
+  fail_unless(buffer_append(buffer, "7", 1) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 4);
+  fail_unless(buffer_get_size(buffer) == 3);
+  fail_unless(memcmp(buffer_get_data(buffer), "567", 3) == 0);
+}
+END_TEST
+
 TCase* buffer_tcase() {
   TCase* tc = tcase_create("buffer");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -115,6 +185,11 @@ TCase* buffer_tcase() {
   tcase_add_test(tc, append_no_data);
   tcase_add_test(tc, append_with_data);
   tcase_add_test(tc, append_multiple);
+  tcase_add_test(tc, remove_null_buffer);
+  tcase_add_test(tc, remove_not_empty);
+  tcase_add_test(tc, remove_empty);
+  tcase_add_test(tc, remove_over_size);
+  tcase_add_test(tc, add_remove);
 
   return tc;
 }

@@ -90,3 +90,18 @@ int buffer_append(buffer_t buffer, char* data, unsigned int nbytes) {
 
   return 0;
 }
+
+int buffer_remove(buffer_t buffer, unsigned int nbytes) {
+  if (buffer == NULL) {
+    return -1;
+  }
+
+  if (buffer->size >= nbytes) {
+    memmove(buffer->buf, buffer->buf + nbytes, nbytes);
+    buffer->size -= nbytes;
+  } else {
+    buffer->size = 0;
+  }
+
+  return 0;
+}
