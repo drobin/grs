@@ -185,6 +185,16 @@ START_TEST(get_in_buffer) {
 }
 END_TEST
 
+START_TEST(get_out_buffer_null_session) {
+  fail_unless(session_get_out_buffer(NULL) == NULL);
+}
+END_TEST
+
+START_TEST(get_out_buffer) {
+  fail_unless(session_get_out_buffer(session) != NULL);
+}
+END_TEST
+
 START_TEST(exec_null_session) {
   fail_unless(session_exec(NULL) == -1);
 }
@@ -250,6 +260,8 @@ TCase* session_tcase() {
   tcase_add_test(tc, create_process_success);
   tcase_add_test(tc, get_in_buffer_null_session);
   tcase_add_test(tc, get_in_buffer);
+  tcase_add_test(tc, get_out_buffer_null_session);
+  tcase_add_test(tc, get_out_buffer);
   tcase_add_test(tc, exec_null_session);
   tcase_add_test(tc, exec_wrong_state);
   tcase_add_test(tc, exec_no_access);

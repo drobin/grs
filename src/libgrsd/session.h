@@ -57,6 +57,17 @@ process_t session_create_process(session_t session, process_env_t env,
  */
 buffer_t session_get_in_buffer(session_t session);
 
+/**
+ * Returns the buffer, which is filled by the session-process.
+ *
+ * The process fills the buffer with data, which needs to be send back to the
+ * client.
+ *
+ * @param session The requested session
+ * @return The buffer you have to send back to the client
+ */
+buffer_t session_get_out_buffer(session_t session);
+
 int session_exec(session_t session);
 
 #endif  /* SESSION_H */
