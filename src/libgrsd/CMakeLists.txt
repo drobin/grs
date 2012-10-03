@@ -19,6 +19,7 @@
 
 SET(LIBGRSD_SOURCES
   acl.c
+  buffer.c
   grs.c
   log.c
   process.c
