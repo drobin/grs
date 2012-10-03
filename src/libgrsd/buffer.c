@@ -23,6 +23,7 @@
 #include "buffer.h"
 
 struct _buffer {
+  unsigned int size;
 };
 
 buffer_t buffer_create() {
@@ -45,4 +46,12 @@ int buffer_destroy(buffer_t buffer) {
   free(buffer);
 
   return 0;
+}
+
+int buffer_get_size(buffer_t buffer) {
+  if (buffer == NULL) {
+    return -1;
+  }
+
+  return buffer->size;
 }

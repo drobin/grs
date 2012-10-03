@@ -40,4 +40,14 @@ buffer_t buffer_create();
  */
 int buffer_destroy(buffer_t buffer);
 
+/**
+ * Returns the size of the buffer.
+ *
+ * This is the number of bytes actually stored in the buffer.
+ *
+ * @param The requested buffer
+ * @preturn The number of bytes stored in the buffer.
+ */
+int buffer_get_size(buffer_t buffer);
+
 #endif  /* BUFFER_H */

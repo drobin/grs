@@ -37,11 +37,23 @@ START_TEST(destroy_null_buffer) {
 }
 END_TEST
 
+START_TEST(get_size_null_buffer) {
+  fail_unless(buffer_get_size(NULL) == -1);
+}
+END_TEST
+
+START_TEST(get_size_empty_buffer) {
+  fail_unless(buffer_get_size(buffer) == 0);
+}
+END_TEST
+
 TCase* buffer_tcase() {
   TCase* tc = tcase_create("buffer");
   tcase_add_checked_fixture(tc, setup, teardown);
 
   tcase_add_test(tc, destroy_null_buffer);
+  tcase_add_test(tc, get_size_null_buffer);
+  tcase_add_test(tc, get_size_empty_buffer);
 
   return tc;
 }
