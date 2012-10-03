@@ -25,6 +25,7 @@
 struct _buffer {
   unsigned int capacity;
   unsigned int size;
+  char* buf;
 };
 
 buffer_t buffer_create() {
@@ -44,6 +45,7 @@ int buffer_destroy(buffer_t buffer) {
     return -1;
   }
 
+  free(buffer->buf);
   free(buffer);
 
   return 0;
@@ -63,4 +65,20 @@ int buffer_get_size(buffer_t buffer) {
   }
 
   return buffer->size;
+}
+
+int buffer_append(buffer_t buffer, char* data, unsigned int nbytes) {
+  if (buffer == NULL || data == NULL) {
+    return -1;
+  }
+
+  if (buffer->capacity < buffer->size + nbytes) {
+    buffer->buf = realloc(buffer->buf, buffer->size + nbytes);
+    buffer->capacity = buffer->size + nbytes;
+  }
+
+  memcpy(buffer->buf + buffer->size, data, nbytes);
+  buffer->size += nbytes;
+
+  return 0;
 }

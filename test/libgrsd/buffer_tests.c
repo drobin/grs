@@ -57,6 +57,41 @@ START_TEST(get_size_empty_buffer) {
 }
 END_TEST
 
+START_TEST(append_null_buffer) {
+  fail_unless(buffer_append(NULL, "123", 3) == -1);
+}
+END_TEST
+
+START_TEST(append_null_data) {
+  fail_unless(buffer_append(buffer, NULL, 3) == -1);
+}
+END_TEST
+
+START_TEST(append_no_data) {
+  fail_unless(buffer_append(buffer, "123", 0) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 0);
+  fail_unless(buffer_get_size(buffer) == 0);
+}
+END_TEST
+
+START_TEST(append_with_data) {
+  fail_unless(buffer_append(buffer, "123", 3) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 3);
+  fail_unless(buffer_get_size(buffer) == 3);
+}
+END_TEST
+
+START_TEST(append_multiple) {
+  fail_unless(buffer_append(buffer, "123", 3) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 3);
+  fail_unless(buffer_get_size(buffer) == 3);
+
+  fail_unless(buffer_append(buffer, "45", 2) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 5);
+  fail_unless(buffer_get_size(buffer) == 5);
+}
+END_TEST
+
 TCase* buffer_tcase() {
   TCase* tc = tcase_create("buffer");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -66,6 +101,11 @@ TCase* buffer_tcase() {
   tcase_add_test(tc, get_capacity_initial);
   tcase_add_test(tc, get_size_null_buffer);
   tcase_add_test(tc, get_size_empty_buffer);
+  tcase_add_test(tc, append_null_buffer);
+  tcase_add_test(tc, append_null_data);
+  tcase_add_test(tc, append_no_data);
+  tcase_add_test(tc, append_with_data);
+  tcase_add_test(tc, append_multiple);
 
   return tc;
 }

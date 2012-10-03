@@ -61,4 +61,17 @@ int buffer_get_capacity(buffer_t buffer);
  */
 int buffer_get_size(buffer_t buffer);
 
+/**
+ * Appends data onto the buffer.
+ *
+ * If the capacity of the buffer is not big enough to hold all the data, then
+ * the buffer is increased to the desired size.
+ *
+ * @param buffer The destination buffer
+ * @param data Data to by assigned to the buffer
+ * @param nbytes Size of <code>data</code>
+ * @return On success <code>0</code> is returned.
+ */
+int buffer_append(buffer_t buffer, char* data, unsigned int nbytes);
+
 #endif  /* BUFFER_H */
