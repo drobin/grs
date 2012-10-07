@@ -19,7 +19,6 @@
 
 #include <check.h>
 
-#include "../../src/libgrsd/process.h"
 #include "../../src/libgrsd/session.h"
 
 int test_hook(const char** comand, buffer_t in_buf, buffer_t out_buf) {
@@ -162,13 +161,11 @@ START_TEST(exec_no_hook) {
 END_TEST
 
 START_TEST(exec_success) {
-  process_env_t env = process_env_create();
+  grs_t grs = session_get_grs(session);
 
-  fail_unless(process_env_register_command(env, "foo", test_hook) == 0);
+  fail_unless(grs_register_command(grs, "foo", test_hook) == 0);
   fail_unless(session_set_command(session, "foo") == 0);
-  //fail_unless(session_exec(session) == 0);
-
-  process_env_destroy(env);
+  fail_unless(session_exec(session) == 0);
 }
 END_TEST
 

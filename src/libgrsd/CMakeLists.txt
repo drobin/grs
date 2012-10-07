@@ -22,7 +22,6 @@ SET(LIBGRSD_SOURCES
   buffer.c
   grs.c
   log.c
-  process.c
   session.c
 )
 

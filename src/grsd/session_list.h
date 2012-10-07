@@ -22,7 +22,6 @@
 
 #include <sys/queue.h>
 
-#include <libgrsd/process.h>
 #include <libgrsd/session.h>
 #include <libssh/libssh.h>
 
