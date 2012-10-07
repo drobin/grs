@@ -84,14 +84,6 @@ static int handle_ssh_authentication(session_t session, ssh_message msg) {
 
   log_debug("Handle authentication for session");
 
-  if (ssh_message_type(msg) != SSH_REQUEST_AUTH) {
-    log_debug("Ignoring message of type %i", ssh_message_type(msg));
-
-    ssh_message_reply_default(msg);
-
-    return 0;
-  }
-
   if (ssh_message_subtype(msg) != SSH_AUTH_METHOD_PASSWORD) {
     log_debug("Currently only password-authentication is supported.");
     log_debug("Rejecting auth-type %i", ssh_message_subtype(msg));
@@ -121,14 +113,6 @@ static int handle_ssh_authentication(session_t session, ssh_message msg) {
 static int handle_ssh_channel_open(struct session_entry* entry, ssh_message msg) {
   log_debug("Handle open-request for a channel");
 
-  if (ssh_message_type(msg) != SSH_REQUEST_CHANNEL_OPEN) {
-    log_debug("Ignoring message of type %i", ssh_message_type(msg));
-
-    ssh_message_reply_default(msg);
-
-    return 0;
-  }
-
   entry->channel = ssh_message_channel_request_open_reply_accept(msg);
   if (entry->channel != NULL) {
     log_debug("Channel is open");
@@ -142,17 +126,7 @@ static int handle_ssh_channel_open(struct session_entry* entry, ssh_message msg)
 
 static int handle_ssh_channel_request(struct session_entry* entry,
                                       ssh_message msg, grs_t grs) {
-  process_t process;
-
   log_debug("Handle channel-request");
-
-  if (ssh_message_type(msg) != SSH_REQUEST_CHANNEL) {
-    log_debug("Ignoring message of type %i", ssh_message_type(msg));
-
-    ssh_message_reply_default(msg);
-
-    return 0;
-  }
 
   if (ssh_message_subtype(msg) != SSH_CHANNEL_REQUEST_EXEC) {
     log_debug("Ignoring channel-type %i", ssh_message_subtype(msg));
@@ -165,14 +139,6 @@ static int handle_ssh_channel_request(struct session_entry* entry,
   ssh_message_channel_request_reply_success(msg);
   log_debug("Channel request accepted");
 
-  process = session_create_process(entry->grs_session, grs_get_process_env(grs),
-    ssh_message_channel_request_command(msg));
-
-  if (session_exec(entry->grs_session) != 0) {
-    log_debug("Failed to exec command");
-    return -1;
-  }
-
   return 0;
 }
 
@@ -180,6 +146,7 @@ static int handle_ssh_session(struct session_list* list,
                               struct session_entry* entry, grs_t grs) {
   int result = 0;
   ssh_message msg;
+  int msg_type;
 
   log_debug("Session is selected");
 
@@ -192,22 +159,24 @@ static int handle_ssh_session(struct session_list* list,
     return -1;
   }
 
-  switch (session_get_state(entry->grs_session)) {
-    case NEED_AUTHENTICATION:
-      log_debug("Session state: NEED_AUTHENTICATION");
+  switch ((msg_type = ssh_message_type(msg))) {
+    case SSH_REQUEST_AUTH:
+      log_debug("Session state: handle authentication");
       result = handle_ssh_authentication(entry->grs_session, msg);
       break;
-    case NEED_PROCESS:
-      log_debug("Session state: NEED_PROCESS");
-      if (entry->channel == NULL) {
-        result = handle_ssh_channel_open(entry, msg);
-      } else {
-        result = handle_ssh_channel_request(entry, msg, grs);
-      }
+    case SSH_REQUEST_CHANNEL_OPEN:
+      log_debug("Session state: open a channel");
+      result = handle_ssh_channel_open(entry, msg);
+      break;
+    case SSH_REQUEST_CHANNEL:
+      log_debug("Session state: channel request");
+      result = handle_ssh_channel_request(entry, msg, grs);
       break;
     default:
-      log_debug("Session state: default");
-      result = -1;
+      // Ignore message
+      log_debug("Ignore message of type %i", msg_type);
+      ssh_message_reply_default(msg);
+      result = 0;
       break;
   }
 
@@ -344,53 +313,37 @@ int main(int argc, char** argv) {
   }
 
   while (1) {
-    ssh_channel channels[session_list.size + 1];
-    ssh_channel outchannels[session_list.size + 1];
-    int nchannels = 0;
-    int nprocesses = 0;
     struct session_entry* entry;
-    fd_set read_fds;
+    fd_set read_fds, write_fds;
     int max_fd;
 
     FD_ZERO(&read_fds);
+    FD_ZERO(&write_fds);
     FD_SET(ssh_bind_get_fd(bind), &read_fds);
     max_fd = ssh_bind_get_fd(bind);
 
     SESSION_LIST_FOREACH(entry, session_list) {
-      process_t process;
+      buffer_t obuf;
 
-      if (session_get_state(entry->grs_session) < NEED_EXEC) {
-        FD_SET(ssh_get_fd(entry->session), &read_fds);
+      FD_SET(ssh_get_fd(entry->session), &read_fds);
 
-        if (ssh_get_fd(entry->session) > max_fd) {
-          max_fd = ssh_get_fd(entry->session);
-        }
+      // Also register session-fd in write-set if you have buffered data to
+      // write back to the client.
+      obuf = session_get_out_buffer(entry->grs_session);
+      if (entry->channel != NULL && buffer_get_size(obuf) > 0) {
+        FD_SET(ssh_get_fd(entry->session), &write_fds);
       }
 
-      if ((process = session_get_process(entry->grs_session)) != NULL) {
-        nprocesses++;
-        FD_SET(process_get_fd_out(process), &read_fds);
-
-        if (process_get_fd_out(process) > max_fd) {
-          max_fd = process_get_fd_out(process);
-        }
-      }
-
-      if (entry->channel != NULL) {
-        channels[nchannels] = entry->channel;
-        nchannels++;
+      if (ssh_get_fd(entry->session) > max_fd) {
+        max_fd = ssh_get_fd(entry->session);
       }
     }
 
-    channels[nchannels] = NULL;
-
     log_debug("# of queued sessions: %i", session_list.size);
-    log_debug("# of queued channels: %i", nchannels);
-    log_debug("# of queued processes: %i", nprocesses);
 
-    result = ssh_select(channels, outchannels, max_fd + 1, &read_fds, NULL);
+    result = select(max_fd + 1, &read_fds, &write_fds, NULL, NULL);
 
-    if (result == SSH_EINTR) {
+    if (result == -1 && errno == EINTR) {
       if (leave_selection_loop) {
         log_debug("Leaving selection loop");
         break;
@@ -400,40 +353,34 @@ int main(int argc, char** argv) {
     }
 
     if (FD_ISSET(ssh_bind_get_fd(bind), &read_fds)) {
+      // Connection-attempt
       handle_ssh_bind(bind, &session_list, grs);
     } else {
       SESSION_LIST_FOREACH(entry, session_list) {
-        process_t process;
-
         if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
-          handle_ssh_session(&session_list, entry, grs);
-        }
-
-        if ((process = session_get_process(entry->grs_session)) == NULL) {
-          log_warn("No process available for session, skipping");
-          continue;
-        }
-
-        // Test if there are data available from the process
-        if (FD_ISSET(process_get_fd_out(process), &read_fds) &&
-            process2channel(&session_list, entry) != 0) {
-          close_and_free_session_entry(&session_list, entry);
-          continue;
-        }
-
-        // Test if there are data available from the channel
-        if (entry->channel != NULL) {
-          int i;
-          for (i = 0; outchannels[i] != NULL; i++) {
-            if (entry->channel == outchannels[i] &&
-                channel2process(&session_list, entry) != 0) {
-              close_and_free_session_entry(&session_list, entry);
-              continue;
-            }
+          if (entry->channel != NULL && ssh_channel_poll(entry->channel, 0) > 0) {
+            // Data available in the channel, forward to process
+            channel2buf(&session_list, entry);
+          } else {
+            // handle initial ssh-handshake
+            handle_ssh_session(&session_list, entry, grs);
           }
         }
 
-        process_update_status(process);
+        if (FD_ISSET(ssh_get_fd(entry->session), &write_fds)) {
+          // Data available in the process, forward to the channel
+          buf2channel(&session_list, entry);
+        }
+
+        // Execute the process
+        if (session_exec(entry->grs_session) == 0) {
+          // Process has finished
+          buffer_t buf = session_get_out_buffer(entry->grs_session);
+          if (buffer_get_size(buf) == 0) {
+            // No cached data left, it's save to destroy the session now
+            close_and_free_session_entry(&session_list, entry);
+          }
+        }
       }
     }
   }

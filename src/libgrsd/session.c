@@ -25,7 +25,6 @@
 
 struct _session {
   grs_t grs;
-  process_t process;
   buffer_t in_buf;
   buffer_t out_buf;
 };
@@ -42,7 +41,6 @@ session_t session_create(grs_t grs) {
   }
 
   session->grs = grs;
-  session->process = NULL;
   session->in_buf = buffer_create();
   session->out_buf = buffer_create();
 
@@ -52,10 +50,6 @@ session_t session_create(grs_t grs) {
 int session_destroy(session_t session) {
   if (session == NULL) {
     return -1;
-  }
-
-  if (session->process != NULL) {
-    process_destroy(session->process);
   }
 
   buffer_destroy(session->in_buf);
