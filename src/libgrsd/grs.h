@@ -30,7 +30,7 @@ struct _grs;
  */
 typedef struct _grs* grs_t;
 
-typedef int (*command2_hook)(const char** command,
+typedef int (*command_hook)(const char** command,
                             buffer_t in_buf, buffer_t out_buf);
 
 /*
@@ -67,7 +67,7 @@ acl_t grs_get_acl(grs_t handle);
  * @param hook The hook which gets invoked
  * @return On success <code>0</code> is returned.
  */
-int grs_register_command(grs_t handle, const char* command, command2_hook hook);
+int grs_register_command(grs_t handle, const char* command, command_hook hook);
 
 /**
  * Receives the hook of an already registered command.
@@ -77,6 +77,6 @@ int grs_register_command(grs_t handle, const char* command, command2_hook hook);
  * @return The hook registered for the given command. If no such command is
  *         registered, <code>NULL</code> is returned.
  */
-command2_hook grs_get_command(grs_t handle, const char* command);
+command_hook grs_get_command(grs_t handle, const char* command);
 
 #endif /* GRSD_H */

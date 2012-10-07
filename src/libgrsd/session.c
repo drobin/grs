@@ -133,7 +133,7 @@ buffer_t session_get_out_buffer(session_t session) {
 }
 
 int session_exec(session_t session) {
-  command2_hook hook;
+  command_hook hook;
 
   if (session == NULL) {
     return -1;

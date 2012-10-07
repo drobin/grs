@@ -40,13 +40,13 @@ static void teardown() {
 }
 
 START_TEST(register_command_null_env) {
-  command2_hook hook;
+  command_hook hook;
   fail_unless(grs_register_command(NULL, "foobar", hook) == -1);
 }
 END_TEST
 
 START_TEST(register_command_null_command) {
-  command2_hook hook;
+  command_hook hook;
   fail_unless(grs_register_command(handle, NULL, hook) == -1);
 }
 END_TEST
@@ -67,8 +67,8 @@ START_TEST(get_command_null_command) {
 END_TEST
 
 START_TEST(get_command_found) {
-  command2_hook h1 = sample_command_hook_1;
-  command2_hook h2 = sample_command_hook_2;
+  command_hook h1 = sample_command_hook_1;
+  command_hook h2 = sample_command_hook_2;
 
   fail_unless(grs_register_command(handle, "hook1", h1) == 0);
   fail_unless(grs_register_command(handle, "hook2", h2) == 0);
@@ -79,8 +79,8 @@ END_TEST
 
 
 START_TEST(get_command_not_found) {
-  command2_hook h1 = sample_command_hook_1;
-  command2_hook h2 = sample_command_hook_2;
+  command_hook h1 = sample_command_hook_1;
+  command_hook h2 = sample_command_hook_2;
 
   fail_unless(grs_register_command(handle, "hook1", h1) == 0);
   fail_unless(grs_register_command(handle, "hook2", h2) == 0);

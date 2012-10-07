@@ -25,7 +25,7 @@
 
 struct command_entry {
   char* command;
-  command2_hook hook;
+  command_hook hook;
   LIST_ENTRY(command_entry) entries;
 };
 
@@ -82,7 +82,7 @@ acl_t grs_get_acl(grs_t handle) {
   return handle->acl;
 }
 
-int grs_register_command(grs_t handle, const char* command, command2_hook hook) {
+int grs_register_command(grs_t handle, const char* command, command_hook hook) {
   struct command_entry* entry;
 
   if (handle == NULL || command == NULL || hook == NULL) {
@@ -100,7 +100,7 @@ int grs_register_command(grs_t handle, const char* command, command2_hook hook) 
   return 0;
 }
 
-command2_hook grs_get_command(grs_t handle, const char* command) {
+command_hook grs_get_command(grs_t handle, const char* command) {
   struct command_entry* entry;
 
   if (handle == NULL || command == NULL) {
