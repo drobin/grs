@@ -333,7 +333,7 @@ int main(int argc, char** argv) {
       // Also register session-fd in write-set if you have buffered data to
       // write back to the client.
       obuf = session_get_out_buffer(entry->grs_session);
-      if (entry->channel != NULL && buffer_get_size(obuf) > 0) {
+      if (session_can_exec(entry->grs_session) && buffer_get_size(obuf) > 0) {
         FD_SET(ssh_get_fd(entry->session), &write_fds);
       }
 
@@ -361,12 +361,15 @@ int main(int argc, char** argv) {
     } else {
       SESSION_LIST_FOREACH(entry, session_list) {
         if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
-          if (entry->channel != NULL && ssh_channel_poll(entry->channel, 0) > 0) {
-            // Data available in the channel, forward to process
-            channel2buf(&session_list, entry);
-          } else {
+          if (!session_can_exec(entry->grs_session)) {
             // handle initial ssh-handshake
             handle_ssh_session(&session_list, entry, grs);
+          }
+
+          if (session_can_exec(entry->grs_session) &&
+              ssh_channel_poll(entry->channel, 0) > 0) {
+            // Data available in the channel, forward to process
+            channel2buf(&session_list, entry);
           }
         }
 
@@ -376,8 +379,12 @@ int main(int argc, char** argv) {
         }
 
         // Execute the process
-        if (session_exec(entry->grs_session) == 0) {
-          // Process has finished
+        if (session_can_exec(entry->grs_session) &&
+            !session_is_finished(entry->grs_session)) {
+          session_exec(entry->grs_session);
+        }
+
+        if (session_is_finished(entry->grs_session)) {
           buffer_t buf = session_get_out_buffer(entry->grs_session);
           if (buffer_get_size(buf) == 0) {
             // No cached data left, it's save to destroy the session now
