@@ -19,7 +19,7 @@
 
 #include <check.h>
 
-#include "../../src/libgrs/core/session.h"
+#include "../../src/libgrs/session.h"
 
 int success_hook(const char** comand, buffer_t in_buf, buffer_t out_buf,
                  buffer_t err_buf) {

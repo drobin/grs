@@ -19,7 +19,7 @@
 
 #include <check.h>
 
-#include "../../src/libgrs/core/acl.h"
+#include "../../src/libgrs/acl.h"
 
 /*
   root

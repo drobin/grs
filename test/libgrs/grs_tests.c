@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "../../src/libgrs/core/grs.h"
+#include "../../src/libgrs/grs.h"
 
 static int sample_command_hook_1(const char** command, buffer_t in_buf,
                                  buffer_t out_buf, buffer_t err_buf) {

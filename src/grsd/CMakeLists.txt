@@ -31,7 +31,7 @@ include_directories(
   ${LIBSSH_INCLUDE_DIR}
 )
 target_link_libraries(grsd
-  libcore libcmd
+  libgrs libcmd
   ${LIBSSH_LIBRARY}
   ${LIBEVENT_LIBRARY}
 )

@@ -20,7 +20,7 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
-#include <libgrs/core/buffer.h>
+#include <libgrs/buffer.h>
 
 int grs_info(const char** command, buffer_t in_buf, buffer_t out_buf,
              buffer_t err_buf);

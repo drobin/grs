@@ -22,7 +22,7 @@
 
 #include <sys/queue.h>
 
-#include <libgrs/core/session.h>
+#include <libgrs/session.h>
 #include <libssh/libssh.h>
 
 struct session_entry {

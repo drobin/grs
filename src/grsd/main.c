@@ -24,9 +24,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <libgrs/core/acl.h>
-#include <libgrs/core/grs.h>
-#include <libgrs/core/log.h>
+#include <libgrs/acl.h>
+#include <libgrs/grs.h>
+#include <libgrs/log.h>
 #include <extension/command.h>
 #include <libssh/libssh.h>
 #include <libssh/server.h>

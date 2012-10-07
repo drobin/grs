@@ -19,10 +19,10 @@
 
 SET(GRS_TEST_SOURCES
   suite.c
-  libcore/acl_tests.c
-  libcore/buffer_tests.c
-  libcore/grs_tests.c
-  libcore/session_tests.c
+  libgrs/acl_tests.c
+  libgrs/buffer_tests.c
+  libgrs/grs_tests.c
+  libgrs/session_tests.c
 )
 
 add_executable(grs_test ${GRS_TEST_SOURCES})
@@ -35,7 +35,7 @@ include_directories(
 )
 
 target_link_libraries(grs_test
-  libcore libcmd
+  libgrs libcmd
   ${LIBEVENT_LIBRARY}
   ${CHECK_LIBRARY}
   pthread
