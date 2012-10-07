@@ -21,7 +21,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include <libgrsd/log.h>
+#include <libgrs/log.h>
 
 #include "io.h"
 

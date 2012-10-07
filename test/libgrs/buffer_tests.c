@@ -19,7 +19,7 @@
 
 #include <check.h>
 
-#include "../../src/libgrsd/buffer.h"
+#include "../../src/libgrs/buffer.h"
 
 static buffer_t buffer;
 

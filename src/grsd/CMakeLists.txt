@@ -27,11 +27,11 @@ add_executable(grsd ${GRSD_SOURCES})
 
 include_directories(
   ${LIBEVENT_INCLUDE_DIR}
-  ${LIBGRSD_INCLUDE_DIR}
+  ${LIBGRS_INCLUDE_DIR}
   ${LIBSSH_INCLUDE_DIR}
 )
 target_link_libraries(grsd
-  libgrsd
+  libgrs
   ${LIBSSH_LIBRARY}
   ${LIBEVENT_LIBRARY}
 )

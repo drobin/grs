@@ -17,5 +17,5 @@
 #
 ################################################################################
 
-add_subdirectory(libgrsd)
+add_subdirectory(libgrs)
 add_subdirectory(grsd)

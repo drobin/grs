@@ -17,7 +17,7 @@
 #
 ################################################################################
 
-SET(LIBGRSD_SOURCES
+SET(LIBGRS_SOURCES
   acl.c
   buffer.c
   grs.c
@@ -25,4 +25,4 @@ SET(LIBGRSD_SOURCES
   session.c
 )
 
-add_library(libgrsd STATIC ${LIBGRSD_SOURCES})
+add_library(libgrs STATIC ${LIBGRS_SOURCES})
