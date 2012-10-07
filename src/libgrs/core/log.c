@@ -94,7 +94,7 @@ void log_debug(const char* format, ...) {
 }
 
 inline static char buf2char(char buf) {
-  if (isalnum(buf)) {
+  if (isprint(buf)) {
     return buf;
   } else {
     return '?';
