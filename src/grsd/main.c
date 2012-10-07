@@ -27,6 +27,7 @@
 #include <libgrs/core/acl.h>
 #include <libgrs/core/grs.h>
 #include <libgrs/core/log.h>
+#include <libgrs/cmd/command.h>
 #include <libssh/libssh.h>
 #include <libssh/server.h>
 
@@ -280,6 +281,9 @@ int main(int argc, char** argv) {
   }
 
   grs = grs_init();
+
+  grs_register_command(grs, "info", grs_info);
+
   SESSION_LIST_INIT(session_list);
 
   setup_acl(grs, writable);

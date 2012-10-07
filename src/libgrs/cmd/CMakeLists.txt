@@ -17,21 +17,12 @@
 #
 ################################################################################
 
-set(GRSD_SOURCES
-  io.h io.c
-  main.c
-  session_list.c
+SET(LIBCMD_SOURCES
+  command.c
 )
-
-add_executable(grsd ${GRSD_SOURCES})
 
 include_directories(
-  ${LIBEVENT_INCLUDE_DIR}
   ${LIBGRS_INCLUDE_DIR}
-  ${LIBSSH_INCLUDE_DIR}
 )
-target_link_libraries(grsd
-  libcore libcmd
-  ${LIBSSH_LIBRARY}
-  ${LIBEVENT_LIBRARY}
-)
+
+add_library(libcmd STATIC ${LIBCMD_SOURCES})
