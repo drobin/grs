@@ -66,28 +66,6 @@ START_TEST(get_grs) {
 }
 END_TEST
 
-START_TEST(get_state_null_session) {
-  fail_unless(session_get_state(NULL) == -1);
-}
-END_TEST
-
-START_TEST(get_state_initial) {
-  fail_unless(session_get_state(session) == NEED_AUTHENTICATION);
-}
-END_TEST
-
-START_TEST(set_state_null_session) {
-  fail_unless(session_set_state(NULL, EXECUTING) == -1);
-}
-END_TEST
-
-START_TEST(get_set_state) {
-  fail_unless(session_get_state(session) == NEED_AUTHENTICATION);
-  fail_unless(session_set_state(session, EXECUTING) == 0);
-  fail_unless(session_get_state(session) == EXECUTING);
-}
-END_TEST
-
 START_TEST(authenticate_null_session) {
   fail_unless(session_authenticate(NULL, "foo", "foo") == -1);
 }
@@ -103,21 +81,13 @@ START_TEST(authenticate_null_password) {
 }
 END_TEST
 
-START_TEST(authenticate_wrong_state) {
-  fail_unless(session_set_state(session, EXECUTING) == 0);
-  fail_unless(session_authenticate(session, "foo", "foo") == -1);
-}
-END_TEST
-
 START_TEST(authenticate_wrong_password) {
   fail_unless(session_authenticate(session, "foo", "bar") == -1);
-  fail_unless(session_get_state(session) == NEED_AUTHENTICATION);
 }
 END_TEST
 
 START_TEST(authenticate_success) {
   fail_unless(session_authenticate(session, "foo", "foo") == 0);
-  fail_unless(session_get_state(session) == NEED_PROCESS);
 }
 END_TEST
 
@@ -152,25 +122,13 @@ START_TEST(create_process_null_command) {
 }
 END_TEST
 
-START_TEST(create_process_wrong_state) {
-  process_env_t env;
-
-  fail_unless((env = process_env_create()) != NULL);
-  fail_unless(session_create_process(session, env, "foobar") == NULL);
-  fail_unless(session_get_process(session) == NULL);
-  fail_unless(process_env_destroy(env) == 0);
-}
-END_TEST
-
 START_TEST(create_process_success) {
   process_env_t env;
   process_t process;
 
   fail_unless((env = process_env_create()) != NULL);
-  fail_unless(session_set_state(session, NEED_PROCESS) == 0);
   fail_unless((process = session_create_process(session, env, "foobar")) != NULL);
   fail_unless(session_get_process(session) == process);
-  fail_unless(session_get_state(session) == NEED_EXEC);
   fail_unless(process_env_destroy(env) == 0);
 }
 END_TEST
@@ -200,11 +158,6 @@ START_TEST(exec_null_session) {
 }
 END_TEST
 
-START_TEST(exec_wrong_state) {
-  fail_unless(session_exec(session) == -1);
-}
-END_TEST
-
 START_TEST(exec_no_access) {
   acl_t acl;
   acl_node_t node;
@@ -218,19 +171,15 @@ START_TEST(exec_no_access) {
   value->flag = 0;
 
   fail_unless((env = process_env_create()) != NULL);
-  fail_unless(session_set_state(session, NEED_PROCESS) == 0);
   fail_unless((process = session_create_process(session, env, "foobar")) != NULL);
   fail_unless(session_exec(session) == -1);
-  fail_unless(session_get_state(session) == NEED_EXEC);
 
   fail_unless(process_env_destroy(env) == 0);
 }
 END_TEST
 
 START_TEST(exec_success) {
-  fail_unless(session_set_state(session, NEED_EXEC) == 0);
   fail_unless(session_exec(session) == 0);
-  fail_unless(session_get_state(session) == EXECUTING);
 }
 END_TEST
 
@@ -242,28 +191,21 @@ TCase* session_tcase() {
   tcase_add_test(tc, destroy_null_session);
   tcase_add_test(tc, get_grs_null_session);
   tcase_add_test(tc, get_grs);
-  tcase_add_test(tc, get_state_null_session);
-  tcase_add_test(tc, get_state_initial);
-  tcase_add_test(tc, set_state_null_session);
-  tcase_add_test(tc, get_set_state);
   tcase_add_test(tc, authenticate_null_session);
   tcase_add_test(tc, authenticate_null_username);
   tcase_add_test(tc, authenticate_null_password);
-  tcase_add_test(tc, authenticate_wrong_state);
   tcase_add_test(tc, authenticate_wrong_password);
   tcase_add_test(tc, authenticate_success);
   tcase_add_test(tc, get_process_null_session);
   tcase_add_test(tc, create_process_null_session);
   tcase_add_test(tc, create_process_null_env);
   tcase_add_test(tc, create_process_null_command);
-  tcase_add_test(tc, create_process_wrong_state);
   tcase_add_test(tc, create_process_success);
   tcase_add_test(tc, get_in_buffer_null_session);
   tcase_add_test(tc, get_in_buffer);
   tcase_add_test(tc, get_out_buffer_null_session);
   tcase_add_test(tc, get_out_buffer);
   tcase_add_test(tc, exec_null_session);
-  tcase_add_test(tc, exec_wrong_state);
   tcase_add_test(tc, exec_no_access);
   tcase_add_test(tc, exec_success);
 

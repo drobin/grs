@@ -25,7 +25,6 @@
 
 struct _session {
   grs_t grs;
-  enum session_state state;
   process_t process;
   buffer_t in_buf;
   buffer_t out_buf;
@@ -43,7 +42,6 @@ session_t session_create(grs_t grs) {
   }
 
   session->grs = grs;
-  session->state = NEED_AUTHENTICATION;
   session->process = NULL;
   session->in_buf = buffer_create();
   session->out_buf = buffer_create();
@@ -75,24 +73,6 @@ grs_t session_get_grs(session_t session) {
   return session->grs;
 }
 
-enum session_state session_get_state(session_t session) {
-  if (session == NULL) {
-    return -1;
-  }
-
-  return session->state;
-}
-
-int session_set_state(session_t session, enum session_state state) {
-  if (session == NULL) {
-    return -1;
-  }
-
-  session->state = state;
-
-  return 0;
-}
-
 int session_authenticate(session_t session,
                          const char* username, const char* password) {
 
@@ -100,12 +80,7 @@ int session_authenticate(session_t session,
     return -1;
   }
 
-  if (session->state != NEED_AUTHENTICATION) {
-    return -1;
-  }
-
   if (strcmp(username, password) == 0) {
-    session->state = NEED_PROCESS;
     return 0;
   } else {
     return -1;
@@ -126,12 +101,7 @@ process_t session_create_process(session_t session, process_env_t env,
     return NULL;
   }
 
-  if (session->state != NEED_PROCESS) {
-    return NULL;
-  }
-
   session->process = process_prepare(env, command);
-  session->state = NEED_EXEC;
 
   return session->process;
 }
@@ -159,16 +129,10 @@ int session_exec(session_t session) {
     return -1;
   }
 
-  if (session->state != NEED_EXEC) {
-    return -1;
-  }
-
   command = process_get_command(session->process);
 
   if (acl_can(grs_get_acl(session->grs), &command, 1)) {
     process_exec(session->process);
-    session->state = EXECUTING;
-
     return 0;
   } else {
     return -1;
