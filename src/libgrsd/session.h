@@ -22,7 +22,6 @@
 
 #include "buffer.h"
 #include "grs.h"
-#include "process.h"
 
 struct _session;
 typedef struct _session* session_t;
@@ -33,9 +32,6 @@ grs_t session_get_grs(session_t session);
 
 int session_authenticate(session_t session,
                          const char* username, const char* password);
-process_t session_get_process(session_t session);
-process_t session_create_process(session_t session, process_env_t env,
-                                 const char* command);
 
 /**
  * Returns the buffer, which is consumed by the session-process.
@@ -58,6 +54,26 @@ buffer_t session_get_in_buffer(session_t session);
  */
 buffer_t session_get_out_buffer(session_t session);
 
+/**
+ * Executes the session.
+ *
+ * You can execute a session, when it is ready for execution. Check
+ * session_can_exec().
+ *
+ * If the process needs more data to complete the exec-operation,
+ * then <code>1<code> is returned.
+ *
+ * If the exec-operation completed its operation, then <code>0</code> is
+ * returned. The session can be destroyed. <b>Note:</b> Even if the operation
+ * is finished, there can be still data to be written back to the client. So
+ * make sure to write back the output-buffer in any case!
+ *
+ * @param session The session to execute
+ * @return If the process has finished execution, then <code>0</code> is
+ *         returned, but if you need another run of session_exec()
+ *         <code>1</code> is returned. If an error occured <code>-1</code> is
+ *         returned.
+ */
 int session_exec(session_t session);
 
 #endif  /* SESSION_H */

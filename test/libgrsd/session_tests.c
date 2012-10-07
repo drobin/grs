@@ -91,48 +91,6 @@ START_TEST(authenticate_success) {
 }
 END_TEST
 
-START_TEST(get_process_null_session) {
-  fail_unless(session_get_process(NULL) == NULL);
-}
-END_TEST
-
-START_TEST(create_process_null_session) {
-  process_env_t env;
-
-  fail_unless((env = process_env_create()) != NULL);
-  fail_unless(session_create_process(NULL, env, "foobar") == NULL);
-  fail_unless(session_get_process(session) == NULL);
-  fail_unless(process_env_destroy(env) == 0);
-}
-END_TEST
-
-START_TEST(create_process_null_env) {
-  fail_unless(session_create_process(session, NULL, "foobar") == NULL);
-  fail_unless(session_get_process(session) == NULL);
-}
-END_TEST
-
-START_TEST(create_process_null_command) {
-  process_env_t env;
-
-  fail_unless((env = process_env_create()) != NULL);
-  fail_unless(session_create_process(session, env, NULL) == NULL);
-  fail_unless(session_get_process(session) == NULL);
-  fail_unless(process_env_destroy(env) == 0);
-}
-END_TEST
-
-START_TEST(create_process_success) {
-  process_env_t env;
-  process_t process;
-
-  fail_unless((env = process_env_create()) != NULL);
-  fail_unless((process = session_create_process(session, env, "foobar")) != NULL);
-  fail_unless(session_get_process(session) == process);
-  fail_unless(process_env_destroy(env) == 0);
-}
-END_TEST
-
 START_TEST(get_in_buffer_null_session) {
   fail_unless(session_get_in_buffer(NULL) == NULL);
 }
@@ -158,26 +116,6 @@ START_TEST(exec_null_session) {
 }
 END_TEST
 
-START_TEST(exec_no_access) {
-  acl_t acl;
-  acl_node_t node;
-  struct acl_node_value* value;
-  process_env_t env;
-  process_t process;
-
-  fail_unless((acl = grs_get_acl(session_get_grs(session))) != NULL);
-  fail_unless((node = acl_get_root_node(acl)) != NULL);
-  fail_unless((value = acl_node_get_value(node, 1)) != NULL);
-  value->flag = 0;
-
-  fail_unless((env = process_env_create()) != NULL);
-  fail_unless((process = session_create_process(session, env, "foobar")) != NULL);
-  fail_unless(session_exec(session) == -1);
-
-  fail_unless(process_env_destroy(env) == 0);
-}
-END_TEST
-
 START_TEST(exec_success) {
   fail_unless(session_exec(session) == 0);
 }
@@ -196,17 +134,11 @@ TCase* session_tcase() {
   tcase_add_test(tc, authenticate_null_password);
   tcase_add_test(tc, authenticate_wrong_password);
   tcase_add_test(tc, authenticate_success);
-  tcase_add_test(tc, get_process_null_session);
-  tcase_add_test(tc, create_process_null_session);
-  tcase_add_test(tc, create_process_null_env);
-  tcase_add_test(tc, create_process_null_command);
-  tcase_add_test(tc, create_process_success);
   tcase_add_test(tc, get_in_buffer_null_session);
   tcase_add_test(tc, get_in_buffer);
   tcase_add_test(tc, get_out_buffer_null_session);
   tcase_add_test(tc, get_out_buffer);
   tcase_add_test(tc, exec_null_session);
-  tcase_add_test(tc, exec_no_access);
   tcase_add_test(tc, exec_success);
 
   return tc;

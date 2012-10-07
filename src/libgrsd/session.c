@@ -87,25 +87,6 @@ int session_authenticate(session_t session,
   }
 }
 
-process_t session_get_process(session_t session) {
-  if (session == NULL) {
-    return NULL;
-  }
-
-  return session->process;
-}
-
-process_t session_create_process(session_t session, process_env_t env,
-                                 const char* command) {
-  if (session == NULL || env == NULL || command == NULL) {
-    return NULL;
-  }
-
-  session->process = process_prepare(env, command);
-
-  return session->process;
-}
-
 buffer_t session_get_in_buffer(session_t session) {
   if (session == NULL) {
     return NULL;
@@ -123,18 +104,9 @@ buffer_t session_get_out_buffer(session_t session) {
 }
 
 int session_exec(session_t session) {
-  const char* command;
-
   if (session == NULL) {
     return -1;
   }
 
-  command = process_get_command(session->process);
-
-  if (acl_can(grs_get_acl(session->grs), &command, 1)) {
-    process_exec(session->process);
-    return 0;
-  } else {
-    return -1;
-  }
+  return 0;
 }
