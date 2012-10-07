@@ -17,13 +17,23 @@
  *
  ******************************************************************************/
 
+#include <sys/queue.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "grs.h"
 
+struct command_entry {
+  char* command;
+  command2_hook hook;
+  LIST_ENTRY(command_entry) entries;
+};
+
+LIST_HEAD(command_head, command_entry);
+
 struct _grs {
   acl_t acl;
+  struct command_head cmd_head;
   process_env_t process_env;
 };
 
@@ -40,6 +50,8 @@ grs_t grs_init() {
     free(handle);
   }
 
+  LIST_INIT(&handle->cmd_head);
+
   if ((handle->process_env = process_env_create()) == NULL) {
     acl_destroy(handle->acl);
     free(handle);
@@ -49,11 +61,20 @@ grs_t grs_init() {
 }
 
 int grs_destroy(grs_t handle) {
+  struct command_entry* entry;
+
   if (handle == NULL) {
     return -1;
   }
 
   acl_destroy(handle->acl);
+
+  while ((entry = LIST_FIRST(&(handle->cmd_head))) != NULL) {
+    LIST_REMOVE(entry, entries);
+    free(entry->command);
+    free(entry);
+  }
+
   process_env_destroy(handle->process_env);
   free(handle);
 
@@ -66,6 +87,40 @@ acl_t grs_get_acl(grs_t handle) {
   }
 
   return handle->acl;
+}
+
+int grs_register_command(grs_t handle, const char* command, command2_hook hook) {
+  struct command_entry* entry;
+
+  if (handle == NULL || command == NULL || hook == NULL) {
+    return -1;
+  }
+
+  if ((entry = malloc(sizeof(struct command_entry))) == NULL) {
+    return -1;
+  }
+
+  entry->command = strdup(command);
+  entry->hook = hook;
+  LIST_INSERT_HEAD(&(handle->cmd_head), entry, entries);
+
+  return 0;
+}
+
+command2_hook grs_get_command(grs_t handle, const char* command) {
+  struct command_entry* entry;
+
+  if (handle == NULL || command == NULL) {
+    return NULL;
+  }
+
+  LIST_FOREACH(entry, &(handle->cmd_head), entries) {
+    if (strcmp(entry->command, command) == 0) {
+      return entry->hook;
+    }
+  }
+
+  return NULL;
 }
 
 process_env_t grs_get_process_env(grs_t handle) {

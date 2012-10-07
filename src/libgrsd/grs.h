@@ -30,6 +30,9 @@ struct _grs;
  */
 typedef struct _grs* grs_t;
 
+typedef int (*command2_hook)(const char** command,
+                            buffer_t in_buf, buffer_t out_buf);
+
 /*
  * Creates a new grs-handle.
  *
@@ -52,6 +55,29 @@ int grs_destroy(grs_t handle);
  * @return The ACL-system assigned to this grs-handle
  */
 acl_t grs_get_acl(grs_t handle);
+
+/**
+ * Register a command-hook at the grs-handle.
+ *
+ * If <code>command</code> should be executed, then the given <code>hook</code>
+ * is invoked.
+ *
+ * @param handle The handle
+ * @param command The command, where the hook should be registered
+ * @param hook The hook which gets invoked
+ * @return On success <code>0</code> is returned.
+ */
+int grs_register_command(grs_t handle, const char* command, command2_hook hook);
+
+/**
+ * Receives the hook of an already registered command.
+ *
+ * @param handle The handle
+ * @param command The requested command
+ * @return The hook registered for the given command. If no such command is
+ *         registered, <code>NULL</code> is returned.
+ */
+command2_hook grs_get_command(grs_t handle, const char* command);
 
 /**
  * Returns the process-environment assigned to the grs-handle.
