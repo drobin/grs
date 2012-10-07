@@ -34,7 +34,6 @@ LIST_HEAD(command_head, command_entry);
 struct _grs {
   acl_t acl;
   struct command_head cmd_head;
-  process_env_t process_env;
 };
 
 grs_t grs_init() {
@@ -51,11 +50,6 @@ grs_t grs_init() {
   }
 
   LIST_INIT(&handle->cmd_head);
-
-  if ((handle->process_env = process_env_create()) == NULL) {
-    acl_destroy(handle->acl);
-    free(handle);
-  }
 
   return handle;
 }
@@ -75,7 +69,6 @@ int grs_destroy(grs_t handle) {
     free(entry);
   }
 
-  process_env_destroy(handle->process_env);
   free(handle);
 
   return 0;
@@ -121,12 +114,4 @@ command2_hook grs_get_command(grs_t handle, const char* command) {
   }
 
   return NULL;
-}
-
-process_env_t grs_get_process_env(grs_t handle) {
-  if (handle == NULL) {
-    return NULL;
-  }
-
-  return handle->process_env;
 }

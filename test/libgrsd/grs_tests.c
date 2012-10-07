@@ -103,16 +103,6 @@ START_TEST(get_acl) {
 }
 END_TEST
 
-START_TEST(get_process_env_null_handle) {
-  fail_unless(grs_get_process_env(NULL) == NULL);
-}
-END_TEST
-
-START_TEST(get_process_env) {
-  fail_unless(grs_get_process_env(handle) != NULL);
-}
-END_TEST
-
 TCase* grs_tcase() {
   TCase* tc = tcase_create("grs");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -127,9 +117,6 @@ TCase* grs_tcase() {
   tcase_add_test(tc, get_command_null_command);
   tcase_add_test(tc, get_command_found);
   tcase_add_test(tc, get_command_not_found);
-
-  tcase_add_test(tc, get_process_env_null_handle);
-  tcase_add_test(tc, get_process_env);
 
   return tc;
 }

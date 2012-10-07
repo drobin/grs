@@ -21,7 +21,7 @@
 #define GRSD_H
 
 #include "acl.h"
-#include "process.h"
+#include "buffer.h"
 
 struct _grs;
 
@@ -78,13 +78,5 @@ int grs_register_command(grs_t handle, const char* command, command2_hook hook);
  *         registered, <code>NULL</code> is returned.
  */
 command2_hook grs_get_command(grs_t handle, const char* command);
-
-/**
- * Returns the process-environment assigned to the grs-handle.
- *
- * @param handle The handle
- * @return The process-environment of this grs-handle
- */
-process_env_t grs_get_process_env(grs_t handle);
 
 #endif /* GRSD_H */
