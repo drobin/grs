@@ -29,6 +29,7 @@ struct _session {
   char* command[ARG_MAX];
   buffer_t in_buf;
   buffer_t out_buf;
+  int exec_finished;
 };
 
 static void tokenize(struct _session* session) {
@@ -58,6 +59,7 @@ session_t session_create(grs_t grs) {
   session->command[0] = NULL;
   session->in_buf = buffer_create();
   session->out_buf = buffer_create();
+  session->exec_finished = 0;
 
   return session;
 }
@@ -140,9 +142,20 @@ int session_exec(session_t session) {
   }
 
   if ((hook = grs_get_command(session->grs, session->command[0])) != NULL) {
-    return hook((const char**)session->command,
-                session->in_buf, session->out_buf);
+    int result = hook((const char**)session->command,
+                      session->in_buf, session->out_buf);
+    session->exec_finished = (result != 1);
+
+    return result;
   } else {
     return -1;
   }
+}
+
+int session_is_finished(session_t session) {
+  if (session == NULL) {
+    return -1;
+  }
+
+  return session->exec_finished;
 }

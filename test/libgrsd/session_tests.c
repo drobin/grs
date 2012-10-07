@@ -21,8 +21,16 @@
 
 #include "../../src/libgrsd/session.h"
 
-int test_hook(const char** comand, buffer_t in_buf, buffer_t out_buf) {
+int success_hook(const char** comand, buffer_t in_buf, buffer_t out_buf) {
   return 0;
+}
+
+int fail_hook(const char** comand, buffer_t in_buf, buffer_t out_buf) {
+  return -1;
+}
+
+int continue_hook(const char** comand, buffer_t in_buf, buffer_t out_buf) {
+  return 1;
 }
 
 static grs_t grs;
@@ -163,9 +171,49 @@ END_TEST
 START_TEST(exec_success) {
   grs_t grs = session_get_grs(session);
 
-  fail_unless(grs_register_command(grs, "foo", test_hook) == 0);
+  fail_unless(grs_register_command(grs, "foo", success_hook) == 0);
   fail_unless(session_set_command(session, "foo") == 0);
   fail_unless(session_exec(session) == 0);
+}
+END_TEST
+
+START_TEST(is_finished_null_session) {
+  fail_unless(session_is_finished(NULL) == -1);
+}
+END_TEST
+
+START_TEST(is_finished_no_exec) {
+  fail_unless(!session_is_finished(session));
+}
+END_TEST
+
+START_TEST(is_finished_error) {
+  grs_t grs = session_get_grs(session);
+
+  fail_unless(grs_register_command(grs, "foo", fail_hook) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_exec(session) == -1);
+  fail_unless(session_is_finished(session));
+}
+END_TEST
+
+START_TEST(is_finished_continue) {
+  grs_t grs = session_get_grs(session);
+
+  fail_unless(grs_register_command(grs, "foo", continue_hook) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_exec(session) == 1);
+  fail_unless(!session_is_finished(session));
+}
+END_TEST
+
+START_TEST(is_finished_success) {
+  grs_t grs = session_get_grs(session);
+
+  fail_unless(grs_register_command(grs, "foo", success_hook) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_exec(session) == 0);
+  fail_unless(session_is_finished(session));
 }
 END_TEST
 
@@ -195,6 +243,11 @@ TCase* session_tcase() {
   tcase_add_test(tc, exec_null_session);
   tcase_add_test(tc, exec_no_hook);
   tcase_add_test(tc, exec_success);
+  tcase_add_test(tc, is_finished_null_session);
+  tcase_add_test(tc, is_finished_no_exec);
+  tcase_add_test(tc, is_finished_error);
+  tcase_add_test(tc, is_finished_continue);
+  tcase_add_test(tc, is_finished_success);
 
   return tc;
 }

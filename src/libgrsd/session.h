@@ -98,4 +98,17 @@ buffer_t session_get_out_buffer(session_t session);
  */
 int session_exec(session_t session);
 
+/**
+ * Tests whether session_exec() has finished execution.
+ *
+ * If session_exec() was never executed, then this function returned
+ * <code>false</code>. But whenever the exec-operation completed its operation,
+ * then <code>true</code> is returned.
+ *
+ * @param session The requested session
+ * @return If the session has completed its operation, then <code>true</code>
+ *         is returned.
+ */
+int session_is_finished(session_t session);
+
 #endif  /* SESSION_H */
