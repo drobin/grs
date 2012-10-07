@@ -77,6 +77,18 @@ buffer_t session_get_in_buffer(session_t session);
 buffer_t session_get_out_buffer(session_t session);
 
 /**
+ * Returns the buffer, which is filled by the session-process with
+ * error-informations.
+ *
+ * The process filles the buffer with error-data, which needs to be send back
+ * to the client.
+ *
+ * @param session The requested session
+ * @return The error-buffer you have to send back to the client
+ */
+buffer_t session_get_err_buffer(session_t session);
+
+/**
  * Tests whether you can exec the session via session_exec().
  *
  * You need at least a command (session_set_command()) assigned to the session.

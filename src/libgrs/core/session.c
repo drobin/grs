@@ -29,6 +29,7 @@ struct _session {
   char* command[ARG_MAX];
   buffer_t in_buf;
   buffer_t out_buf;
+  buffer_t err_buf;
   int exec_finished;
 };
 
@@ -59,6 +60,7 @@ session_t session_create(grs_t grs) {
   session->command[0] = NULL;
   session->in_buf = buffer_create();
   session->out_buf = buffer_create();
+  session->err_buf = buffer_create();
   session->exec_finished = 0;
 
   return session;
@@ -72,6 +74,7 @@ int session_destroy(session_t session) {
   free(session->raw_command);
   buffer_destroy(session->in_buf);
   buffer_destroy(session->out_buf);
+  buffer_destroy(session->err_buf);
   free(session);
 
   return 0;
@@ -132,6 +135,14 @@ buffer_t session_get_out_buffer(session_t session) {
   }
 
   return session->out_buf;
+}
+
+buffer_t session_get_err_buffer(session_t session) {
+  if (session == NULL) {
+    return NULL;
+  }
+
+  return session->err_buf;
 }
 
 int session_can_exec(session_t session) {
