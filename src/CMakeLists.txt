@@ -19,3 +19,4 @@
 
 add_subdirectory(libgrs)
 add_subdirectory(grsd)
+add_subdirectory(extension)
