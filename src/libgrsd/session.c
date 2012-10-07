@@ -17,17 +17,30 @@
  *
  ******************************************************************************/
 
+#include <sys/param.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "session.h"
 
-
 struct _session {
   grs_t grs;
+  char* raw_command;
+  char* command[ARG_MAX];
   buffer_t in_buf;
   buffer_t out_buf;
 };
+
+static void tokenize(struct _session* session) {
+  char* token;
+  int nargs = 0;
+
+  for (; (token = strsep(&session->raw_command, " \t")) != NULL; nargs++) {
+    session->command[nargs] = token;
+  }
+
+  session->command[nargs] = NULL;
+}
 
 session_t session_create(grs_t grs) {
   struct _session* session;
@@ -41,6 +54,8 @@ session_t session_create(grs_t grs) {
   }
 
   session->grs = grs;
+  session->raw_command = NULL;
+  session->command[0] = NULL;
   session->in_buf = buffer_create();
   session->out_buf = buffer_create();
 
@@ -52,6 +67,7 @@ int session_destroy(session_t session) {
     return -1;
   }
 
+  free(session->raw_command);
   buffer_destroy(session->in_buf);
   buffer_destroy(session->out_buf);
   free(session);
@@ -79,6 +95,25 @@ int session_authenticate(session_t session,
   } else {
     return -1;
   }
+}
+
+const char** session_get_command(session_t session) {
+  if (session == NULL) {
+    return NULL;
+  }
+
+  return (const char**)session->command;
+}
+
+int session_set_command(session_t session, const char* command) {
+  if (session == NULL || command == NULL) {
+    return -1;
+  }
+
+  session->raw_command = strdup(command);
+  tokenize(session);
+
+  return 0;
 }
 
 buffer_t session_get_in_buffer(session_t session) {

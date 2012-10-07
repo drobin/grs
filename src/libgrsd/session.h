@@ -34,6 +34,28 @@ int session_authenticate(session_t session,
                          const char* username, const char* password);
 
 /**
+ * Returns the command, which is assigned to the session.
+ *
+ * A NULL-terminated array is returned. Each array-element is a argument of the
+ * command. If the array is empty, then no command was assigned.
+ *
+ * @param session The requested session
+ * @return The tokenized command assigned to the session
+ */
+const char** session_get_command(session_t session);
+
+/**
+ * Assigns a command to the session.
+ *
+ * Later, this command is executed with session_exec().
+ *
+ * @param session The destination session
+ * @param command The command to be assigned
+ * @return On success <code>0</code> is returned.
+ */
+int session_set_command(session_t session, const char* command);
+
+/**
  * Returns the buffer, which is consumed by the session-process.
  *
  * You put data into this buffer and the process consumes the data.

@@ -91,6 +91,41 @@ START_TEST(authenticate_success) {
 }
 END_TEST
 
+START_TEST(get_command_null_session) {
+  fail_unless(session_get_command(NULL) == NULL);
+}
+END_TEST
+
+START_TEST(get_command_initial) {
+  fail_unless(session_get_command(session)[0] == NULL);
+}
+END_TEST
+
+START_TEST(get_command_one_arg) {
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(strcmp(session_get_command(session)[0], "foo") == 0);
+  fail_unless(session_get_command(session)[1] == NULL);
+}
+END_TEST
+
+START_TEST(get_command_two_args) {
+  fail_unless(session_set_command(session, "foo bar") == 0);
+  fail_unless(strcmp(session_get_command(session)[0], "foo") == 0);
+  fail_unless(strcmp(session_get_command(session)[1], "bar") == 0);
+  fail_unless(session_get_command(session)[2] == NULL);
+}
+END_TEST
+
+START_TEST(set_command_null_session) {
+  fail_unless(session_set_command(NULL, "foo") == -1);
+}
+END_TEST
+
+START_TEST(set_command_null_command) {
+  fail_unless(session_set_command(session, NULL) == -1);
+}
+END_TEST
+
 START_TEST(get_in_buffer_null_session) {
   fail_unless(session_get_in_buffer(NULL) == NULL);
 }
@@ -134,6 +169,12 @@ TCase* session_tcase() {
   tcase_add_test(tc, authenticate_null_password);
   tcase_add_test(tc, authenticate_wrong_password);
   tcase_add_test(tc, authenticate_success);
+  tcase_add_test(tc, get_command_null_session);
+  tcase_add_test(tc, get_command_initial);
+  tcase_add_test(tc, get_command_one_arg);
+  tcase_add_test(tc, get_command_two_args);
+  tcase_add_test(tc, set_command_null_session);
+  tcase_add_test(tc, set_command_null_command);
   tcase_add_test(tc, get_in_buffer_null_session);
   tcase_add_test(tc, get_in_buffer);
   tcase_add_test(tc, get_out_buffer_null_session);

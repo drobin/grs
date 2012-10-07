@@ -139,6 +139,9 @@ static int handle_ssh_channel_request(struct session_entry* entry,
   ssh_message_channel_request_reply_success(msg);
   log_debug("Channel request accepted");
 
+  session_set_command(entry->grs_session,
+                      ssh_message_channel_request_command(msg));
+
   return 0;
 }
 
