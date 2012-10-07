@@ -167,6 +167,7 @@ int session_exec(session_t session) {
 
     return result;
   } else {
+    buffer_append(session->err_buf, "No such command\n", 16);
     session->exec_finished = 1;
     return -1;
   }

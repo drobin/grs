@@ -22,10 +22,12 @@
 #include <string.h>
 
 #include <libgrs/core/log.h>
+#include <libssh/server.h>
 
 #include "io.h"
 
-int buf2channel(struct session_list* list, struct session_entry* entry) {
+int buf2channel(struct session_list* list, struct session_entry* entry,
+                int is_err) {
   buffer_t buffer;
 
   if (entry->channel == NULL) {
@@ -33,11 +35,25 @@ int buf2channel(struct session_list* list, struct session_entry* entry) {
     return -1;
   }
 
-  buffer = session_get_out_buffer(entry->grs_session);
+  if (is_err) {
+    buffer = session_get_err_buffer(entry->grs_session);
+  } else {
+    buffer = session_get_out_buffer(entry->grs_session);
+  }
+
 
   while (buffer_get_size(buffer) > 0) {
-    int nbytes = ssh_channel_write(entry->channel, buffer_get_data(buffer),
-                                   buffer_get_size(buffer));
+    int nbytes;
+
+    if (is_err) {
+      nbytes = ssh_channel_write_stderr(entry->channel, buffer_get_data(buffer),
+                                        buffer_get_size(buffer));
+    } else {
+      nbytes = ssh_channel_write(entry->channel, buffer_get_data(buffer),
+                                 buffer_get_size(buffer));
+    }
+
+
 
     if (nbytes == SSH_ERROR) {
       log_err("Failed to write into channel: %s",
