@@ -22,6 +22,7 @@
 
 #include <libgrs/core/buffer.h>
 
-int grs_info(const char** command, buffer_t in_buf, buffer_t out_buf);
+int grs_info(const char** command, buffer_t in_buf, buffer_t out_buf,
+             buffer_t err_buf);
 
 #endif  /* COMMAND_H */

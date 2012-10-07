@@ -162,7 +162,7 @@ int session_exec(session_t session) {
 
   if ((hook = grs_get_command(session->grs, session->command[0])) != NULL) {
     int result = hook((const char**)session->command,
-                      session->in_buf, session->out_buf);
+                      session->in_buf, session->out_buf, session->err_buf);
     session->exec_finished = (result != 1);
 
     return result;

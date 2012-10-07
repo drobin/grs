@@ -31,7 +31,8 @@ struct _grs;
 typedef struct _grs* grs_t;
 
 typedef int (*command_hook)(const char** command,
-                            buffer_t in_buf, buffer_t out_buf);
+                            buffer_t in_buf, buffer_t out_buf,
+                            buffer_t err_buf);
 
 /*
  * Creates a new grs-handle.

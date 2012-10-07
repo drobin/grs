@@ -21,15 +21,18 @@
 
 #include "../../src/libgrs/core/session.h"
 
-int success_hook(const char** comand, buffer_t in_buf, buffer_t out_buf) {
+int success_hook(const char** comand, buffer_t in_buf, buffer_t out_buf,
+                 buffer_t err_buf) {
   return 0;
 }
 
-int fail_hook(const char** comand, buffer_t in_buf, buffer_t out_buf) {
+int fail_hook(const char** comand, buffer_t in_buf, buffer_t out_buf,
+              buffer_t err_buf) {
   return -1;
 }
 
-int continue_hook(const char** comand, buffer_t in_buf, buffer_t out_buf) {
+int continue_hook(const char** comand, buffer_t in_buf, buffer_t out_buf,
+                  buffer_t err_buf) {
   return 1;
 }
 

@@ -25,8 +25,15 @@
 
 #include "../../src/libgrs/core/grs.h"
 
-static int sample_command_hook_1(const char** command, buffer_t in_buf, buffer_t out_buf) { return 0; }
-static int sample_command_hook_2(const char** command, buffer_t in_buf, buffer_t out_buf) { return 0; }
+static int sample_command_hook_1(const char** command, buffer_t in_buf,
+                                 buffer_t out_buf, buffer_t err_buf) {
+  return 0;
+}
+
+static int sample_command_hook_2(const char** command, buffer_t in_buf,
+                                 buffer_t out_buf, buffer_t err_buf) {
+  return 0;
+}
 
 static grs_t handle;
 
