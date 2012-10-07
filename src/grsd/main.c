@@ -385,7 +385,10 @@ int main(int argc, char** argv) {
         // Execute the process
         if (session_can_exec(entry->grs_session) &&
             !session_is_finished(entry->grs_session)) {
-          session_exec(entry->grs_session);
+
+          int result = session_exec(entry->grs_session);
+          ssh_channel_request_send_exit_status(entry->channel,
+                                               (result == 0) ? 0 : 127);
         }
 
         if (session_is_finished(entry->grs_session)) {

@@ -156,6 +156,7 @@ int session_exec(session_t session) {
 
     return result;
   } else {
+    session->exec_finished = 1;
     return -1;
   }
 }
