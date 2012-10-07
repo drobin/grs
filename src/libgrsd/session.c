@@ -134,6 +134,14 @@ buffer_t session_get_out_buffer(session_t session) {
   return session->out_buf;
 }
 
+int session_can_exec(session_t session) {
+  if (session == NULL) {
+    return -1;
+  }
+
+  return session->command[0] != NULL;
+}
+
 int session_exec(session_t session) {
   command_hook hook;
 

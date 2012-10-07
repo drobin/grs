@@ -77,6 +77,16 @@ buffer_t session_get_in_buffer(session_t session);
 buffer_t session_get_out_buffer(session_t session);
 
 /**
+ * Tests whether you can exec the session via session_exec().
+ *
+ * You need at least a command (session_set_command()) assigned to the session.
+ *
+ * @param session The requested session
+ * @return If you can exec the session, <code>true</code> is returned.
+ */
+int session_can_exec(session_t session);
+
+/**
  * Executes the session.
  *
  * You can execute a session, when it is ready for execution. Check

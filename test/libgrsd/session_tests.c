@@ -158,6 +158,22 @@ START_TEST(get_out_buffer) {
 }
 END_TEST
 
+START_TEST(can_exec_null_session) {
+  fail_unless(session_can_exec(NULL) == -1);
+}
+END_TEST
+
+START_TEST(can_exec_no_command) {
+  fail_unless(!session_can_exec(session));
+}
+END_TEST
+
+START_TEST(can_exec_with_command) {
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_can_exec(session));
+}
+END_TEST
+
 START_TEST(exec_null_session) {
   fail_unless(session_exec(NULL) == -1);
 }
@@ -240,6 +256,9 @@ TCase* session_tcase() {
   tcase_add_test(tc, get_in_buffer);
   tcase_add_test(tc, get_out_buffer_null_session);
   tcase_add_test(tc, get_out_buffer);
+  tcase_add_test(tc, can_exec_null_session);
+  tcase_add_test(tc, can_exec_no_command);
+  tcase_add_test(tc, can_exec_with_command);
   tcase_add_test(tc, exec_null_session);
   tcase_add_test(tc, exec_no_hook);
   tcase_add_test(tc, exec_success);
