@@ -57,6 +57,7 @@ struct _process {
   struct process_info info;
 };
 
+#if 0
 static int hello_command(process_t process) {
   write(process->out_fds[1], "Hello world!", 12);
   close(process->out_fds[1]);
@@ -77,6 +78,7 @@ static int git_pack_command(process_t process) {
 
   return process_fork(process, argv);
 }
+#endif
 
 static void tokenize(struct _process* process) {
   char* token;
@@ -97,9 +99,9 @@ process_env_t process_env_create() {
   }
 
   LIST_INIT(&env->cmd_head);
-  process_env_register_command(env, "hello", hello_command);
-  process_env_register_command(env, "git-upload-pack", git_pack_command);
-  process_env_register_command(env, "git-receive-pack", git_pack_command);
+  //process_env_register_command(env, "hello", hello_command);
+  //process_env_register_command(env, "git-upload-pack", git_pack_command);
+  //process_env_register_command(env, "git-receive-pack", git_pack_command);
 
   return env;
 }
@@ -287,7 +289,7 @@ int process_exec(process_t process) {
 
   hook = process_env_get_command(process->env, process->token[0]);
   if (hook != NULL) {
-    return hook(process);
+    return hook(NULL, NULL, NULL);
   } else {
     return -1;
   }

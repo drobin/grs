@@ -21,6 +21,10 @@
 
 #include "../../src/libgrsd/session.h"
 
+int test_hook(const char** comand, buffer_t in_buf, buffer_t out_buf) {
+  return 0;
+}
+
 static grs_t grs;
 static session_t session;
 
@@ -151,7 +155,17 @@ START_TEST(exec_null_session) {
 }
 END_TEST
 
+START_TEST(exec_no_hook) {
+  fail_unless(session_exec(session) == -1);
+}
+END_TEST
+
 START_TEST(exec_success) {
+  grs_t grs = session_get_grs(session);
+  process_env_t env = grs_get_process_env(grs);
+
+  fail_unless(process_env_register_command(env, "foo", test_hook) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
   fail_unless(session_exec(session) == 0);
 }
 END_TEST
@@ -180,6 +194,7 @@ TCase* session_tcase() {
   tcase_add_test(tc, get_out_buffer_null_session);
   tcase_add_test(tc, get_out_buffer);
   tcase_add_test(tc, exec_null_session);
+  tcase_add_test(tc, exec_no_hook);
   tcase_add_test(tc, exec_success);
 
   return tc;

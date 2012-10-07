@@ -133,9 +133,20 @@ buffer_t session_get_out_buffer(session_t session) {
 }
 
 int session_exec(session_t session) {
+  process_env_t env;
+  command_hook hook;
+
   if (session == NULL) {
     return -1;
   }
 
-  return 0;
+  env = grs_get_process_env(session->grs);
+  hook = process_env_get_command(env, session->command[0]);
+
+  if (hook != NULL) {
+    return hook((const char**)session->command,
+                session->in_buf, session->out_buf);
+  } else {
+    return -1;
+  }
 }

@@ -20,12 +20,15 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
+#include "buffer.h"
+
 struct _process_env;
 struct _process;
 
 typedef struct _process_env* process_env_t;
 typedef struct _process* process_t;
-typedef int (*command_hook)(process_t);
+typedef int (*command_hook)(const char** command,
+                            buffer_t in_buf, buffer_t out_buf);
 
 /**
  * Initializes the process module.
