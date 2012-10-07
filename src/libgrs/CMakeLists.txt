@@ -17,12 +17,4 @@
 #
 ################################################################################
 
-SET(LIBGRS_SOURCES
-  acl.c
-  buffer.c
-  grs.c
-  log.c
-  session.c
-)
-
-add_library(libgrs STATIC ${LIBGRS_SOURCES})
+add_subdirectory(core)
