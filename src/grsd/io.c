@@ -25,33 +25,19 @@
 
 #include "io.h"
 
-int process2channel(struct session_list* list, struct session_entry* entry) {
-  process_t process;
-  size_t nread;
-  size_t nwritten = 0;
-
-  process = session_get_process(entry->grs_session);
-  nread = read(process_get_fd_out(process), list->buffer, sizeof(list->buffer));
-
-  if (nread == 0) {
-    log_debug("EOF from fd_out");
-    return -1;
-  } else if (nread < 0) {
-    log_err("Error occured while reading from process: %s", strerror(errno));
-    return -1;
-  }
+int buf2channel(struct session_list* list, struct session_entry* entry) {
+  buffer_t buffer;
 
   if (entry->channel == NULL) {
     log_err("You don't have a destination-channel");
     return -1;
   }
 
-  log_debug("%i bytes read from process", nread);
-  log_data("P2C", list->buffer, nread);
+  buffer = session_get_out_buffer(entry->grs_session);
 
-  while (nwritten < nread) {
-    int nbytes = ssh_channel_write(entry->channel,
-                                   list->buffer + nwritten, nread - nwritten);
+  while (buffer_get_size(buffer) > 0) {
+    int nbytes = ssh_channel_write(entry->channel, buffer_get_data(buffer),
+                                   buffer_get_size(buffer));
 
     if (nbytes == SSH_ERROR) {
       log_err("Failed to write into channel: %s",
@@ -59,16 +45,16 @@ int process2channel(struct session_list* list, struct session_entry* entry) {
       return -1;
     }
 
-    nwritten += nbytes;
-    log_debug("%i bytes written into channel", nbytes);
+    log_data("B2C", buffer_get_data(buffer), nbytes);
+    buffer_remove(buffer, nbytes);
   }
 
   return 0;
 }
 
-int channel2process(struct session_list* list, struct session_entry* entry) {
-  process_t process;
-  size_t nread, nwritten;
+int channel2buf(struct session_list* list, struct session_entry* entry) {
+  buffer_t buffer;
+  size_t nread;
 
   nread = ssh_channel_read(entry->channel, list->buffer, sizeof(list->buffer), 0);
   if (nread == SSH_ERROR) {
@@ -78,19 +64,14 @@ int channel2process(struct session_list* list, struct session_entry* entry) {
     log_debug("%i bytes read from channel", nread);
   }
 
-  log_data("C2P", list->buffer, nread);
+  log_data("C2B", list->buffer, nread);
 
-  if ((process = session_get_process(entry->grs_session)) == NULL) {
-    log_err("You don't have a destination process");
-    return -1;
-  }
-
-  nwritten = write(process_get_fd_in(process), list->buffer, nread);
-  if (nwritten > 0) {
-    log_debug("%i bytes written into process", nwritten);
+  buffer = session_get_in_buffer(entry->grs_session);
+  if (buffer_append(buffer, list->buffer, nread) == 0) {
+    log_debug("%i bytes written into in_buffer", nread);
     return 0;
   } else {
-    log_err("Failed to write into process: %s", strerror(errno));
+    log_err("Failed to write into in_buffer");
     return -1;
   }
 }

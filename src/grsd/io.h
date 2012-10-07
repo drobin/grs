@@ -22,7 +22,7 @@
 
 #include "session_list.h"
 
-int channel2process(struct session_list* list, struct session_entry* entry);
-int process2channel(struct session_list* list, struct session_entry* entry);
+int channel2buf(struct session_list* list, struct session_entry* entry);
+int buf2channel(struct session_list* list, struct session_entry* entry);
 
 #endif  /* IO_H */
