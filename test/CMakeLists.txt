@@ -35,7 +35,7 @@ include_directories(
 )
 
 target_link_libraries(grs_test
-  libgrs libcmd
+  libgrs libextension
   ${LIBEVENT_LIBRARY}
   ${CHECK_LIBRARY}
   pthread

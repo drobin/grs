@@ -17,7 +17,7 @@
 #
 ################################################################################
 
-SET(LIBCMD_SOURCES
+SET(LIBEXTENSION_SOURCES
   command.c
 )
 
@@ -25,4 +25,4 @@ include_directories(
   ${LIBGRS_INCLUDE_DIR}
 )
 
-add_library(libcmd STATIC ${LIBCMD_SOURCES})
+add_library(libextension STATIC ${LIBEXTENSION_SOURCES})
