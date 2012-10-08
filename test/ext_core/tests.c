@@ -19,12 +19,24 @@
 
 #include <check.h>
 
-extern TCase* core_extension_tcase();
+#include "../../src/extension/extensions.h"
 
-Suite* core_extension_suite() {
-  Suite* s = suite_create("core extension");
+START_TEST(load_extension) {
+  grs_t grs;
 
-  suite_add_tcase(s, core_extension_tcase());
+  fail_unless((grs = grs_init()) != NULL);
+  fail_unless(load_core_extension(grs) == 0);
 
-  return s;
+  fail_unless(grs_get_command(grs, "info") != NULL);
+
+  fail_unless(grs_destroy(grs) == 0);
+}
+END_TEST
+
+TCase* core_extension_tcase() {
+  TCase* tc = tcase_create("core extension");
+
+  tcase_add_test(tc, load_extension);
+
+  return tc;
 }

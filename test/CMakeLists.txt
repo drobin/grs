@@ -19,6 +19,7 @@
 
 SET(GRS_TEST_SOURCES
   ext_core/suite.c
+  ext_core/tests.c
   libgrs/acl_tests.c
   libgrs/buffer_tests.c
   libgrs/grs_tests.c
@@ -34,6 +35,7 @@ include_directories(
   ${LIBEVENT_INCLUDE_DIR}
   ${LIBSSH_INCLUDE_DIR}
   ${CHECK_INCLUDE_DIR}
+  ${LIBGRS_INCLUDE_DIR}
 )
 
 target_link_libraries(grs_test
