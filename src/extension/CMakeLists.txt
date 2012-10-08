@@ -18,7 +18,7 @@
 ################################################################################
 
 SET(LIBEXTENSION_SOURCES
-  command.c
+  core.c
 )
 
 include_directories(
