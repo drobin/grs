@@ -17,7 +17,7 @@
  *
  ******************************************************************************/
 
-#include "command.h"
+#include "extensions.h"
 
 int grs_info(const char** command, buffer_t in_buf, buffer_t out_buf,
              buffer_t err_buf) {

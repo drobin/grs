@@ -27,7 +27,7 @@
 #include <libgrs/acl.h>
 #include <libgrs/grs.h>
 #include <libgrs/log.h>
-#include <extension/command.h>
+#include <extension/extensions.h>
 #include <libssh/libssh.h>
 #include <libssh/server.h>
 

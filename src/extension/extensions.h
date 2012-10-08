@@ -17,12 +17,12 @@
  *
  ******************************************************************************/
 
-#ifndef COMMAND_H
-#define COMMAND_H
+#ifndef EXTENSIONS_H
+#define EXTENSIONS_H
 
 #include <libgrs/buffer.h>
 
 int grs_info(const char** command, buffer_t in_buf, buffer_t out_buf,
              buffer_t err_buf);
 
-#endif  /* COMMAND_H */
+#endif  /* EXTENSIONS_H */
