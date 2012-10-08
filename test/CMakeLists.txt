@@ -18,11 +18,12 @@
 ################################################################################
 
 SET(GRS_TEST_SOURCES
-  suite.c
   libgrs/acl_tests.c
   libgrs/buffer_tests.c
   libgrs/grs_tests.c
   libgrs/session_tests.c
+  libgrs/suite.c
+  grs_test.c
 )
 
 add_executable(grs_test ${GRS_TEST_SOURCES})

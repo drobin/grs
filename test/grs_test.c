@@ -20,21 +20,7 @@
 #include <check.h>
 #include <unistd.h>
 
-extern TCase* acl_tcase();
-extern TCase* buffer_tcase();
-extern TCase* grs_tcase();
-extern TCase* session_tcase();
-
-static Suite* grs_suite() {
-  Suite* s = suite_create("grs_test");
-
-  suite_add_tcase(s, acl_tcase());
-  suite_add_tcase(s, buffer_tcase());
-  suite_add_tcase(s, grs_tcase());
-  suite_add_tcase(s, session_tcase());
-
-  return s;
-}
+extern Suite* libgrs_suite();
 
 int main(int argc, char** argv) {
   int nfailed;
@@ -51,7 +37,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  Suite* s = grs_suite();
+  Suite* s = libgrs_suite();
   SRunner* sr = srunner_create(s);
 
   if (enable_debug) {
