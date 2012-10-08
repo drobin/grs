@@ -18,6 +18,7 @@
 ################################################################################
 
 SET(GRS_TEST_SOURCES
+  ext_core/suite.c
   libgrs/acl_tests.c
   libgrs/buffer_tests.c
   libgrs/grs_tests.c

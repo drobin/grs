@@ -18,39 +18,9 @@
  ******************************************************************************/
 
 #include <check.h>
-#include <unistd.h>
 
-extern Suite* core_extension_suite();
-extern Suite* libgrs_suite();
+Suite* core_extension_suite() {
+  Suite* s = suite_create("core extension");
 
-int main(int argc, char** argv) {
-  int nfailed;
-  int c;
-  int enable_debug = 0;
-
-  while ((c = getopt(argc, argv, "d")) != -1) {
-    switch (c) {
-      case 'd':
-        enable_debug = 1;
-        break;
-      default:
-        return 1;
-    }
-  }
-
-  SRunner* sr = srunner_create(NULL);
-
-  srunner_add_suite(sr, core_extension_suite());
-  srunner_add_suite(sr, libgrs_suite());
-
-  if (enable_debug) {
-    srunner_set_fork_status(sr, CK_NOFORK);
-  }
-
-  srunner_run_all(sr, CK_NORMAL);
-
-  nfailed = srunner_ntests_failed(sr);
-  srunner_free(sr);
-
-  return (nfailed == 0) ? 0 : 1;
+  return s;
 }
