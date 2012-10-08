@@ -17,10 +17,16 @@
  *
  ******************************************************************************/
 
+#include <libgrs/buffer.h>
+
 #include "extensions.h"
 
-int grs_info(const char** command, buffer_t in_buf, buffer_t out_buf,
-             buffer_t err_buf) {
+static int grs_info(const char** command, buffer_t in_buf, buffer_t out_buf,
+                    buffer_t err_buf) {
   buffer_append(out_buf, "** INFO **\n", 11);
   return 0;
+}
+
+int load_core_extension(grs_t grs) {
+  return grs_register_command(grs, "info", grs_info);
 }

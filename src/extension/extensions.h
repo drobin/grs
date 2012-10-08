@@ -20,9 +20,8 @@
 #ifndef EXTENSIONS_H
 #define EXTENSIONS_H
 
-#include <libgrs/buffer.h>
+#include <libgrs/grs.h>
 
-int grs_info(const char** command, buffer_t in_buf, buffer_t out_buf,
-             buffer_t err_buf);
+int load_core_extension(grs_t grs);
 
 #endif  /* EXTENSIONS_H */

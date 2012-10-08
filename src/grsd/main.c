@@ -282,7 +282,7 @@ int main(int argc, char** argv) {
 
   grs = grs_init();
 
-  grs_register_command(grs, "info", grs_info);
+  load_core_extension(grs);
 
   SESSION_LIST_INIT(session_list);
 
