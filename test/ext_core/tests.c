@@ -22,7 +22,7 @@
 #include "../../src/extension/extensions.h"
 
 START_TEST(load_extension) {
-  char* command[] = { "info", NULL };
+  char* command[] = { "grs", "info", NULL };
   grs_t grs;
 
   fail_unless((grs = grs_init()) != NULL);
