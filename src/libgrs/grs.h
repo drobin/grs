@@ -64,11 +64,14 @@ acl_t grs_get_acl(grs_t handle);
  * is invoked.
  *
  * @param handle The handle
- * @param command The command, where the hook should be registered
+ * @param command The command, where the hook should be registered. The array
+ *                containts the command and all its arguments. The array must
+ *                be NULL-terminared and you need at least one array-element.
  * @param hook The hook which gets invoked
  * @return On success <code>0</code> is returned.
  */
-int grs_register_command(grs_t handle, const char* command, command_hook hook);
+int grs_register_command(grs_t handle, char *const command[],
+                         command_hook hook);
 
 /**
  * Receives the hook of an already registered command.

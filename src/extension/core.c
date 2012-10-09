@@ -28,5 +28,6 @@ static int grs_info(const char** command, buffer_t in_buf, buffer_t out_buf,
 }
 
 int load_core_extension(grs_t grs) {
-  return grs_register_command(grs, "info", grs_info);
+  char* command[] = { "info" };
+  return grs_register_command(grs, command, grs_info);
 }

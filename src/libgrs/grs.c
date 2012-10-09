@@ -108,14 +108,15 @@ acl_t grs_get_acl(grs_t handle) {
   return handle->acl;
 }
 
-int grs_register_command(grs_t handle, const char* command, command_hook hook) {
+int grs_register_command(grs_t handle, char *const command[],
+                         command_hook hook) {
   struct command_entry* entry;
 
-  if (handle == NULL || command == NULL || hook == NULL) {
+  if (handle == NULL || command == NULL || command[0] == NULL || hook == NULL) {
     return -1;
   }
 
-  entry = get_command_entry(handle, command, 1);
+  entry = get_command_entry(handle, command[0], 1);
 
   if (entry->hook == NULL || entry->hook == hook) {
     entry->hook = hook;
