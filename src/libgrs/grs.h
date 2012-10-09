@@ -76,6 +76,11 @@ int grs_register_command(grs_t handle, char *const command[],
 /**
  * Receives the hook of an already registered command.
  *
+ * First it tries to get the hook for the command and all its arguments. If
+ * you don't have a hook at this position, then the function tries to find the
+ * hook by removing the last argument from the search-path. The algorithm is
+ * repeated until the search-path is empty.
+ *
  * @param handle The handle
  * @param command Array which contains the command and all its arguments.The
  *                array must be NULL-terminated and you need at least one

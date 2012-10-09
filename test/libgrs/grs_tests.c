@@ -124,6 +124,27 @@ START_TEST(get_command_found) {
 }
 END_TEST
 
+START_TEST(get_command_hierarchy) {
+  char* part[] = { "foo", NULL };
+  char* leaf[] = { "foo", "bar", NULL };
+  command_hook h1 = sample_command_hook_1;
+
+  fail_unless(grs_register_command(handle, leaf, h1) == 0);
+  fail_unless(grs_get_command(handle, part) == NULL);
+  fail_unless(grs_get_command(handle, leaf) == h1);
+}
+END_TEST
+
+START_TEST(get_command_partly_hierarchy) {
+  char* part[] = { "foo", NULL };
+  char* leaf[] = { "foo", "bar", NULL };
+  command_hook h1 = sample_command_hook_1;
+
+  fail_unless(grs_register_command(handle, part, h1) == 0);
+  fail_unless(grs_get_command(handle, part) == h1);
+  fail_unless(grs_get_command(handle, leaf) == h1);
+}
+END_TEST
 
 START_TEST(get_command_not_found) {
   command_hook h1 = sample_command_hook_1;
@@ -135,6 +156,12 @@ START_TEST(get_command_not_found) {
   fail_unless(grs_register_command(handle, command_1, h1) == 0);
   fail_unless(grs_register_command(handle, command_2, h2) == 0);
   fail_unless(grs_get_command(handle, command_3) == NULL);
+}
+END_TEST
+
+START_TEST(get_command_not_found_hierarchy) {
+  char* command[] = { "1", "2", "3", NULL };
+  fail_unless(grs_get_command(handle, command) == NULL);
 }
 END_TEST
 
@@ -170,7 +197,10 @@ TCase* grs_tcase() {
   tcase_add_test(tc, get_command_null_command);
   tcase_add_test(tc, get_command_empty_command);
   tcase_add_test(tc, get_command_found);
+  tcase_add_test(tc, get_command_hierarchy);
+  tcase_add_test(tc, get_command_partly_hierarchy);
   tcase_add_test(tc, get_command_not_found);
+  tcase_add_test(tc, get_command_not_found_hierarchy);
 
   return tc;
 }

@@ -26,6 +26,7 @@
 struct command_entry {
   char* command;
   command_hook hook;
+  struct command_entry* parent;
   LIST_ENTRY(command_entry) entries;
 };
 
@@ -38,11 +39,12 @@ struct _grs {
 
 static struct command_entry* get_command_entry(struct _grs* handle,
                                                const char* command,
+                                               struct command_entry* parent,
                                                int create) {
   struct command_entry* entry;
 
   LIST_FOREACH(entry, &(handle->cmd_head), entries) {
-    if (strcmp(entry->command, command) == 0) {
+    if (entry->parent == parent && strcmp(entry->command, command) == 0) {
       return entry;
     }
   }
@@ -54,6 +56,7 @@ static struct command_entry* get_command_entry(struct _grs* handle,
 
     entry->command = strdup(command);
     entry->hook = NULL;
+    entry->parent = parent;
     LIST_INSERT_HEAD(&(handle->cmd_head), entry, entries);
 
     return entry;
@@ -111,12 +114,17 @@ acl_t grs_get_acl(grs_t handle) {
 int grs_register_command(grs_t handle, char *const command[],
                          command_hook hook) {
   struct command_entry* entry;
+  struct command_entry* parent;
+  int i;
 
   if (handle == NULL || command == NULL || command[0] == NULL || hook == NULL) {
     return -1;
   }
 
-  entry = get_command_entry(handle, command[0], 1);
+  for (parent = NULL, i = 0; command[i] != NULL; i++) {
+    entry = get_command_entry(handle, command[i], parent, 1);
+    parent = entry;
+  }
 
   if (entry->hook == NULL || entry->hook == hook) {
     entry->hook = hook;
@@ -128,14 +136,26 @@ int grs_register_command(grs_t handle, char *const command[],
 
 command_hook grs_get_command(grs_t handle, char *const command[]) {
   struct command_entry* entry;
+  struct command_entry* parent;
+  struct command_entry* result;
+  int i;
 
   if (handle == NULL || command == NULL || command[0] == NULL) {
     return NULL;
   }
 
-  if ((entry = get_command_entry(handle, command[0], 0)) == NULL) {
-    return NULL;
+  for (result = NULL, parent = NULL, i = 0; command[i] != NULL; i++) {
+    if ((entry = get_command_entry(handle, command[i], parent, 0)) != NULL) {
+      result = entry;
+      parent = entry;
+    } else {
+      break;
+    }
   }
 
-  return entry->hook;
+  if (result != NULL) {
+    return result->hook;
+  } else {
+    return NULL;
+  }
 }
