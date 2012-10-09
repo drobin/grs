@@ -64,23 +64,26 @@ START_TEST(register_command_null_hook) {
 END_TEST
 
 START_TEST(register_command_reregister) {
+  char* command[] = { "foo", NULL };
   fail_unless(grs_register_command(handle, "foo", sample_command_hook_1) == 0);
-  fail_unless(grs_get_command(handle, "foo") == sample_command_hook_1);
+  fail_unless(grs_get_command(handle, command) == sample_command_hook_1);
   fail_unless(grs_register_command(handle, "foo", sample_command_hook_1) == 0);
-  fail_unless(grs_get_command(handle, "foo") == sample_command_hook_1);
+  fail_unless(grs_get_command(handle, command) == sample_command_hook_1);
 }
 END_TEST
 
 START_TEST(register_command_already_registered) {
+  char* command[] = { "foo", NULL };
   fail_unless(grs_register_command(handle, "foo", sample_command_hook_1) == 0);
-  fail_unless(grs_get_command(handle, "foo") == sample_command_hook_1);
+  fail_unless(grs_get_command(handle, command) == sample_command_hook_1);
   fail_unless(grs_register_command(handle, "foo", sample_command_hook_2) == -1);
-  fail_unless(grs_get_command(handle, "foo") == sample_command_hook_1);
+  fail_unless(grs_get_command(handle, command) == sample_command_hook_1);
 }
 END_TEST
 
 START_TEST(get_command_null_env) {
-  fail_unless(grs_get_command(NULL, "foobar") == NULL);
+  char* command[] = { "foo", NULL };
+  fail_unless(grs_get_command(NULL, command) == NULL);
 }
 END_TEST
 
@@ -89,14 +92,22 @@ START_TEST(get_command_null_command) {
 }
 END_TEST
 
+START_TEST(get_command_empty_command) {
+  char* command[] = { NULL };
+  fail_unless(grs_get_command(handle, command) == NULL);
+}
+END_TEST
+
 START_TEST(get_command_found) {
+  char* command_1[] = { "hook1", NULL };
+  char* command_2[] = { "hook2", NULL };
   command_hook h1 = sample_command_hook_1;
   command_hook h2 = sample_command_hook_2;
 
   fail_unless(grs_register_command(handle, "hook1", h1) == 0);
   fail_unless(grs_register_command(handle, "hook2", h2) == 0);
-  fail_unless(grs_get_command(handle, "hook1") == h1);
-  fail_unless(grs_get_command(handle, "hook2") == h2);
+  fail_unless(grs_get_command(handle, command_1) == h1);
+  fail_unless(grs_get_command(handle, command_2) == h2);
 }
 END_TEST
 
@@ -104,10 +115,11 @@ END_TEST
 START_TEST(get_command_not_found) {
   command_hook h1 = sample_command_hook_1;
   command_hook h2 = sample_command_hook_2;
+  char* command_3[] = { "hook3", NULL };
 
   fail_unless(grs_register_command(handle, "hook1", h1) == 0);
   fail_unless(grs_register_command(handle, "hook2", h2) == 0);
-  fail_unless(grs_get_command(handle, "hook3") == NULL);
+  fail_unless(grs_get_command(handle, command_3) == NULL);
 }
 END_TEST
 
@@ -140,6 +152,7 @@ TCase* grs_tcase() {
   tcase_add_test(tc, register_command_already_registered);
   tcase_add_test(tc, get_command_null_env);
   tcase_add_test(tc, get_command_null_command);
+  tcase_add_test(tc, get_command_empty_command);
   tcase_add_test(tc, get_command_found);
   tcase_add_test(tc, get_command_not_found);
 

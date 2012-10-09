@@ -22,12 +22,13 @@
 #include "../../src/extension/extensions.h"
 
 START_TEST(load_extension) {
+  char* command[] = { "info", NULL };
   grs_t grs;
 
   fail_unless((grs = grs_init()) != NULL);
   fail_unless(load_core_extension(grs) == 0);
 
-  fail_unless(grs_get_command(grs, "info") != NULL);
+  fail_unless(grs_get_command(grs, command) != NULL);
 
   fail_unless(grs_destroy(grs) == 0);
 }

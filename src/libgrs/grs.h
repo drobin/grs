@@ -74,10 +74,12 @@ int grs_register_command(grs_t handle, const char* command, command_hook hook);
  * Receives the hook of an already registered command.
  *
  * @param handle The handle
- * @param command The requested command
+ * @param command Array which contains the command and all its arguments.The
+ *                array must be NULL-terminated and you need at least one
+ *                array-element.
  * @return The hook registered for the given command. If no such command is
  *         registered, <code>NULL</code> is returned.
  */
-command_hook grs_get_command(grs_t handle, const char* command);
+command_hook grs_get_command(grs_t handle, char *const command[]);
 
 #endif /* GRSD_H */

@@ -125,14 +125,14 @@ int grs_register_command(grs_t handle, const char* command, command_hook hook) {
   }
 }
 
-command_hook grs_get_command(grs_t handle, const char* command) {
+command_hook grs_get_command(grs_t handle, char *const command[]) {
   struct command_entry* entry;
 
-  if (handle == NULL || command == NULL) {
+  if (handle == NULL || command == NULL || command[0] == NULL) {
     return NULL;
   }
 
-  if ((entry = get_command_entry(handle, command, 0)) == NULL) {
+  if ((entry = get_command_entry(handle, command[0], 0)) == NULL) {
     return NULL;
   }
 
