@@ -36,6 +36,32 @@ struct _grs {
   struct command_head cmd_head;
 };
 
+static struct command_entry* get_command_entry(struct _grs* handle,
+                                               const char* command,
+                                               int create) {
+  struct command_entry* entry;
+
+  LIST_FOREACH(entry, &(handle->cmd_head), entries) {
+    if (strcmp(entry->command, command) == 0) {
+      return entry;
+    }
+  }
+
+  if (create) {
+    if ((entry = malloc(sizeof(struct command_entry))) == NULL) {
+      return NULL;
+    }
+
+    entry->command = strdup(command);
+    entry->hook = NULL;
+    LIST_INSERT_HEAD(&(handle->cmd_head), entry, entries);
+
+    return entry;
+  } else {
+    return NULL;
+  }
+}
+
 grs_t grs_init() {
   struct _grs* handle;
 
@@ -89,15 +115,14 @@ int grs_register_command(grs_t handle, const char* command, command_hook hook) {
     return -1;
   }
 
-  if ((entry = malloc(sizeof(struct command_entry))) == NULL) {
+  entry = get_command_entry(handle, command, 1);
+
+  if (entry->hook == NULL || entry->hook == hook) {
+    entry->hook = hook;
+    return 0;
+  } else {
     return -1;
   }
-
-  entry->command = strdup(command);
-  entry->hook = hook;
-  LIST_INSERT_HEAD(&(handle->cmd_head), entry, entries);
-
-  return 0;
 }
 
 command_hook grs_get_command(grs_t handle, const char* command) {
@@ -107,11 +132,9 @@ command_hook grs_get_command(grs_t handle, const char* command) {
     return NULL;
   }
 
-  LIST_FOREACH(entry, &(handle->cmd_head), entries) {
-    if (strcmp(entry->command, command) == 0) {
-      return entry->hook;
-    }
+  if ((entry = get_command_entry(handle, command, 0)) == NULL) {
+    return NULL;
   }
 
-  return NULL;
+  return entry->hook;
 }

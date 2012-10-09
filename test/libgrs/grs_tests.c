@@ -63,6 +63,22 @@ START_TEST(register_command_null_hook) {
 }
 END_TEST
 
+START_TEST(register_command_reregister) {
+  fail_unless(grs_register_command(handle, "foo", sample_command_hook_1) == 0);
+  fail_unless(grs_get_command(handle, "foo") == sample_command_hook_1);
+  fail_unless(grs_register_command(handle, "foo", sample_command_hook_1) == 0);
+  fail_unless(grs_get_command(handle, "foo") == sample_command_hook_1);
+}
+END_TEST
+
+START_TEST(register_command_already_registered) {
+  fail_unless(grs_register_command(handle, "foo", sample_command_hook_1) == 0);
+  fail_unless(grs_get_command(handle, "foo") == sample_command_hook_1);
+  fail_unless(grs_register_command(handle, "foo", sample_command_hook_2) == -1);
+  fail_unless(grs_get_command(handle, "foo") == sample_command_hook_1);
+}
+END_TEST
+
 START_TEST(get_command_null_env) {
   fail_unless(grs_get_command(NULL, "foobar") == NULL);
 }
@@ -120,6 +136,8 @@ TCase* grs_tcase() {
   tcase_add_test(tc, register_command_null_env);
   tcase_add_test(tc, register_command_null_command);
   tcase_add_test(tc, register_command_null_hook);
+  tcase_add_test(tc, register_command_reregister);
+  tcase_add_test(tc, register_command_already_registered);
   tcase_add_test(tc, get_command_null_env);
   tcase_add_test(tc, get_command_null_command);
   tcase_add_test(tc, get_command_found);
