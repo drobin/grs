@@ -41,6 +41,26 @@ struct pkt_line {
 };
 
 /**
+ * Creates a new <i>pkt-line</i>.
+ *
+ * @param len Length of payload, which should be assigned to the
+ *            <i>pkt-line</i>. If <code>len</code> is <code>0</code>, then
+ *            this is a <i>flush-pkt</i>.
+ * @param payload The payload to be assigned to the <i>pkt-line</i>. It can be
+ *                <code>NULL</i>, when <code>len</code> is <code>0</code>.
+ * @return A new <i>pkt-line</i>.
+ */
+struct pkt_line* pkt_line_create(int len, char* payload);
+
+/**
+ * Destroys the given <i>pkt-line</i> again.
+ *
+ * @param line The <i>pkt-line</i> to destroy.
+ * @return On success <code>0</code> is returned.
+ */
+int pkt_line_destroy(struct pkt_line* line);
+
+/**
  * Reads a <i>pkt-line</i> from the given buffer.
  *
  * If a <i>pkt-line</code> was read, the related data are removed from the
@@ -52,13 +72,5 @@ struct pkt_line {
  *         wrong, <code>NULL</code> is returned.
  */
 struct pkt_line* pkt_line_read(buffer_t buf);
-
-/**
- * Destroys the given <i>pkt-line</i> again.
- *
- * @param line The <i>pkt-line</i> to destroy.
- * @return On success <code>0</code> is returned.
- */
-int pkt_line_destroy(struct pkt_line* line);
 
 #endif  /* PROTOCOL_H */

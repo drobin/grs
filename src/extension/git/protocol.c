@@ -44,8 +44,42 @@ static int hex2int(char hex[4]) {
   return n;
 }
 
-struct pkt_line* pkt_line_read(buffer_t buf) {
+struct pkt_line* pkt_line_create(int len, char* payload) {
   struct pkt_line* line;
+
+  if (len == 0) { // flush_pkt
+    if ((line = malloc(sizeof(struct pkt_line))) == NULL) {
+      return NULL;
+    }
+
+    line->len = 0;
+  } else {
+    if (payload == NULL) {
+      return NULL;
+    }
+
+    if ((line = malloc(sizeof(struct pkt_line) + len)) == NULL) {
+      return NULL;
+    }
+
+    line->len = len;
+    memcpy(line->payload, payload, len);
+  }
+
+  return line;
+}
+
+int pkt_line_destroy(struct pkt_line* line) {
+  if (line == NULL) {
+    return -1;
+  }
+
+  free(line);
+
+  return 0;
+}
+
+struct pkt_line* pkt_line_read(buffer_t buf) {
   int size;
 
   if (buf == NULL) {
@@ -66,39 +100,18 @@ struct pkt_line* pkt_line_read(buffer_t buf) {
   }
 
   if (size == 0) { // flush_pkt
-    if ((line = malloc(sizeof(struct pkt_line))) == NULL) {
-      return NULL;
-    }
-
-    line->len = 0;
+    struct pkt_line* line = pkt_line_create(0, NULL);
     buffer_remove(buf, 4);
 
     return line;
-  }
-
-  // Test if you have the complete pkt-line
-  if (buffer_get_size(buf) < size) {
+  } else if (buffer_get_size(buf) < size) {
+    // You don't have the complete pkt-line
     return NULL;
+  } else {
+    struct pkt_line* line = pkt_line_create(size - 4, buffer_get_data(buf) + 4);
+    buffer_remove(buf, size);
+
+    return line;
   }
-
-  // Allocate: size - 4 is payload-length
-  if ((line = malloc(sizeof(struct pkt_line) + size - 4)) == NULL) {
-    return NULL;
-  }
-
-  line->len = size - 4;
-  memcpy(line->payload, buffer_get_data(buf) + 4, line->len);
-  buffer_remove(buf, size);
-
-  return line;
 }
 
-int pkt_line_destroy(struct pkt_line* line) {
-  if (line == NULL) {
-    return -1;
-  }
-
-  free(line);
-
-  return 0;
-}
