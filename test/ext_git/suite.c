@@ -19,8 +19,12 @@
 
 #include <check.h>
 
+extern TCase* git_extension_tcase();
+
 Suite* git_extension_suite() {
   Suite* s = suite_create("git extension");
+
+  suite_add_tcase(s, git_extension_tcase());
 
   return s;
 }

@@ -28,6 +28,7 @@
 #include <libgrs/grs.h>
 #include <libgrs/log.h>
 #include <extension/core/core.h>
+#include <extension/git/git.h>
 #include <libssh/libssh.h>
 #include <libssh/server.h>
 
@@ -283,6 +284,7 @@ int main(int argc, char** argv) {
   grs = grs_init();
 
   load_core_extension(grs);
+  load_git_extension(grs);
 
   SESSION_LIST_INIT(session_list);
 

@@ -20,4 +20,8 @@
 #ifndef GIT_H
 #define GIT_H
 
+#include <libgrs/grs.h>
+
+int load_git_extension(grs_t grs);
+
 #endif  /* GIT_H */

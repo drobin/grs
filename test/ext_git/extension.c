@@ -17,16 +17,27 @@
  *
  ******************************************************************************/
 
-#include <stdlib.h>
+#include <check.h>
 
-#include "git.h"
+#include "../../src/extension/git/git.h"
 
-static int git_upload_pack(const char** command, buffer_t in_buf, buffer_t out_buf,
-                           buffer_t err_buf) {
-  return 0;
-}
-
-int load_git_extension(grs_t grs) {
+START_TEST(load_extension) {
   char* command[] = { "git-upload-pack", NULL };
-  return grs_register_command(grs, command, git_upload_pack);
+  grs_t grs;
+
+  fail_unless((grs = grs_init()) != NULL);
+  fail_unless(load_git_extension(grs) == 0);
+
+  fail_unless(grs_get_command(grs, command) != NULL);
+
+  fail_unless(grs_destroy(grs) == 0);
+}
+END_TEST
+
+TCase* git_extension_tcase() {
+  TCase* tc = tcase_create("git extension");
+
+  tcase_add_test(tc, load_extension);
+
+  return tc;
 }
