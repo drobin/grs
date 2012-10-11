@@ -191,7 +191,7 @@ static int handle_ssh_session(struct session_list* list,
 
   ssh_message_free(msg);
 
-  return 0;
+  return result;
 }
 
 static int handle_ssh_bind(ssh_bind bind, struct session_list* slist,
@@ -369,7 +369,9 @@ int main(int argc, char** argv) {
         if (FD_ISSET(ssh_get_fd(entry->session), &read_fds)) {
           if (!session_can_exec(entry->grs_session)) {
             // handle initial ssh-handshake
-            handle_ssh_session(&session_list, entry, grs);
+            if (handle_ssh_session(&session_list, entry, grs) != 0) {
+              break;
+            }
           }
 
           if (session_can_exec(entry->grs_session) &&
