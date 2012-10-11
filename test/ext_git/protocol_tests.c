@@ -125,6 +125,42 @@ START_TEST(pkt_line_read_flush_pkt) {
 }
 END_TEST
 
+START_TEST(pkt_line_write_null_line) {
+  fail_unless(pkt_line_write(NULL, buffer) == -1);
+}
+END_TEST
+
+START_TEST(pkt_line_write_null_buffer) {
+  struct pkt_line* line;
+
+  fail_unless((line = pkt_line_create(0, NULL)) != NULL);
+  fail_unless(pkt_line_write(line, NULL) == -1);
+  fail_unless(pkt_line_destroy(line) == 0);
+}
+END_TEST
+
+START_TEST(pkt_line_write_flush_pkt) {
+  struct pkt_line* line;
+
+  fail_unless((line = pkt_line_create(0, NULL)) != NULL);
+  fail_unless(pkt_line_write(line, buffer) == 0);
+  fail_unless(pkt_line_destroy(line) == 0);
+  fail_unless(buffer_get_size(buffer) == 4);
+  fail_unless(strncmp(buffer_get_data(buffer), "0000", 4) == 0);
+}
+END_TEST
+
+START_TEST(pkt_line_write_success) {
+  struct pkt_line* line;
+
+  fail_unless((line = pkt_line_create(7, "abcdefg")) != NULL);
+  fail_unless(pkt_line_write(line, buffer) == 0);
+  fail_unless(pkt_line_destroy(line) == 0);
+  fail_unless(buffer_get_size(buffer) == 11);
+  fail_unless(strncmp(buffer_get_data(buffer), "000babcdefg", 11) == 0);
+}
+END_TEST
+
 TCase* git_protocol_tcase() {
   TCase* tc = tcase_create("git protocol");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -139,6 +175,10 @@ TCase* git_protocol_tcase() {
   tcase_add_test(tc, pkt_line_read_success);
   tcase_add_test(tc, pkt_line_read_empty);
   tcase_add_test(tc, pkt_line_read_flush_pkt);
+  tcase_add_test(tc, pkt_line_write_null_line);
+  tcase_add_test(tc, pkt_line_write_null_buffer);
+  tcase_add_test(tc, pkt_line_write_flush_pkt);
+  tcase_add_test(tc, pkt_line_write_success);
 
   return tc;
 }

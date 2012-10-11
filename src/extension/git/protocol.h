@@ -73,4 +73,13 @@ int pkt_line_destroy(struct pkt_line* line);
  */
 struct pkt_line* pkt_line_read(buffer_t buf);
 
+/**
+ * Writes a <i>pkt-line</i> into the buffer.
+ *
+ * @param line The <i>pkt-line</i> to encode into the buffer
+ * @param buf The destination buffer
+ * @return On success <code>0</code> is returned.
+ */
+int pkt_line_write(struct pkt_line* line, buffer_t buf);
+
 #endif  /* PROTOCOL_H */

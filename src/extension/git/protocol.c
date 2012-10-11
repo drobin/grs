@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "protocol.h"
@@ -115,3 +116,23 @@ struct pkt_line* pkt_line_read(buffer_t buf) {
   }
 }
 
+int pkt_line_write(struct pkt_line* line, buffer_t buf) {
+  if (line == NULL || buf == NULL) {
+    return -1;
+  }
+
+  if (line->len == 0) { // flush-pkt
+    return buffer_append(buf, "0000", 4);
+  } else {
+    char hex[5];
+
+    snprintf(hex, 5, "%04x", line->len + 4);
+
+    if (buffer_append(buf, hex, 4) == 0 &&
+        buffer_append(buf, line->payload, line->len) == 0) {
+      return 0;
+    } else {
+      return -1;
+    }
+  }
+}
