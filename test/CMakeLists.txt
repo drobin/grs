@@ -20,6 +20,7 @@
 SET(GRS_TEST_SOURCES
   ext_core/suite.c
   ext_core/tests.c
+  ext_git/suite.c
   libgrs/acl_tests.c
   libgrs/buffer_tests.c
   libgrs/grs_tests.c
@@ -39,7 +40,7 @@ include_directories(
 )
 
 target_link_libraries(grs_test
-  libgrs libext_core
+  libgrs libext_core libext_git
   ${LIBEVENT_LIBRARY}
   ${CHECK_LIBRARY}
   pthread

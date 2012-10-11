@@ -17,5 +17,12 @@
 #
 ################################################################################
 
-add_subdirectory(core)
-add_subdirectory(git)
+SET(LIBEXT_GIT_SOURCES
+  git.c
+)
+
+include_directories(
+  ${LIBGRS_INCLUDE_DIR}
+)
+
+add_library(libext_git STATIC ${LIBEXT_GIT_SOURCES})
