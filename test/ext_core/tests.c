@@ -19,7 +19,7 @@
 
 #include <check.h>
 
-#include "../../src/extension/extensions.h"
+#include "../../src/extension/core/core.h"
 
 START_TEST(load_extension) {
   char* command[] = { "grs", "info", NULL };

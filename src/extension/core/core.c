@@ -17,11 +17,19 @@
  *
  ******************************************************************************/
 
-#ifndef EXTENSIONS_H
-#define EXTENSIONS_H
+#include <stdlib.h>
 
-#include <libgrs/grs.h>
+#include <libgrs/buffer.h>
 
-int load_core_extension(grs_t grs);
+#include "core.h"
 
-#endif  /* EXTENSIONS_H */
+static int grs_info(const char** command, buffer_t in_buf, buffer_t out_buf,
+                    buffer_t err_buf) {
+  buffer_append(out_buf, "** INFO **\n", 11);
+  return 0;
+}
+
+int load_core_extension(grs_t grs) {
+  char* command[] = { "grs", "info", NULL };
+  return grs_register_command(grs, command, grs_info);
+}

@@ -17,30 +17,12 @@
 #
 ################################################################################
 
-SET(GRS_TEST_SOURCES
-  ext_core/suite.c
-  ext_core/tests.c
-  libgrs/acl_tests.c
-  libgrs/buffer_tests.c
-  libgrs/grs_tests.c
-  libgrs/session_tests.c
-  libgrs/suite.c
-  grs_test.c
+SET(LIBEXT_CORE_SOURCES
+  core.c
 )
 
-add_executable(grs_test ${GRS_TEST_SOURCES})
-add_test(grs_test grs_test)
-
 include_directories(
-  ${LIBEVENT_INCLUDE_DIR}
-  ${LIBSSH_INCLUDE_DIR}
-  ${CHECK_INCLUDE_DIR}
   ${LIBGRS_INCLUDE_DIR}
 )
 
-target_link_libraries(grs_test
-  libgrs libext_core
-  ${LIBEVENT_LIBRARY}
-  ${CHECK_LIBRARY}
-  pthread
-)
+add_library(libext_core STATIC ${LIBEXT_CORE_SOURCES})

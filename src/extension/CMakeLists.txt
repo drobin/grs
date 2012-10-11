@@ -17,12 +17,4 @@
 #
 ################################################################################
 
-SET(LIBEXTENSION_SOURCES
-  core.c
-)
-
-include_directories(
-  ${LIBGRS_INCLUDE_DIR}
-)
-
-add_library(libextension STATIC ${LIBEXTENSION_SOURCES})
+add_subdirectory(core)
