@@ -20,7 +20,7 @@
 #include <stdlib.h>
 
 #include "git.h"
-#include "protocol.h"
+#include "pkt_line.h"
 
 static int reference_discovery(buffer_t out, buffer_t err) {
   struct pkt_line* flush_pkt = pkt_line_create(0, NULL);

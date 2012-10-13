@@ -19,6 +19,7 @@
 
 SET(LIBEXT_GIT_SOURCES
   git.c
+  pkt_line.c
   protocol.c
 )
 
