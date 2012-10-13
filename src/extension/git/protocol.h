@@ -20,4 +20,18 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
+#include <libgrs/buffer.h>
+
+/**
+ * Implementation of the <i>Reference Discovery</i>-process.
+ *
+ * @param out The function writes data into this buffer, which should be
+ *            transferred to the client.
+ * @param err The function writes error-messages into the buffer (if any).
+ * @return On success <code>0</code> is returned.
+ *
+ * @see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt
+ */
+int reference_discovery(buffer_t out, buffer_t err);
+
 #endif  /* PROTOCOL_H */

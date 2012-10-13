@@ -17,4 +17,23 @@
  *
  ******************************************************************************/
 
+#include <stdlib.h>
+
+#include "pkt_line.h"
 #include "protocol.h"
+
+int reference_discovery(buffer_t out, buffer_t err) {
+  struct pkt_line* flush_pkt;
+
+  if (out == NULL || err == NULL) {
+    return -1;
+  }
+
+  flush_pkt = pkt_line_create(0, NULL);
+
+  // No references: Simply send back a flush-pkt
+  pkt_line_write(flush_pkt, out);
+  pkt_line_destroy(flush_pkt);
+
+  return 0;
+}

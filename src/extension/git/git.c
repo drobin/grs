@@ -20,17 +20,7 @@
 #include <stdlib.h>
 
 #include "git.h"
-#include "pkt_line.h"
-
-static int reference_discovery(buffer_t out, buffer_t err) {
-  struct pkt_line* flush_pkt = pkt_line_create(0, NULL);
-
-  // No references: Simply send back a flush-pkt
-  pkt_line_write(flush_pkt, out);
-  pkt_line_destroy(flush_pkt);
-
-  return 0;
-}
+#include "protocol.h"
 
 static int git_upload_pack(char *const command[], buffer_t in_buf,
                            buffer_t out_buf, buffer_t err_buf) {
