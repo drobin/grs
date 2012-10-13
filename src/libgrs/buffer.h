@@ -98,4 +98,12 @@ int buffer_append(buffer_t buffer, char* data, unsigned int nbytes);
  */
 int buffer_remove(buffer_t buffer, unsigned int nbytes);
 
+/**
+ * Removes all data from the buffer.
+ *
+ * @param buffer The buffer to clear
+ * @return On success <code>0</code> is returned.
+ */
+int buffer_clear(buffer_t buffer);
+
 #endif  /* BUFFER_H */

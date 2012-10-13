@@ -105,3 +105,12 @@ int buffer_remove(buffer_t buffer, unsigned int nbytes) {
 
   return 0;
 }
+
+int buffer_clear(buffer_t buffer) {
+  if (buffer == NULL) {
+    return -1;
+  }
+
+  buffer->size = 0;
+  return 0;
+}

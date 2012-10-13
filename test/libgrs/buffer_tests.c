@@ -170,6 +170,30 @@ START_TEST(add_remove) {
 }
 END_TEST
 
+START_TEST(clear_null_buffer) {
+  fail_unless(buffer_clear(NULL) == -1);
+}
+END_TEST
+
+START_TEST(clear_empty) {
+  fail_unless(buffer_clear(buffer) == 0);
+  fail_unless(buffer_get_size(buffer) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 0);
+}
+END_TEST
+
+START_TEST(clear_non_empty) {
+  fail_unless(buffer_append(buffer, "123", 3) == 0);
+  fail_unless(buffer_get_size(buffer) == 3);
+  fail_unless(buffer_get_capacity(buffer) == 3);
+
+  fail_unless(buffer_clear(buffer) == 0);
+
+  fail_unless(buffer_get_size(buffer) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 3);
+}
+END_TEST
+
 TCase* buffer_tcase() {
   TCase* tc = tcase_create("buffer");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -190,6 +214,9 @@ TCase* buffer_tcase() {
   tcase_add_test(tc, remove_empty);
   tcase_add_test(tc, remove_over_size);
   tcase_add_test(tc, add_remove);
+  tcase_add_test(tc, clear_null_buffer);
+  tcase_add_test(tc, clear_empty);
+  tcase_add_test(tc, clear_non_empty);
 
   return tc;
 }
