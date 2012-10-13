@@ -21,8 +21,8 @@
 
 #include "git.h"
 
-static int git_upload_pack(const char** command, buffer_t in_buf, buffer_t out_buf,
-                           buffer_t err_buf) {
+static int git_upload_pack(char *const command[], buffer_t in_buf,
+                           buffer_t out_buf, buffer_t err_buf) {
   return 0;
 }
 
