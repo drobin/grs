@@ -22,17 +22,18 @@
 #include "pkt_line.h"
 #include "protocol.h"
 
-int reference_discovery(buffer_t out, buffer_t err, rd_get_refs refs) {
+int reference_discovery(const char* repository,
+                        buffer_t out, buffer_t err, rd_get_refs refs) {
   struct rd_ref* ref_list;
   size_t nrefs;
   buffer_t flush_pkt;
 
-  if (out == NULL || err == NULL || refs == NULL) {
+  if (repository == NULL || out == NULL || err == NULL || refs == NULL) {
     return -1;
   }
 
   // Fetch the references
-  if (refs(&ref_list, &nrefs) != 0) {
+  if (refs(repository, &ref_list, &nrefs) != 0) {
     return -1;
   }
 

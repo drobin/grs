@@ -23,12 +23,14 @@
 
 #include "../../src/extension/git/protocol.h"
 
-static int no_refs_stub(struct rd_ref** ref_list, size_t* nrefs) {
+static int no_refs_stub(const char* repository,
+                        struct rd_ref** ref_list, size_t* nrefs) {
   *nrefs = 0;
   return 0;
 }
 
-static int failed_stub(struct rd_ref** ref_list, size_t* nrefs) {
+static int failed_stub(const char* repository,
+                       struct rd_ref** ref_list, size_t* nrefs) {
   return -1;
 }
 
@@ -47,23 +49,28 @@ static void teardown() {
   err = NULL;
 }
 
+START_TEST(reference_discovery_null_out_repository) {
+  fail_unless(reference_discovery(NULL, out, err, no_refs_stub) == -1);
+}
+END_TEST
+
 START_TEST(reference_discovery_null_out_buffer) {
-  fail_unless(reference_discovery(NULL, err, no_refs_stub) == -1);
+  fail_unless(reference_discovery("xxx", NULL, err, no_refs_stub) == -1);
 }
 END_TEST
 
 START_TEST(reference_discovery_null_err_buffer) {
-  fail_unless(reference_discovery(out, NULL, no_refs_stub) == -1);
+  fail_unless(reference_discovery("xxx", out, NULL, no_refs_stub) == -1);
 }
 END_TEST
 
 START_TEST(reference_discovery_null_refs) {
-  fail_unless(reference_discovery(out, err, NULL) == -1);
+  fail_unless(reference_discovery("xxx", out, err, NULL) == -1);
 }
 END_TEST
 
 START_TEST(reference_discovery_empty) {
-  fail_unless(reference_discovery(out, err, no_refs_stub) == 0);
+  fail_unless(reference_discovery("xxx", out, err, no_refs_stub) == 0);
   fail_unless(buffer_get_size(out) == 4);
   fail_unless(strncmp(buffer_get_data(out), "0000", 4) == 0);
   fail_unless(buffer_get_size(err) == 0);
@@ -71,7 +78,7 @@ START_TEST(reference_discovery_empty) {
 END_TEST
 
 START_TEST(reference_discovery_fetch_failed) {
-  fail_unless(reference_discovery(out, err, failed_stub) == -1);
+  fail_unless(reference_discovery("xxx", out, err, failed_stub) == -1);
   fail_unless(buffer_get_size(out) == 0);
   fail_unless(buffer_get_size(err) == 0);
 }
@@ -81,6 +88,7 @@ TCase* git_protocol_tcase() {
   TCase* tc = tcase_create("git protocol");
   tcase_add_checked_fixture(tc, setup, teardown);
 
+  tcase_add_test(tc, reference_discovery_null_out_repository);
   tcase_add_test(tc, reference_discovery_null_out_buffer);
   tcase_add_test(tc, reference_discovery_null_err_buffer);
   tcase_add_test(tc, reference_discovery_null_refs);

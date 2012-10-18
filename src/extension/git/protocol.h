@@ -44,17 +44,20 @@ struct rd_ref {
  * The callback-implementation should store the references at <code>refs</code>.
  * The number of references should be stored in <code>nrefs</code>.
  *
+ * @param repository The path the the requested repository
  * @param refs The implementation should store the references here. The
  *             reference_discovery-function will release the memory again.
  * @param nrefs The implementation should store the number of references here.
  * @return The implementation should return <code>0</code>, if the operation was
  *         successful.
  */
-typedef int (*rd_get_refs)(struct rd_ref** refs, size_t* nrefs);
+typedef int (*rd_get_refs)(const char* repository,
+                           struct rd_ref** refs, size_t* nrefs);
 
 /**
  * Implementation of the <i>Reference Discovery</i>-process.
  *
+ * @param repository The path of the requested repository
  * @param out The function writes data into this buffer, which should be
  *            transferred to the client.
  * @param err The function writes error-messages into the buffer (if any).
@@ -63,6 +66,7 @@ typedef int (*rd_get_refs)(struct rd_ref** refs, size_t* nrefs);
  *
  * @see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt
  */
-int reference_discovery(buffer_t out, buffer_t err, rd_get_refs refs);
+int reference_discovery(const char* repository,
+                        buffer_t out, buffer_t err, rd_get_refs refs);
 
 #endif  /* PROTOCOL_H */
