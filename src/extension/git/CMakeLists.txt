@@ -25,6 +25,7 @@ SET(LIBEXT_GIT_SOURCES
 
 include_directories(
   ${LIBGRS_INCLUDE_DIR}
+  ${LIBGIT2_INCLUDE_DIR}
 )
 
 add_library(libext_git STATIC ${LIBEXT_GIT_SOURCES})
