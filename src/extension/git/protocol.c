@@ -17,6 +17,7 @@
  *
  ******************************************************************************/
 
+#include <string.h>
 #include <stdlib.h>
 
 #include "pkt_line.h"
@@ -26,7 +27,7 @@ int reference_discovery(const char* repository,
                         buffer_t out, buffer_t err, rd_get_refs refs) {
   struct rd_ref* ref_list;
   size_t nrefs;
-  buffer_t flush_pkt;
+  buffer_t pkt;
 
   if (repository == NULL || out == NULL || err == NULL || refs == NULL) {
     return -1;
@@ -37,11 +38,42 @@ int reference_discovery(const char* repository,
     return -1;
   }
 
-  flush_pkt = buffer_create();
+  if ((pkt = buffer_create()) == NULL) {
+    return -1;
+  }
 
-  // No references: Simply send back a flush-pkt
-  pkt_line_write(flush_pkt, out);
-  buffer_destroy(flush_pkt);
+  if (nrefs == 0) {
+    // No references: Simply send back a flush-pkt
+    pkt_line_write(pkt, out);
+  } else {
+    int i;
+
+    for (i = 0; i < nrefs; i++) {
+      buffer_clear(pkt);
+      buffer_append(pkt, ref_list[i].obj_id, strlen(ref_list[i].obj_id));
+      buffer_append(pkt, " ", 1);
+      buffer_append(pkt, ref_list[i].ref_name, strlen(ref_list[i].ref_name));
+
+      if (i == 0) { // first ref
+        buffer_append(pkt, "\0report-status delete-refs ofs-delta", 36);
+      }
+
+      buffer_append(pkt, "\n", 1);
+
+      pkt_line_write(pkt, out);
+
+      free(ref_list[i].obj_id);
+      free(ref_list[i].ref_name);
+    }
+
+    free(ref_list);
+
+    // flush_pkt
+    buffer_clear(pkt);
+    pkt_line_write(pkt, out);
+  }
+
+  buffer_destroy(pkt);
 
   return 0;
 }

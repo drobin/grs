@@ -18,8 +18,7 @@
  ******************************************************************************/
 
 #include <check.h>
-
-#include <stdio.h>
+#include <stdlib.h>
 
 #include "../../src/extension/git/protocol.h"
 
@@ -29,8 +28,23 @@ static int no_refs_stub(const char* repository,
   return 0;
 }
 
-static int failed_stub(const char* repository,
+static int refs_stub(const char* repository,
                        struct rd_ref** ref_list, size_t* nrefs) {
+  *ref_list = calloc(2, sizeof(struct rd_ref));
+
+  (*ref_list)[0].obj_id = strdup("objid1");
+  (*ref_list)[0].ref_name = strdup("foo");
+  (*ref_list)[1].obj_id = strdup("objid2");
+  (*ref_list)[1].ref_name = strdup("bar");
+
+  *nrefs = 2;
+
+  return 0;
+}
+
+static int failed_stub(const char* repository,
+                     struct rd_ref** ref_list, size_t* nrefs) {
+
   return -1;
 }
 
@@ -84,6 +98,15 @@ START_TEST(reference_discovery_fetch_failed) {
 }
 END_TEST
 
+START_TEST(reference_discovery_fetch) {
+  fail_unless(reference_discovery("xxx", out, err, refs_stub) == 0);
+  fail_unless(buffer_get_size(out) == 30);
+  fail_unless(strncmp(buffer_get_data(out),
+                      "000fobjid1 foo\n000fobjid2 bar\n", 30) == 0);
+  fail_unless(buffer_get_size(err) == 0);
+}
+END_TEST
+
 TCase* git_protocol_tcase() {
   TCase* tc = tcase_create("git protocol");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -94,6 +117,7 @@ TCase* git_protocol_tcase() {
   tcase_add_test(tc, reference_discovery_null_refs);
   tcase_add_test(tc, reference_discovery_empty);
   tcase_add_test(tc, reference_discovery_fetch_failed);
+  tcase_add_test(tc, reference_discovery_fetch);
 
   return tc;
 }
