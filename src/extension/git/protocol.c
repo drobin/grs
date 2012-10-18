@@ -25,7 +25,7 @@
 int reference_discovery(buffer_t out, buffer_t err, rd_get_refs refs) {
   struct rd_ref* ref_list;
   size_t nrefs;
-  struct pkt_line* flush_pkt;
+  buffer_t flush_pkt;
 
   if (out == NULL || err == NULL || refs == NULL) {
     return -1;
@@ -36,11 +36,11 @@ int reference_discovery(buffer_t out, buffer_t err, rd_get_refs refs) {
     return -1;
   }
 
-  flush_pkt = pkt_line_create(0, NULL);
+  flush_pkt = buffer_create();
 
   // No references: Simply send back a flush-pkt
   pkt_line_write(flush_pkt, out);
-  pkt_line_destroy(flush_pkt);
+  buffer_destroy(flush_pkt);
 
   return 0;
 }

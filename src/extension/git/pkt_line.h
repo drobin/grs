@@ -23,63 +23,28 @@
 #include <libgrs/buffer.h>
 
 /**
- * A pkg-line
- * @see https://github.com/git/git/blob/master/Documentation/technical/protocol-common.txt
- */
-struct pkt_line {
-  /**
-   * Length of payload.
-   *
-   * If <code>len</code> is <code>0</code>, then this is a <i>flush-pkt</i>.
-   */
-  unsigned int len;
-
-  /**
-   * Payload encoded in the pkt-line.
-   */
-  char payload[0];
-};
-
-/**
- * Creates a new <i>pkt-line</i>.
- *
- * @param len Length of payload, which should be assigned to the
- *            <i>pkt-line</i>. If <code>len</code> is <code>0</code>, then
- *            this is a <i>flush-pkt</i>.
- * @param payload The payload to be assigned to the <i>pkt-line</i>. It can be
- *                <code>NULL</i>, when <code>len</code> is <code>0</code>.
- * @return A new <i>pkt-line</i>.
- */
-struct pkt_line* pkt_line_create(int len, char* payload);
-
-/**
- * Destroys the given <i>pkt-line</i> again.
- *
- * @param line The <i>pkt-line</i> to destroy.
- * @return On success <code>0</code> is returned.
- */
-int pkt_line_destroy(struct pkt_line* line);
-
-/**
  * Reads a <i>pkt-line</i> from the given buffer.
  *
- * If a <i>pkt-line</code> was read, the related data are removed from the
- * buffer.
+ * Reads a <i>pkt_line</i> from <code>src</code>, decodes the data and writes
+ * the result into <code>dest</code>. If a <i>pkt-line</code> was read, the
+ * related data are removed from the buffer.
  *
- * @param buf The source where to read the data.
- * @return A <i>pkt-line</i> read from the buffer. If not a complete
- *         <i>pkt-line<i> is available or the format of the <i>pkt-line</i> is
- *         wrong, <code>NULL</code> is returned.
+ * @param src The source where to read the data.
+ * @param dest The destination buffer, where to write the decoded data
+ * @return On success <code>0</code> is returned.
  */
-struct pkt_line* pkt_line_read(buffer_t buf);
+int pkt_line_read(buffer_t src, buffer_t dest);
 
 /**
  * Writes a <i>pkt-line</i> into the buffer.
  *
- * @param line The <i>pkt-line</i> to encode into the buffer
- * @param buf The destination buffer
+ * Assume, that the whole buffer-content of <code>src</code> should be encoded.
+ * The resulting pkt_line is written into <code>dest</code>.
+ *
+ * @param src The source buffer. The content of the resulting pkt_line.
+ * @param dest The destination buffer
  * @return On success <code>0</code> is returned.
  */
-int pkt_line_write(struct pkt_line* line, buffer_t buf);
+int pkt_line_write(buffer_t src, buffer_t dest);
 
 #endif  /* PKT_LINE_H */

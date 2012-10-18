@@ -45,91 +45,53 @@ static int hex2int(char hex[4]) {
   return n;
 }
 
-struct pkt_line* pkt_line_create(int len, char* payload) {
-  struct pkt_line* line;
-
-  if (len == 0) { // flush_pkt
-    if ((line = malloc(sizeof(struct pkt_line))) == NULL) {
-      return NULL;
-    }
-
-    line->len = 0;
-  } else {
-    if (payload == NULL) {
-      return NULL;
-    }
-
-    if ((line = malloc(sizeof(struct pkt_line) + len)) == NULL) {
-      return NULL;
-    }
-
-    line->len = len;
-    memcpy(line->payload, payload, len);
-  }
-
-  return line;
-}
-
-int pkt_line_destroy(struct pkt_line* line) {
-  if (line == NULL) {
-    return -1;
-  }
-
-  free(line);
-
-  return 0;
-}
-
-struct pkt_line* pkt_line_read(buffer_t buf) {
+int pkt_line_read(buffer_t src, buffer_t dest) {
   int size;
 
-  if (buf == NULL) {
-    return NULL;
+  if (src == NULL || dest == NULL) {
+    return -1;
   }
 
   // 4 bytes length-indicator, empty pkt-line "0004" is not allowed
-  if (buffer_get_size(buf) < 4) {
-    return NULL;
-  }
-
-  // Length of pkt-line
-  size = hex2int(buffer_get_data(buf));
-
-  // Empty pkt-line "0004" is not allowed
-  if (size == 4) {
-    return NULL;
-  }
-
-  if (size == 0) { // flush_pkt
-    struct pkt_line* line = pkt_line_create(0, NULL);
-    buffer_remove(buf, 4);
-
-    return line;
-  } else if (buffer_get_size(buf) < size) {
-    // You don't have the complete pkt-line
-    return NULL;
-  } else {
-    struct pkt_line* line = pkt_line_create(size - 4, buffer_get_data(buf) + 4);
-    buffer_remove(buf, size);
-
-    return line;
-  }
-}
-
-int pkt_line_write(struct pkt_line* line, buffer_t buf) {
-  if (line == NULL || buf == NULL) {
+  if (buffer_get_size(src) < 4) {
     return -1;
   }
 
-  if (line->len == 0) { // flush-pkt
-    return buffer_append(buf, "0000", 4);
+  // Length of pkt-line
+  size = hex2int(buffer_get_data(src));
+
+  // Empty pkt-line "0004" is not allowed
+  if (size == 4) {
+    return -1;
+  }
+
+  if (size == 0) { // flush_pkt
+    buffer_remove(src, 4);
+    return 0;
+  } else if (buffer_get_size(src) < size) {
+    // You don't have the complete pkt-line
+    return -1;
+  } else {
+    buffer_append(dest, buffer_get_data(src) + 4, size - 4);
+    buffer_remove(src, size);
+    return 0;
+  }
+}
+
+int pkt_line_write(buffer_t src, buffer_t dest) {
+  if (src == NULL || dest == NULL) {
+    return -1;
+  }
+
+  if (buffer_get_size(src) == 0) { // flush-pkt
+    return buffer_append(dest, "0000", 4);
   } else {
     char hex[5];
 
-    snprintf(hex, 5, "%04x", line->len + 4);
+    snprintf(hex, 5, "%04x", buffer_get_size(src) + 4);
 
-    if (buffer_append(buf, hex, 4) == 0 &&
-        buffer_append(buf, line->payload, line->len) == 0) {
+    if (buffer_append(dest, hex, 4) == 0 &&
+        buffer_append(dest, buffer_get_data(src), buffer_get_size(src)) == 0) {
       return 0;
     } else {
       return -1;
