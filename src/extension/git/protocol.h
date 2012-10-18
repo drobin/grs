@@ -23,15 +23,46 @@
 #include <libgrs/buffer.h>
 
 /**
+ * A reference.
+ */
+struct rd_ref {
+  /**
+   * The SHA object-id of the reference
+   */
+  char* obj_id;
+
+  /**
+   * The name of the reference
+   */
+  char* ref_name;
+};
+
+/**
+ * A callback-function used by reference_discovery to fetch references from a
+ * repository.
+ *
+ * The callback-implementation should store the references at <code>refs</code>.
+ * The number of references should be stored in <code>nrefs</code>.
+ *
+ * @param refs The implementation should store the references here. The
+ *             reference_discovery-function will release the memory again.
+ * @param nrefs The implementation should store the number of references here.
+ * @return The implementation should return <code>0</code>, if the operation was
+ *         successful.
+ */
+typedef int (*rd_get_refs)(struct rd_ref** refs, size_t* nrefs);
+
+/**
  * Implementation of the <i>Reference Discovery</i>-process.
  *
  * @param out The function writes data into this buffer, which should be
  *            transferred to the client.
  * @param err The function writes error-messages into the buffer (if any).
+ * @param refs A function used to fetch references from a repository.
  * @return On success <code>0</code> is returned.
  *
  * @see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt
  */
-int reference_discovery(buffer_t out, buffer_t err);
+int reference_discovery(buffer_t out, buffer_t err, rd_get_refs refs);
 
 #endif  /* PROTOCOL_H */

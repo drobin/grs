@@ -22,10 +22,17 @@
 #include "pkt_line.h"
 #include "protocol.h"
 
-int reference_discovery(buffer_t out, buffer_t err) {
+int reference_discovery(buffer_t out, buffer_t err, rd_get_refs refs) {
+  struct rd_ref* ref_list;
+  size_t nrefs;
   struct pkt_line* flush_pkt;
 
-  if (out == NULL || err == NULL) {
+  if (out == NULL || err == NULL || refs == NULL) {
+    return -1;
+  }
+
+  // Fetch the references
+  if (refs(&ref_list, &nrefs) != 0) {
     return -1;
   }
 

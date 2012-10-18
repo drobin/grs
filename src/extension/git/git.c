@@ -22,9 +22,14 @@
 #include "git.h"
 #include "protocol.h"
 
+int rd_get_refs_stub(struct rd_ref** refs, size_t* nrefs) {
+  *nrefs = 0;
+  return 0;
+}
+
 static int git_upload_pack(char *const command[], buffer_t in_buf,
                            buffer_t out_buf, buffer_t err_buf) {
-  return reference_discovery(out_buf, err_buf);
+  return reference_discovery(out_buf, err_buf, rd_get_refs_stub);
 }
 
 int load_git_extension(grs_t grs) {
