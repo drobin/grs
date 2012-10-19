@@ -45,44 +45,32 @@ static char* repository_path(const char* str) {
 
 struct git_reference_foreach_data {
   git_repository* repo;
-  struct rd_ref** refs;
-  size_t* nrefs;
+  binbuf_t refs;
 };
 
 static int git_reference_foreach_cb(const char* ref_name, void* payload) {
   struct git_reference_foreach_data* data;
   git_reference* ref;
-  char hex[41];
   int result;
-  int nrefs;
+  struct rd_ref* return_ref;
 
   data = (struct git_reference_foreach_data*)payload;
-  nrefs = *(data->nrefs);
 
   if ((result = git_reference_lookup(&ref, data->repo, ref_name)) != 0) {
     log_err("Reference lookup failed: %s", git_strerror(result));
     return 0; // Skip reference but try another one
   }
 
-  if (nrefs == 0) {
-    *(data->refs) = malloc(sizeof(struct rd_ref));
-  } else {
-    *(data->refs) = realloc(*(data->refs), sizeof(struct rd_ref) * (nrefs + 1));
-  }
-
-  git_oid_fmt(hex, git_reference_oid(ref));
-  hex[40] = '\0';
-
-  (*(data->refs))[nrefs].obj_id = strdup(hex);
-  (*(data->refs))[nrefs].ref_name = strdup(git_reference_name(ref));
-  *(data->nrefs) += 1;
+  return_ref = binbuf_add(data->refs);
+  git_oid_fmt(return_ref->obj_id, git_reference_oid(ref));
+  return_ref->obj_id[40] = '\0';
+  strlcpy(return_ref->ref_name, git_reference_name(ref),
+          sizeof(return_ref->ref_name));
 
   return 0;
 }
 
-static int get_refs_impl(const char* repository,
-                        struct rd_ref** refs, size_t* nrefs) {
-
+static int get_refs_impl(const char* repository, binbuf_t refs) {
   struct git_reference_foreach_data data;
   git_repository* repo;
   int result;
@@ -96,10 +84,8 @@ static int get_refs_impl(const char* repository,
     return result;
   }
 
-  *nrefs = 0;
   data.repo = repo;
   data.refs = refs;
-  data.nrefs = nrefs;
   result = git_reference_foreach(repo, GIT_REF_LISTALL,
                                  git_reference_foreach_cb, &data);
   if (result != 0) {

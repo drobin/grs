@@ -20,6 +20,9 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
+#include <limits.h>
+
+#include <libgrs/binbuf.h>
 #include <libgrs/buffer.h>
 
 /**
@@ -29,12 +32,12 @@ struct rd_ref {
   /**
    * The SHA object-id of the reference
    */
-  char* obj_id;
+  char obj_id[41];
 
   /**
    * The name of the reference
    */
-  char* ref_name;
+  char ref_name[PATH_MAX];
 };
 
 /**
@@ -45,14 +48,12 @@ struct rd_ref {
  * The number of references should be stored in <code>nrefs</code>.
  *
  * @param repository The path the the requested repository
- * @param refs The implementation should store the references here. The
- *             reference_discovery-function will release the memory again.
+ * @param refs The implementation should store the references here.
  * @param nrefs The implementation should store the number of references here.
  * @return The implementation should return <code>0</code>, if the operation was
  *         successful.
  */
-typedef int (*rd_get_refs)(const char* repository,
-                           struct rd_ref** refs, size_t* nrefs);
+typedef int (*rd_get_refs)(const char* repository, binbuf_t refs);
 
 /**
  * Implementation of the <i>Reference Discovery</i>-process.

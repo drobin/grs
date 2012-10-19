@@ -22,29 +22,25 @@
 
 #include "../../src/extension/git/protocol.h"
 
-static int no_refs_stub(const char* repository,
-                        struct rd_ref** ref_list, size_t* nrefs) {
-  *nrefs = 0;
+static int no_refs_stub(const char* repository, binbuf_t refs) {
   return 0;
 }
 
-static int refs_stub(const char* repository,
-                       struct rd_ref** ref_list, size_t* nrefs) {
-  *ref_list = calloc(2, sizeof(struct rd_ref));
+static int refs_stub(const char* repository, binbuf_t refs) {
+  struct rd_ref* ref;
 
-  (*ref_list)[0].obj_id = strdup("objid1");
-  (*ref_list)[0].ref_name = strdup("foo");
-  (*ref_list)[1].obj_id = strdup("objid2");
-  (*ref_list)[1].ref_name = strdup("bar");
+  ref = binbuf_add(refs);
+  strlcpy(ref->obj_id, "objid1", sizeof(ref->obj_id));
+  strlcpy(ref->ref_name, "foo", sizeof(ref->ref_name));
 
-  *nrefs = 2;
+  ref = binbuf_add(refs);
+  strlcpy(ref->obj_id, "objid2", sizeof(ref->obj_id));
+  strlcpy(ref->ref_name, "bar", sizeof(ref->ref_name));
 
   return 0;
 }
 
-static int failed_stub(const char* repository,
-                     struct rd_ref** ref_list, size_t* nrefs) {
-
+static int failed_stub(const char* repository, binbuf_t refs) {
   return -1;
 }
 

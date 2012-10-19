@@ -25,16 +25,17 @@
 
 int reference_discovery(const char* repository,
                         buffer_t out, buffer_t err, rd_get_refs refs) {
-  struct rd_ref* ref_list;
-  size_t nrefs;
+  binbuf_t refs_buf;
   buffer_t pkt;
 
   if (repository == NULL || out == NULL || err == NULL || refs == NULL) {
     return -1;
   }
 
+  refs_buf = binbuf_create(sizeof(struct rd_ref));
+
   // Fetch the references
-  if (refs(repository, &ref_list, &nrefs) != 0) {
+  if (refs(repository, refs_buf) != 0) {
     return -1;
   }
 
@@ -42,17 +43,19 @@ int reference_discovery(const char* repository,
     return -1;
   }
 
-  if (nrefs == 0) {
+  if (binbuf_get_size(refs_buf) == 0) {
     // No references: Simply send back a flush-pkt
     pkt_line_write(pkt, out);
   } else {
     int i;
 
-    for (i = 0; i < nrefs; i++) {
+    for (i = 0; i < binbuf_get_size(refs_buf); i++) {
+      struct rd_ref* ref = binbuf_get(refs_buf, i);
+
       buffer_clear(pkt);
-      buffer_append(pkt, ref_list[i].obj_id, strlen(ref_list[i].obj_id));
+      buffer_append(pkt, ref->obj_id, strlen(ref->obj_id));
       buffer_append(pkt, " ", 1);
-      buffer_append(pkt, ref_list[i].ref_name, strlen(ref_list[i].ref_name));
+      buffer_append(pkt, ref->ref_name, strlen(ref->ref_name));
 
       if (i == 0) { // first ref
         buffer_append(pkt, "\0report-status delete-refs ofs-delta", 36);
@@ -61,12 +64,9 @@ int reference_discovery(const char* repository,
       buffer_append(pkt, "\n", 1);
 
       pkt_line_write(pkt, out);
-
-      free(ref_list[i].obj_id);
-      free(ref_list[i].ref_name);
     }
 
-    free(ref_list);
+    binbuf_destroy(refs_buf);
 
     // flush_pkt
     buffer_clear(pkt);
