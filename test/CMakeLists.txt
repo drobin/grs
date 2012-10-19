@@ -44,6 +44,7 @@ include_directories(
 
 target_link_libraries(grs_test
   libgrs libext_core libext_git
+  ${LIBGIT2_LIBRARY}
   ${LIBEVENT_LIBRARY}
   ${CHECK_LIBRARY}
   pthread
