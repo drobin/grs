@@ -26,6 +26,7 @@ struct _binbuf {
   size_t size;
   size_t nelems;
   size_t capacity;
+  void* data;
 };
 
 binbuf_t binbuf_create(size_t size) {
@@ -46,6 +47,7 @@ int binbuf_destroy(binbuf_t buf) {
     return -1;
   }
 
+  free(buf->data);
   free(buf);
 
   return 0;
@@ -65,4 +67,31 @@ int binbuf_get_capacity(binbuf_t buf) {
   }
 
   return buf->capacity;
+}
+
+void* binbuf_get(binbuf_t buf, unsigned int idx) {
+  if (buf == NULL) {
+    return NULL;
+  }
+
+  if (idx >= buf->nelems) {
+    return NULL;
+  }
+
+  return buf->data + buf->size * idx;
+}
+
+void* binbuf_add(binbuf_t buf) {
+  if (buf == NULL) {
+    return NULL;
+  }
+
+  // Increase capacity (if necessary)
+  while (buf->capacity < buf->nelems + 1) {
+    buf->data = realloc(buf->data, buf->size * (buf->capacity + 1));
+    buf->capacity++;
+  }
+
+  buf->nelems++;
+  return buf->data + buf->size * (buf->nelems - 1);
 }

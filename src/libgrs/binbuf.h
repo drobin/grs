@@ -61,4 +61,25 @@ int binbuf_get_size(binbuf_t buf);
  */
 int binbuf_get_capacity(binbuf_t buf);
 
+/**
+ * Returns the item at the given index.
+ *
+ * @param buf The requested buf
+ * @param idx The index of the item to return: <code>0 <= idx < size</code>.
+ * @return The item at the requested index. If <code>idx</code> is out of range,
+ *         <code>NULL</code> is returned.
+ */
+void* binbuf_get(binbuf_t buf, unsigned int idx);
+
+/**
+ * Assigns a new item to the buffer.
+ *
+ * If the capacity of the buffer is not big enough to hold a new item, then
+ * the buffer is increased to the desired size.
+ *
+ * @param buf The requested buffer
+ * @param A pointer to the new item, which can be modified
+ */
+void* binbuf_add(binbuf_t buf);
+
 #endif  /* BINBUF_H */
