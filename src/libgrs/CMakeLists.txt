@@ -19,6 +19,7 @@
 
 SET(LIBCORE_SOURCES
   acl.c
+  binbuf.c
   buffer.c
   grs.c
   log.c

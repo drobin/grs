@@ -100,9 +100,11 @@ END_TEST
 
 START_TEST(reference_discovery_fetch) {
   fail_unless(reference_discovery("xxx", out, err, refs_stub) == 0);
-  fail_unless(buffer_get_size(out) == 30);
+  fail_unless(buffer_get_size(out) == 70);
   fail_unless(strncmp(buffer_get_data(out),
-                      "000fobjid1 foo\n000fobjid2 bar\n", 30) == 0);
+                      "0033objid1 foo\0report-status delete-refs ofs-delta\n"
+                      "000fobjid2 bar\n"
+                      "0000", 70) == 0);
   fail_unless(buffer_get_size(err) == 0);
 }
 END_TEST

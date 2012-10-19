@@ -25,6 +25,7 @@ SET(GRS_TEST_SOURCES
   ext_git/protocol_tests.c
   ext_git/suite.c
   libgrs/acl_tests.c
+  libgrs/binbuf_tests.c
   libgrs/buffer_tests.c
   libgrs/grs_tests.c
   libgrs/session_tests.c

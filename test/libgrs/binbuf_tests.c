@@ -19,20 +19,33 @@
 
 #include <check.h>
 
-extern TCase* acl_tcase();
-extern TCase* binbuf_tcase();
-extern TCase* buffer_tcase();
-extern TCase* grs_tcase();
-extern TCase* session_tcase();
+#include "../../src/libgrs/binbuf.h"
 
-Suite* libgrs_suite() {
-  Suite* s = suite_create("grs_test");
+struct test_buf {
+  int i;
+};
 
-  suite_add_tcase(s, acl_tcase());
-  suite_add_tcase(s, binbuf_tcase());
-  suite_add_tcase(s, buffer_tcase());
-  suite_add_tcase(s, grs_tcase());
-  suite_add_tcase(s, session_tcase());
+static binbuf_t buffer;
 
-  return s;
+static void setup() {
+  fail_unless((buffer = binbuf_create(sizeof(struct test_buf))) != NULL);
+}
+
+static void teardown() {
+  fail_unless(binbuf_destroy(buffer) == 0);
+  buffer = NULL;
+}
+
+START_TEST(destroy_null_buf) {
+  fail_unless(binbuf_destroy(NULL) == -1);
+}
+END_TEST
+
+TCase* binbuf_tcase() {
+  TCase* tc = tcase_create("binbuf");
+  tcase_add_checked_fixture(tc, setup, teardown);
+
+  tcase_add_test(tc, destroy_null_buf);
+
+  return tc;
 }

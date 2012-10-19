@@ -17,22 +17,34 @@
  *
  ******************************************************************************/
 
-#include <check.h>
+#include <stdlib.h>
+#include <string.h>
 
-extern TCase* acl_tcase();
-extern TCase* binbuf_tcase();
-extern TCase* buffer_tcase();
-extern TCase* grs_tcase();
-extern TCase* session_tcase();
+#include "binbuf.h"
 
-Suite* libgrs_suite() {
-  Suite* s = suite_create("grs_test");
+struct _binbuf {
+  size_t size;
+};
 
-  suite_add_tcase(s, acl_tcase());
-  suite_add_tcase(s, binbuf_tcase());
-  suite_add_tcase(s, buffer_tcase());
-  suite_add_tcase(s, grs_tcase());
-  suite_add_tcase(s, session_tcase());
+binbuf_t binbuf_create(size_t size) {
+  struct _binbuf* buf;
 
-  return s;
+  if ((buf = malloc(sizeof(struct _binbuf))) == NULL) {
+    return NULL;
+  }
+
+  memset(buf, 0, sizeof(struct _binbuf));
+  buf->size = size;
+
+  return buf;
+}
+
+int binbuf_destroy(binbuf_t buf) {
+  if (buf == NULL) {
+    return -1;
+  }
+
+  free(buf);
+
+  return 0;
 }

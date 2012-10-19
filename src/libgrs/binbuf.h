@@ -17,22 +17,27 @@
  *
  ******************************************************************************/
 
-#include <check.h>
+#ifndef BINBUF_H
+#define BINBUF_H
 
-extern TCase* acl_tcase();
-extern TCase* binbuf_tcase();
-extern TCase* buffer_tcase();
-extern TCase* grs_tcase();
-extern TCase* session_tcase();
+typedef struct _binbuf* binbuf_t;
 
-Suite* libgrs_suite() {
-  Suite* s = suite_create("grs_test");
+/**
+ * Create a new binbuf-structure.
+ *
+ * @param size The size of one element to be stored in the buffer.
+ * @return The handle to the binbuf.
+ */
+binbuf_t binbuf_create(size_t size);
 
-  suite_add_tcase(s, acl_tcase());
-  suite_add_tcase(s, binbuf_tcase());
-  suite_add_tcase(s, buffer_tcase());
-  suite_add_tcase(s, grs_tcase());
-  suite_add_tcase(s, session_tcase());
+/**
+ * Destroys the binbuf again.
+ *
+ * You will loose any items which are still stored in the buffer.
+ *
+ * @param buf The buffer to destroy
+ * @return On success <code>0</code> is returned.
+ */
+int binbuf_destroy(binbuf_t buf);
 
-  return s;
-}
+#endif  /* BINBUF_H */
