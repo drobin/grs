@@ -40,4 +40,25 @@ binbuf_t binbuf_create(size_t size);
  */
 int binbuf_destroy(binbuf_t buf);
 
+/**
+ * Returns the size of the buffer.
+ *
+ * This is the number of items actually stored in the buffer.
+ *
+ * @param The requested buffer
+ * @preturn The number of items stored in the buffer.
+ */
+int binbuf_get_size(binbuf_t buf);
+
+/**
+ * Returns the capacity of the buffer.
+ *
+ * This is the amount of items you can store in the buffer without reorganizing
+ * it.
+ *
+ * @param buffer The requested buffer
+ * @return The capacity of the buffer.
+ */
+int binbuf_get_capacity(binbuf_t buf);
+
 #endif  /* BINBUF_H */

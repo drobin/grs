@@ -24,6 +24,8 @@
 
 struct _binbuf {
   size_t size;
+  size_t nelems;
+  size_t capacity;
 };
 
 binbuf_t binbuf_create(size_t size) {
@@ -47,4 +49,20 @@ int binbuf_destroy(binbuf_t buf) {
   free(buf);
 
   return 0;
+}
+
+int binbuf_get_size(binbuf_t buf) {
+  if (buf == NULL) {
+    return -1;
+  }
+
+  return buf->nelems;
+}
+
+int binbuf_get_capacity(binbuf_t buf) {
+  if (buf == NULL) {
+    return -1;
+  }
+
+  return buf->capacity;
 }
