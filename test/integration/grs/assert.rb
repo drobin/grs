@@ -17,39 +17,16 @@
 #
 ################################################################################
 
-SET(GRS_TEST_SOURCES
-  ext_core/suite.c
-  ext_core/tests.c
-  ext_git/extension_tests.c
-  ext_git/pkt_line_tests.c
-  ext_git/protocol_tests.c
-  ext_git/suite.c
-  libgrs/acl_tests.c
-  libgrs/binbuf_tests.c
-  libgrs/buffer_tests.c
-  libgrs/grs_tests.c
-  libgrs/session_tests.c
-  libgrs/suite.c
-  grs_test.c
-)
+module Grs
+  module Assertion
+    def assert(test, failure_message = nil)
+      unless test
+        raise failure_message || test.to_s
+      end
+    end
+  end
+end
 
-set(INTEGRATION_TESTS "${CMAKE_CURRENT_SOURCE_DIR}/integration")
-
-add_executable(grs_test ${GRS_TEST_SOURCES})
-add_test(grs_test grs_test)
-add_test(ls_remote ${INTEGRATION_TESTS}/ls_remote.rb)
-
-include_directories(
-  ${LIBEVENT_INCLUDE_DIR}
-  ${LIBSSH_INCLUDE_DIR}
-  ${CHECK_INCLUDE_DIR}
-  ${LIBGRS_INCLUDE_DIR}
-)
-
-target_link_libraries(grs_test
-  libgrs libext_core libext_git
-  ${LIBGIT2_LIBRARY}
-  ${LIBEVENT_LIBRARY}
-  ${CHECK_LIBRARY}
-  pthread
-)
+class Object
+  include Grs::Assertion
+end
