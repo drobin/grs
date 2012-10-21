@@ -28,6 +28,7 @@
 
 int buf2channel(struct session_list* list, struct session_entry* entry,
                 int is_err) {
+  const char* prefix = is_err ? "[Berr2C]" : "[Bout2C]";
   buffer_t buffer;
 
   if (entry->channel == NULL) {
@@ -41,6 +42,7 @@ int buf2channel(struct session_list* list, struct session_entry* entry,
     buffer = session_get_out_buffer(entry->grs_session);
   }
 
+  log_debug("%s %i bytes available in buffer", prefix, buffer_get_size(buffer));
 
   while (buffer_get_size(buffer) > 0) {
     int nbytes;
@@ -53,14 +55,13 @@ int buf2channel(struct session_list* list, struct session_entry* entry,
                                  buffer_get_size(buffer));
     }
 
-
-
     if (nbytes == SSH_ERROR) {
       log_err("Failed to write into channel: %s",
               ssh_get_error(entry->channel));
       return -1;
     }
 
+    log_debug("%s %i bytes written into channel", prefix, nbytes);
     log_data("B2C", buffer_get_data(buffer), nbytes);
     buffer_remove(buffer, nbytes);
   }

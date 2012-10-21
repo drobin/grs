@@ -56,11 +56,6 @@ int reference_discovery(const char* repository,
       buffer_append(pkt, ref->obj_id, strlen(ref->obj_id));
       buffer_append(pkt, " ", 1);
       buffer_append(pkt, ref->ref_name, strlen(ref->ref_name));
-
-      if (i == 0) { // first ref
-        buffer_append(pkt, "\0report-status delete-refs ofs-delta", 36);
-      }
-
       buffer_append(pkt, "\n", 1);
 
       pkt_line_write(pkt, out);
