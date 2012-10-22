@@ -28,7 +28,7 @@ START_TEST(load_extension) {
   fail_unless((grs = grs_init()) != NULL);
   fail_unless(load_git_extension(grs) == 0);
 
-  fail_unless(grs_get_command(grs, command) != NULL);
+  fail_unless(grs_get_command_hooks(grs, command) != NULL);
 
   fail_unless(grs_destroy(grs) == 0);
 }

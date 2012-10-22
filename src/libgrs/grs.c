@@ -25,7 +25,7 @@
 
 struct command_entry {
   char* command;
-  command_hook hook;
+  struct command_hooks hooks;
   struct command_entry* parent;
   LIST_ENTRY(command_entry) entries;
 };
@@ -55,7 +55,7 @@ static struct command_entry* get_command_entry(struct _grs* handle,
     }
 
     entry->command = strdup(command);
-    entry->hook = NULL;
+    memset(&entry->hooks, 0, sizeof(struct command_hooks));
     entry->parent = parent;
     LIST_INSERT_HEAD(&(handle->cmd_head), entry, entries);
 
@@ -126,15 +126,16 @@ int grs_register_command(grs_t handle, char *const command[],
     parent = entry;
   }
 
-  if (entry->hook == NULL || entry->hook == hook) {
-    entry->hook = hook;
+  if (entry->hooks.exec == NULL || entry->hooks.exec == hook) {
+    entry->hooks.exec = hook;
     return 0;
   } else {
     return -1;
   }
 }
 
-command_hook grs_get_command(grs_t handle, char *const command[]) {
+struct command_hooks* grs_get_command_hooks(grs_t handle,
+                                            char *const command[]) {
   struct command_entry* entry;
   struct command_entry* parent;
   struct command_entry* result;
@@ -153,9 +154,9 @@ command_hook grs_get_command(grs_t handle, char *const command[]) {
     }
   }
 
-  if (result != NULL) {
-    return result->hook;
-  } else {
+  if (result == NULL || result->hooks.exec == NULL) {
     return NULL;
   }
+
+  return &result->hooks;
 }

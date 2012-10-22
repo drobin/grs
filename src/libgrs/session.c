@@ -154,15 +154,15 @@ int session_can_exec(session_t session) {
 }
 
 int session_exec(session_t session) {
-  command_hook hook;
+  struct command_hooks* hooks;
 
   if (session == NULL) {
     return -1;
   }
 
-  if ((hook = grs_get_command(session->grs, session->command)) != NULL) {
-    int result = hook(session->command, session->in_buf,
-                      session->out_buf, session->err_buf);
+  if ((hooks = grs_get_command_hooks(session->grs, session->command)) != NULL) {
+    int result = hooks->exec(session->command, session->in_buf,
+                             session->out_buf, session->err_buf);
     session->exec_finished = (result != 1);
 
     return result;

@@ -34,6 +34,16 @@ typedef int (*command_hook)(char *const command[],
                             buffer_t in_buf, buffer_t out_buf,
                             buffer_t err_buf);
 
+/**
+ * Structure collects all the hooks for command.
+ */
+struct command_hooks {
+  /**
+   * The execution-hook.
+   */
+  command_hook exec;
+};
+
 /*
  * Creates a new grs-handle.
  *
@@ -74,9 +84,9 @@ int grs_register_command(grs_t handle, char *const command[],
                          command_hook hook);
 
 /**
- * Receives the hook of an already registered command.
+ * Receives all the hooks of an already registered command.
  *
- * First it tries to get the hook for the command and all its arguments. If
+ * First it tries to get the hooks for the command and all its arguments. If
  * you don't have a hook at this position, then the function tries to find the
  * hook by removing the last argument from the search-path. The algorithm is
  * repeated until the search-path is empty.
@@ -85,9 +95,10 @@ int grs_register_command(grs_t handle, char *const command[],
  * @param command Array which contains the command and all its arguments.The
  *                array must be NULL-terminated and you need at least one
  *                array-element.
- * @return The hook registered for the given command. If no such command is
+ * @return The hooks registered for the given command. If no such command is
  *         registered, <code>NULL</code> is returned.
  */
-command_hook grs_get_command(grs_t handle, char *const command[]);
+struct command_hooks* grs_get_command_hooks(grs_t handle,
+                                            char *const command[]);
 
 #endif /* GRSD_H */
