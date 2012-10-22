@@ -99,27 +99,34 @@ static int get_refs_impl(const char* repository, binbuf_t refs) {
   return 0;
 }
 
-static int git_upload_pack(char *const command[], buffer_t in_buf,
-                           buffer_t out_buf, buffer_t err_buf) {
-
-  char *repository;
-  int result;
+static int init_git_upload_pack(char *const command[], void** payload) {
+  char* repository;
 
   repository = repository_path(command[1]);
-  result = reference_discovery(repository, out_buf, err_buf, get_refs_impl);
+  *payload = repository;
 
-  free(repository);
+  return 0;
+}
 
-  return result;
+static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
+                           buffer_t err_buf, void* payload) {
+
+  char *repository = (char*)payload;
+
+  return reference_discovery(repository, out_buf, err_buf, get_refs_impl);
+}
+
+static void destroy_git_upload_pack(void* payload) {
+  free(payload); // repository_path()
 }
 
 int load_git_extension(grs_t grs) {
   char* command[] = { "git-upload-pack", NULL };
   struct command_hooks hooks;
 
-  hooks.init = NULL;
+  hooks.init = init_git_upload_pack;
   hooks.exec = git_upload_pack;
-  hooks.destroy = NULL;
+  hooks.destroy = destroy_git_upload_pack;
 
   return grs_register_command(grs, command, &hooks);
 }

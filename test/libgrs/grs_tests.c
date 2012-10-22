@@ -29,13 +29,13 @@ static int init_hook_1(char *const command[], void** payload) {
   return 0;
 }
 
-static int exec_hook_1(char *const command[], buffer_t in_buf, buffer_t out_buf,
-                       buffer_t err_buf) {
+static int exec_hook_1(buffer_t in_buf, buffer_t out_buf, buffer_t err_buf,
+                       void* payload) {
   return 0;
 }
 
-static int exec_hook_2(char *const command[], buffer_t in_buf, buffer_t out_buf,
-                       buffer_t err_buf) {
+static int exec_hook_2(buffer_t in_buf, buffer_t out_buf, buffer_t err_buf,
+                       void* payload) {
   return 0;
 }
 

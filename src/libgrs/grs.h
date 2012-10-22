@@ -69,13 +69,14 @@ struct command_hooks {
    *                the client.
    * @param err_buf Buffer can be filled with error-data, which should be send
    *                back to the client.
+   * @param payload The payload for the command
    * @return If <code>0</code> is returned, then the operation has finished, a
    *         a positive return-code will lead into another invocation of the
    *         hook. A negative return-code is an error and the command is
    *         aborted.
    */
-  int (*exec)(char *const command[], buffer_t in_buf, buffer_t out_buf,
-              buffer_t err_buf);
+  int (*exec)(buffer_t in_buf, buffer_t out_buf, buffer_t err_buf,
+              void* payload);
 
   /**
    * The hook is executed, when a command should be destroyed.

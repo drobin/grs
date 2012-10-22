@@ -25,43 +25,50 @@ static int n_init = 0;
 static int n_exec = 0;
 static int n_destroy = 0;
 
-struct payload_data {
+static struct payload_data {
 } data;
 
-int init_hook(char *const command[], void** payload) {
+static int init_hook(char *const command[], void** payload) {
   *payload = &data;
   n_init++;
   return 0;
 }
 
-int init_failed_hook(char *const command[], void** payload) {
+static int init_failed_hook(char *const command[], void** payload) {
   n_init++;
   return -1;
 }
 
-int exec_hook(char *const command[], buffer_t in_buf, buffer_t out_buf,
-              buffer_t err_buf) {
+static int exec_hook(buffer_t in_buf, buffer_t out_buf, buffer_t err_buf,
+                     void* payload) {
   n_exec++;
   return 0;
 }
 
-int exec_failed_hook(char *const command[], buffer_t in_buf, buffer_t out_buf,
-                     buffer_t err_buf) {
+static int exec_failed_hook(buffer_t in_buf, buffer_t out_buf, buffer_t err_buf,
+                            void* payload) {
   n_exec++;
   return -1;
 }
 
-int exec_continue_hook(char *const command[], buffer_t in_buf, buffer_t out_buf,
-                       buffer_t err_buf) {
+static int exec_continue_hook(buffer_t in_buf, buffer_t out_buf,
+                              buffer_t err_buf, void* payload) {
   n_exec++;
   return 1;
 }
 
-void destroy_hook(void* payload) {
+static int exec_payload_hook(buffer_t in_buf, buffer_t out_buf,
+                             buffer_t err_buf, void* payload) {
+  n_exec++;
+  fail_unless(payload == &data);
+  return 0;
+}
+
+static void destroy_hook(void* payload) {
   n_destroy++;
 }
 
-void destroy_payload_hook(void* payload) {
+static void destroy_payload_hook(void* payload) {
   n_destroy++;
   fail_unless(payload == &data);
 }
@@ -447,7 +454,7 @@ START_TEST(exec_payload_check) {
   struct command_hooks hooks;
 
   hooks.init = init_hook;
-  hooks.exec = exec_hook;
+  hooks.exec = exec_payload_hook;
   hooks.destroy = destroy_payload_hook;
   fail_unless(grs_register_command(grs, command, &hooks) == 0);
   fail_unless(session_set_command(session, "foo") == 0);

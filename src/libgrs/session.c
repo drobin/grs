@@ -175,8 +175,8 @@ int session_exec(session_t session) {
     }
 
     // Command is initialized, now execute it
-    result = hooks->exec(session->command, session->in_buf, session->out_buf,
-                         session->err_buf);
+    result = hooks->exec(session->in_buf, session->out_buf, session->err_buf,
+                         session->payload);
     session->exec_count++;
 
     if (result <= 0) {
