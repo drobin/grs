@@ -31,5 +31,9 @@ static int grs_info(char *const command[], buffer_t in_buf, buffer_t out_buf,
 
 int load_core_extension(grs_t grs) {
   char* command[] = { "grs", "info", NULL };
-  return grs_register_command(grs, command, grs_info);
+  struct command_hooks hooks;
+
+  hooks.exec = grs_info;
+
+  return grs_register_command(grs, command, &hooks);
 }

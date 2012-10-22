@@ -115,5 +115,9 @@ static int git_upload_pack(char *const command[], buffer_t in_buf,
 
 int load_git_extension(grs_t grs) {
   char* command[] = { "git-upload-pack", NULL };
-  return grs_register_command(grs, command, git_upload_pack);
+  struct command_hooks hooks;
+
+  hooks.exec = git_upload_pack;
+
+  return grs_register_command(grs, command, &hooks);
 }

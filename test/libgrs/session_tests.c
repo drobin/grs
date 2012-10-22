@@ -36,6 +36,18 @@ int continue_hook(char *const command[], buffer_t in_buf, buffer_t out_buf,
   return 1;
 }
 
+static struct command_hooks success_hooks = {
+  .exec = success_hook
+};
+
+static struct command_hooks fail_hooks = {
+  .exec = fail_hook
+};
+
+static struct command_hooks continue_hooks = {
+  .exec = continue_hook
+};
+
 static grs_t grs;
 static session_t session;
 
@@ -201,7 +213,7 @@ START_TEST(exec_success) {
   char* command[] = { "foo", NULL };
   grs_t grs = session_get_grs(session);
 
-  fail_unless(grs_register_command(grs, command, success_hook) == 0);
+  fail_unless(grs_register_command(grs, command, &success_hooks) == 0);
   fail_unless(session_set_command(session, "foo") == 0);
   fail_unless(session_exec(session) == 0);
 }
@@ -221,7 +233,7 @@ START_TEST(is_finished_error) {
   char* command[] = { "foo", NULL };
   grs_t grs = session_get_grs(session);
 
-  fail_unless(grs_register_command(grs, command, fail_hook) == 0);
+  fail_unless(grs_register_command(grs, command, &fail_hooks) == 0);
   fail_unless(session_set_command(session, "foo") == 0);
   fail_unless(session_exec(session) == -1);
   fail_unless(session_is_finished(session));
@@ -232,7 +244,7 @@ START_TEST(is_finished_continue) {
   char* command[] = { "foo", NULL };
   grs_t grs = session_get_grs(session);
 
-  fail_unless(grs_register_command(grs, command, continue_hook) == 0);
+  fail_unless(grs_register_command(grs, command, &continue_hooks) == 0);
   fail_unless(session_set_command(session, "foo") == 0);
   fail_unless(session_exec(session) == 1);
   fail_unless(!session_is_finished(session));
@@ -243,7 +255,7 @@ START_TEST(is_finished_success) {
   char* command[] = { "foo", NULL };
   grs_t grs = session_get_grs(session);
 
-  fail_unless(grs_register_command(grs, command, success_hook) == 0);
+  fail_unless(grs_register_command(grs, command, &success_hooks) == 0);
   fail_unless(session_set_command(session, "foo") == 0);
   fail_unless(session_exec(session) == 0);
   fail_unless(session_is_finished(session));

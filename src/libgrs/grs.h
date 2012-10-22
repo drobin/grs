@@ -30,18 +30,32 @@ struct _grs;
  */
 typedef struct _grs* grs_t;
 
-typedef int (*command_hook)(char *const command[],
-                            buffer_t in_buf, buffer_t out_buf,
-                            buffer_t err_buf);
-
 /**
  * Structure collects all the hooks for command.
  */
 struct command_hooks {
   /**
-   * The execution-hook.
+   * The command is executed.
+   *
+   * The operation of the command is executed. The hook is executed at least one
+   * time in this state. It depends on the return-value of the hook. If this
+   * function returns <code>0</code>, then the operation succeeded and you
+   * switch to the next state. A positive return-code tells the session, that
+   * you need another invocation of the hook. A negative return-value is an
+   * error and you switch to the next state.
+   *
+   * @param in_buf Data, which can be consumed by the command
+   * @param out_buf Buffer can be filled to data, which should be send back to
+   *                the client.
+   * @param err_buf Buffer can be filled with error-data, which should be send
+   *                back to the client.
+   * @return If <code>0</code> is returned, then the operation has finished, a
+   *         a positive return-code will lead into another invocation of the
+   *         hook. A negative return-code is an error and the command is
+   *         aborted.
    */
-  command_hook exec;
+  int (*exec)(char *const command[], buffer_t in_buf, buffer_t out_buf,
+              buffer_t err_buf);
 };
 
 /*
@@ -77,11 +91,11 @@ acl_t grs_get_acl(grs_t handle);
  * @param command The command, where the hook should be registered. The array
  *                containts the command and all its arguments. The array must
  *                be NULL-terminared and you need at least one array-element.
- * @param hook The hook which gets invoked
+ * @param hooks The hooks of the command
  * @return On success <code>0</code> is returned.
  */
 int grs_register_command(grs_t handle, char *const command[],
-                         command_hook hook);
+                         struct command_hooks* hooks);
 
 /**
  * Receives all the hooks of an already registered command.

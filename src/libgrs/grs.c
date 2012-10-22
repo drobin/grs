@@ -112,12 +112,13 @@ acl_t grs_get_acl(grs_t handle) {
 }
 
 int grs_register_command(grs_t handle, char *const command[],
-                         command_hook hook) {
+                         struct command_hooks* hooks) {
   struct command_entry* entry;
   struct command_entry* parent;
   int i;
 
-  if (handle == NULL || command == NULL || command[0] == NULL || hook == NULL) {
+  if (handle == NULL || command == NULL || command[0] == NULL ||
+      hooks == NULL || hooks->exec == NULL) {
     return -1;
   }
 
@@ -126,8 +127,8 @@ int grs_register_command(grs_t handle, char *const command[],
     parent = entry;
   }
 
-  if (entry->hooks.exec == NULL || entry->hooks.exec == hook) {
-    entry->hooks.exec = hook;
+  if (entry->hooks.exec == NULL || entry->hooks.exec == hooks->exec) {
+    memcpy(&entry->hooks, hooks, sizeof(struct command_hooks));
     return 0;
   } else {
     return -1;
