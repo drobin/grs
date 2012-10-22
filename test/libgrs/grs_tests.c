@@ -25,6 +25,10 @@
 
 #include "../../src/libgrs/grs.h"
 
+static int init_hook_1(char *const command[], void** payload) {
+  return 0;
+}
+
 static int exec_hook_1(char *const command[], buffer_t in_buf, buffer_t out_buf,
                        buffer_t err_buf) {
   return 0;
@@ -86,38 +90,32 @@ START_TEST(register_command_null_exec_hook) {
 }
 END_TEST
 
-START_TEST(register_command_reregister) {
+START_TEST(register_command_only_exec) {
   char* command[] = { "foo", NULL };
   struct command_hooks in_hooks;
   struct command_hooks* hooks;
 
+  in_hooks.init = NULL;
   in_hooks.exec = exec_hook_1;
   fail_unless(grs_register_command(handle, command, &in_hooks) == 0);
 
   fail_unless((hooks = grs_get_command_hooks(handle, command)) != NULL);
-  fail_unless(hooks->exec == exec_hook_1);
-
-  fail_unless(grs_register_command(handle, command, &in_hooks) == 0);
-  fail_unless((hooks = grs_get_command_hooks(handle, command)) != NULL);
+  fail_unless(hooks->init == NULL);
   fail_unless(hooks->exec == exec_hook_1);
 }
 END_TEST
 
-START_TEST(register_command_already_registered) {
+START_TEST(register_command_with_init) {
   char* command[] = { "foo", NULL };
   struct command_hooks in_hooks;
   struct command_hooks* hooks;
 
+  in_hooks.init = init_hook_1;
   in_hooks.exec = exec_hook_1;
   fail_unless(grs_register_command(handle, command, &in_hooks) == 0);
 
   fail_unless((hooks = grs_get_command_hooks(handle, command)) != NULL);
-  fail_unless(hooks->exec == exec_hook_1);
-
-  in_hooks.exec = exec_hook_2;
-  fail_unless(grs_register_command(handle, command, &in_hooks) == -1);
-
-  fail_unless((hooks = grs_get_command_hooks(handle, command)) != NULL);
+  fail_unless(hooks->init == init_hook_1);
   fail_unless(hooks->exec == exec_hook_1);
 }
 END_TEST
@@ -236,8 +234,8 @@ TCase* grs_tcase() {
   tcase_add_test(tc, register_command_empty_command);
   tcase_add_test(tc, register_command_null_hooks);
   tcase_add_test(tc, register_command_null_exec_hook);
-  tcase_add_test(tc, register_command_reregister);
-  tcase_add_test(tc, register_command_already_registered);
+  tcase_add_test(tc, register_command_only_exec);
+  tcase_add_test(tc, register_command_with_init);
   tcase_add_test(tc, get_command_hooks_null_handle);
   tcase_add_test(tc, get_command_hooks_null_command);
   tcase_add_test(tc, get_command_hooks_empty_command);

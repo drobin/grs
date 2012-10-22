@@ -117,6 +117,7 @@ int load_git_extension(grs_t grs) {
   char* command[] = { "git-upload-pack", NULL };
   struct command_hooks hooks;
 
+  hooks.init = NULL;
   hooks.exec = git_upload_pack;
 
   return grs_register_command(grs, command, &hooks);

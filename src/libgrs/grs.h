@@ -35,6 +35,26 @@ typedef struct _grs* grs_t;
  */
 struct command_hooks {
   /**
+   * Hook is executed, when a command should be initialized.
+   *
+   * This state can be used for (e.g.) preparing data. This hook is called only
+   * one time. If the function returns <code>0</code>, then the initialization
+   * was successful (or skipped) and you can enter the next state. Another
+   * return-code will abort the command. Make sure to clean-up everything before
+   * leaving the hook in this case! The hook is never called again.
+   *
+   * You can create some payload, which is passed to the other command-hooks as
+   * well.
+   *
+   * @param command The command which should be executed
+   * @param payload Assign some payload to this pointer (if any). This payload
+   *                is passed to the remaining hooks.
+   * @return On success <code>0</code> should be returned. Another return-code
+   *         will abort the command and no other hook is invoked.
+   */
+  int (*init)(char *const command[], void** payload);
+
+  /**
    * The command is executed.
    *
    * The operation of the command is executed. The hook is executed at least one

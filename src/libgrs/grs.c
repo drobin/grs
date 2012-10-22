@@ -127,12 +127,8 @@ int grs_register_command(grs_t handle, char *const command[],
     parent = entry;
   }
 
-  if (entry->hooks.exec == NULL || entry->hooks.exec == hooks->exec) {
-    memcpy(&entry->hooks, hooks, sizeof(struct command_hooks));
-    return 0;
-  } else {
-    return -1;
-  }
+  memcpy(&entry->hooks, hooks, sizeof(struct command_hooks));
+  return 0;
 }
 
 struct command_hooks* grs_get_command_hooks(grs_t handle,

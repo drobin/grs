@@ -33,6 +33,7 @@ int load_core_extension(grs_t grs) {
   char* command[] = { "grs", "info", NULL };
   struct command_hooks hooks;
 
+  hooks.init = NULL;
   hooks.exec = grs_info;
 
   return grs_register_command(grs, command, &hooks);

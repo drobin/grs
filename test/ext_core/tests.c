@@ -24,11 +24,14 @@
 START_TEST(load_extension) {
   char* command[] = { "grs", "info", NULL };
   grs_t grs;
+  struct command_hooks* hooks;
 
   fail_unless((grs = grs_init()) != NULL);
   fail_unless(load_core_extension(grs) == 0);
 
-  fail_unless(grs_get_command_hooks(grs, command) != NULL);
+  fail_unless((hooks = grs_get_command_hooks(grs, command)) != NULL);
+  fail_unless(hooks->init == NULL);
+  fail_unless(hooks->exec != NULL);
 
   fail_unless(grs_destroy(grs) == 0);
 }
