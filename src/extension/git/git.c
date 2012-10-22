@@ -119,6 +119,7 @@ int load_git_extension(grs_t grs) {
 
   hooks.init = NULL;
   hooks.exec = git_upload_pack;
+  hooks.destroy = NULL;
 
   return grs_register_command(grs, command, &hooks);
 }

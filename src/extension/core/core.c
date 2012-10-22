@@ -35,6 +35,7 @@ int load_core_extension(grs_t grs) {
 
   hooks.init = NULL;
   hooks.exec = grs_info;
+  hooks.destroy = NULL;
 
   return grs_register_command(grs, command, &hooks);
 }

@@ -32,6 +32,7 @@ START_TEST(load_extension) {
   fail_unless((hooks = grs_get_command_hooks(grs, command)) != NULL);
   fail_unless(hooks->init == NULL);
   fail_unless(hooks->exec != NULL);
+  fail_unless(hooks->destroy == NULL);
 
   fail_unless(grs_destroy(grs) == 0);
 }

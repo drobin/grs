@@ -76,6 +76,17 @@ struct command_hooks {
    */
   int (*exec)(char *const command[], buffer_t in_buf, buffer_t out_buf,
               buffer_t err_buf);
+
+  /**
+   * The hook is executed, when a command should be destroyed.
+   *
+   * This function can be used to (e.g.) destroy related data again. This
+   * function is called, when command_hook succeeds. The payload created by
+   * init is passed to this function.
+   *
+   * @param payload The payload for the command
+   */
+  void (*destroy)(void* payload);
 };
 
 /*

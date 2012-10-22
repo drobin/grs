@@ -39,6 +39,9 @@ static int exec_hook_2(char *const command[], buffer_t in_buf, buffer_t out_buf,
   return 0;
 }
 
+static void destroy_hook(void* payload) {
+}
+
 static grs_t handle;
 
 static void setup() {
@@ -97,11 +100,13 @@ START_TEST(register_command_only_exec) {
 
   in_hooks.init = NULL;
   in_hooks.exec = exec_hook_1;
+  in_hooks.destroy = NULL;
   fail_unless(grs_register_command(handle, command, &in_hooks) == 0);
 
   fail_unless((hooks = grs_get_command_hooks(handle, command)) != NULL);
   fail_unless(hooks->init == NULL);
   fail_unless(hooks->exec == exec_hook_1);
+  fail_unless(hooks->destroy == NULL);
 }
 END_TEST
 
@@ -112,11 +117,47 @@ START_TEST(register_command_with_init) {
 
   in_hooks.init = init_hook_1;
   in_hooks.exec = exec_hook_1;
+  in_hooks.destroy = NULL;
   fail_unless(grs_register_command(handle, command, &in_hooks) == 0);
 
   fail_unless((hooks = grs_get_command_hooks(handle, command)) != NULL);
   fail_unless(hooks->init == init_hook_1);
   fail_unless(hooks->exec == exec_hook_1);
+  fail_unless(hooks->destroy == NULL);
+}
+END_TEST
+
+START_TEST(register_command_with_destroy) {
+  char* command[] = { "foo", NULL };
+  struct command_hooks in_hooks;
+  struct command_hooks* hooks;
+
+  in_hooks.init = NULL;
+  in_hooks.exec = exec_hook_1;
+  in_hooks.destroy = destroy_hook;
+  fail_unless(grs_register_command(handle, command, &in_hooks) == 0);
+
+  fail_unless((hooks = grs_get_command_hooks(handle, command)) != NULL);
+  fail_unless(hooks->init == NULL);
+  fail_unless(hooks->exec == exec_hook_1);
+  fail_unless(hooks->destroy == destroy_hook);
+}
+END_TEST
+
+START_TEST(register_command_with_init_destroy) {
+  char* command[] = { "foo", NULL };
+  struct command_hooks in_hooks;
+  struct command_hooks* hooks;
+
+  in_hooks.init = init_hook_1;
+  in_hooks.exec = exec_hook_1;
+  in_hooks.destroy = destroy_hook;
+  fail_unless(grs_register_command(handle, command, &in_hooks) == 0);
+
+  fail_unless((hooks = grs_get_command_hooks(handle, command)) != NULL);
+  fail_unless(hooks->init == init_hook_1);
+  fail_unless(hooks->exec == exec_hook_1);
+  fail_unless(hooks->destroy == destroy_hook);
 }
 END_TEST
 
@@ -236,6 +277,8 @@ TCase* grs_tcase() {
   tcase_add_test(tc, register_command_null_exec_hook);
   tcase_add_test(tc, register_command_only_exec);
   tcase_add_test(tc, register_command_with_init);
+  tcase_add_test(tc, register_command_with_destroy);
+  tcase_add_test(tc, register_command_with_init_destroy);
   tcase_add_test(tc, get_command_hooks_null_handle);
   tcase_add_test(tc, get_command_hooks_null_command);
   tcase_add_test(tc, get_command_hooks_empty_command);
