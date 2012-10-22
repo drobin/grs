@@ -21,32 +21,50 @@
 
 #include "../../src/libgrs/session.h"
 
-int success_hook(char *const command[], buffer_t in_buf, buffer_t out_buf,
-                 buffer_t err_buf) {
+static int n_init = 0;
+static int n_exec = 0;
+static int n_destroy = 0;
+
+struct payload_data {
+} data;
+
+int init_hook(char *const command[], void** payload) {
+  *payload = &data;
+  n_init++;
   return 0;
 }
 
-int fail_hook(char *const command[], buffer_t in_buf, buffer_t out_buf,
-              buffer_t err_buf) {
+int init_failed_hook(char *const command[], void** payload) {
+  n_init++;
   return -1;
 }
 
-int continue_hook(char *const command[], buffer_t in_buf, buffer_t out_buf,
-                  buffer_t err_buf) {
+int exec_hook(char *const command[], buffer_t in_buf, buffer_t out_buf,
+              buffer_t err_buf) {
+  n_exec++;
+  return 0;
+}
+
+int exec_failed_hook(char *const command[], buffer_t in_buf, buffer_t out_buf,
+                     buffer_t err_buf) {
+  n_exec++;
+  return -1;
+}
+
+int exec_continue_hook(char *const command[], buffer_t in_buf, buffer_t out_buf,
+                       buffer_t err_buf) {
+  n_exec++;
   return 1;
 }
 
-static struct command_hooks success_hooks = {
-  .exec = success_hook
-};
+void destroy_hook(void* payload) {
+  n_destroy++;
+}
 
-static struct command_hooks fail_hooks = {
-  .exec = fail_hook
-};
-
-static struct command_hooks continue_hooks = {
-  .exec = continue_hook
-};
+void destroy_payload_hook(void* payload) {
+  n_destroy++;
+  fail_unless(payload == &data);
+}
 
 static grs_t grs;
 static session_t session;
@@ -64,6 +82,10 @@ static void setup() {
   fail_unless((node = acl_get_root_node(acl)) != NULL);
   fail_unless((value = acl_node_get_value(node, 1)) != NULL);
   value->flag = 1;
+
+  n_init = 0;
+  n_exec = 0;
+  n_destroy = 0;
 }
 
 static void teardown() {
@@ -209,13 +231,231 @@ START_TEST(exec_no_hook) {
 }
 END_TEST
 
-START_TEST(exec_success) {
+START_TEST(exec_init_failed) {
   char* command[] = { "foo", NULL };
   grs_t grs = session_get_grs(session);
+  struct command_hooks hooks;
 
-  fail_unless(grs_register_command(grs, command, &success_hooks) == 0);
+  hooks.init = init_failed_hook;
+  hooks.exec = exec_hook;
+  hooks.destroy = destroy_hook;
+  fail_unless(grs_register_command(grs, command, &hooks) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_exec(session) == -1);
+  fail_unless(session_is_finished(session));
+  fail_unless(n_init == 1);
+  fail_unless(n_exec == 0);
+  fail_unless(n_destroy == 0);
+}
+END_TEST
+
+START_TEST(exec_init_skipped_exec_failed_destroy_skipped) {
+  char* command[] = { "foo", NULL };
+  grs_t grs = session_get_grs(session);
+  struct command_hooks hooks;
+
+  hooks.init = NULL;
+  hooks.exec = exec_failed_hook;
+  hooks.destroy = NULL;
+  fail_unless(grs_register_command(grs, command, &hooks) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_exec(session) == -1);
+  fail_unless(session_is_finished(session));
+  fail_unless(n_init == 0);
+  fail_unless(n_exec == 1);
+  fail_unless(n_destroy == 0);
+}
+END_TEST
+
+START_TEST(exec_init_skipped_exec_continue) {
+  char* command[] = { "foo", NULL };
+  grs_t grs = session_get_grs(session);
+  struct command_hooks hooks;
+
+  hooks.init = NULL;
+  hooks.exec = exec_continue_hook;
+  hooks.destroy = destroy_hook;
+  fail_unless(grs_register_command(grs, command, &hooks) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_exec(session) == 1);
+  fail_unless(!session_is_finished(session));
+  fail_unless(n_init == 0);
+  fail_unless(n_exec == 1);
+  fail_unless(n_destroy == 0);
+}
+END_TEST
+
+START_TEST(exec_init_skipped_exec_continue_success) {
+  char* command[] = { "foo", NULL };
+  grs_t grs = session_get_grs(session);
+  struct command_hooks hooks;
+
+  hooks.init = NULL;
+  hooks.exec = exec_continue_hook;
+  hooks.destroy = destroy_hook;
+  fail_unless(grs_register_command(grs, command, &hooks) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_exec(session) == 1);
+  fail_unless(!session_is_finished(session));
+
+  hooks.exec = exec_hook;
+  fail_unless(grs_register_command(grs, command, &hooks) == 0);
+  fail_unless(session_exec(session) == 0);
+  fail_unless(session_is_finished(session));
+
+  fail_unless(n_init == 0);
+  fail_unless(n_exec == 2);
+  fail_unless(n_destroy == 1);
+}
+END_TEST
+
+START_TEST(exec_init_skipped_exec_destroy_skipped) {
+  char* command[] = { "foo", NULL };
+  grs_t grs = session_get_grs(session);
+  struct command_hooks hooks;
+
+  hooks.init = NULL;
+  hooks.exec = exec_hook;
+  hooks.destroy = NULL;
+  fail_unless(grs_register_command(grs, command, &hooks) == 0);
   fail_unless(session_set_command(session, "foo") == 0);
   fail_unless(session_exec(session) == 0);
+  fail_unless(session_is_finished(session));
+  fail_unless(n_init == 0);
+  fail_unless(n_exec == 1);
+  fail_unless(n_destroy == 0);
+}
+END_TEST
+
+START_TEST(exec_init_skipped_exec_destroy) {
+  char* command[] = { "foo", NULL };
+  grs_t grs = session_get_grs(session);
+  struct command_hooks hooks;
+
+  hooks.init = NULL;
+  hooks.exec = exec_hook;
+  hooks.destroy = destroy_hook;
+  fail_unless(grs_register_command(grs, command, &hooks) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_exec(session) == 0);
+  fail_unless(session_is_finished(session));
+  fail_unless(n_init == 0);
+  fail_unless(n_exec == 1);
+  fail_unless(n_destroy == 1);
+}
+END_TEST
+
+START_TEST(exec_init_exec_failed_destroy_skipped) {
+  char* command[] = { "foo", NULL };
+  grs_t grs = session_get_grs(session);
+  struct command_hooks hooks;
+
+  hooks.init = init_hook;
+  hooks.exec = exec_failed_hook;
+  hooks.destroy = NULL;
+  fail_unless(grs_register_command(grs, command, &hooks) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_exec(session) == -1);
+  fail_unless(session_is_finished(session));
+  fail_unless(n_init == 1);
+  fail_unless(n_exec == 1);
+  fail_unless(n_destroy == 0);
+}
+END_TEST
+
+START_TEST(exec_init_exec_continue) {
+  char* command[] = { "foo", NULL };
+  grs_t grs = session_get_grs(session);
+  struct command_hooks hooks;
+
+  hooks.init = init_hook;
+  hooks.exec = exec_continue_hook;
+  hooks.destroy = destroy_hook;
+  fail_unless(grs_register_command(grs, command, &hooks) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_exec(session) == 1);
+  fail_unless(!session_is_finished(session));
+  fail_unless(n_init == 1);
+  fail_unless(n_exec == 1);
+  fail_unless(n_destroy == 0);
+}
+END_TEST
+
+START_TEST(exec_init_exec_continue_success) {
+  char* command[] = { "foo", NULL };
+  grs_t grs = session_get_grs(session);
+  struct command_hooks hooks;
+
+  hooks.init = init_hook;
+  hooks.exec = exec_continue_hook;
+  hooks.destroy = destroy_hook;
+  fail_unless(grs_register_command(grs, command, &hooks) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_exec(session) == 1);
+  fail_unless(!session_is_finished(session));
+
+  hooks.exec = exec_hook;
+  fail_unless(grs_register_command(grs, command, &hooks) == 0);
+  fail_unless(session_exec(session) == 0);
+  fail_unless(session_is_finished(session));
+
+  fail_unless(n_init == 1);
+  fail_unless(n_exec == 2);
+  fail_unless(n_destroy == 1);
+}
+END_TEST
+
+START_TEST(exec_init_exec_destroy_skipped) {
+  char* command[] = { "foo", NULL };
+  grs_t grs = session_get_grs(session);
+  struct command_hooks hooks;
+
+  hooks.init = init_hook;
+  hooks.exec = exec_hook;
+  hooks.destroy = NULL;
+  fail_unless(grs_register_command(grs, command, &hooks) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_exec(session) == 0);
+  fail_unless(session_is_finished(session));
+  fail_unless(n_init == 1);
+  fail_unless(n_exec == 1);
+  fail_unless(n_destroy == 0);
+}
+END_TEST
+
+START_TEST(exec_init_exec_destroy) {
+  char* command[] = { "foo", NULL };
+  grs_t grs = session_get_grs(session);
+  struct command_hooks hooks;
+
+  hooks.init = init_hook;
+  hooks.exec = exec_hook;
+  hooks.destroy = destroy_hook;
+  fail_unless(grs_register_command(grs, command, &hooks) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_exec(session) == 0);
+  fail_unless(session_is_finished(session));
+  fail_unless(n_init == 1);
+  fail_unless(n_exec == 1);
+  fail_unless(n_destroy == 1);
+}
+END_TEST
+
+START_TEST(exec_payload_check) {
+  char* command[] = { "foo", NULL };
+  grs_t grs = session_get_grs(session);
+  struct command_hooks hooks;
+
+  hooks.init = init_hook;
+  hooks.exec = exec_hook;
+  hooks.destroy = destroy_payload_hook;
+  fail_unless(grs_register_command(grs, command, &hooks) == 0);
+  fail_unless(session_set_command(session, "foo") == 0);
+  fail_unless(session_exec(session) == 0);
+  fail_unless(session_is_finished(session));
+  fail_unless(n_init == 1);
+  fail_unless(n_exec == 1);
+  fail_unless(n_destroy == 1);
 }
 END_TEST
 
@@ -226,39 +466,6 @@ END_TEST
 
 START_TEST(is_finished_no_exec) {
   fail_unless(!session_is_finished(session));
-}
-END_TEST
-
-START_TEST(is_finished_error) {
-  char* command[] = { "foo", NULL };
-  grs_t grs = session_get_grs(session);
-
-  fail_unless(grs_register_command(grs, command, &fail_hooks) == 0);
-  fail_unless(session_set_command(session, "foo") == 0);
-  fail_unless(session_exec(session) == -1);
-  fail_unless(session_is_finished(session));
-}
-END_TEST
-
-START_TEST(is_finished_continue) {
-  char* command[] = { "foo", NULL };
-  grs_t grs = session_get_grs(session);
-
-  fail_unless(grs_register_command(grs, command, &continue_hooks) == 0);
-  fail_unless(session_set_command(session, "foo") == 0);
-  fail_unless(session_exec(session) == 1);
-  fail_unless(!session_is_finished(session));
-}
-END_TEST
-
-START_TEST(is_finished_success) {
-  char* command[] = { "foo", NULL };
-  grs_t grs = session_get_grs(session);
-
-  fail_unless(grs_register_command(grs, command, &success_hooks) == 0);
-  fail_unless(session_set_command(session, "foo") == 0);
-  fail_unless(session_exec(session) == 0);
-  fail_unless(session_is_finished(session));
 }
 END_TEST
 
@@ -292,12 +499,20 @@ TCase* session_tcase() {
   tcase_add_test(tc, can_exec_with_command);
   tcase_add_test(tc, exec_null_session);
   tcase_add_test(tc, exec_no_hook);
-  tcase_add_test(tc, exec_success);
+  tcase_add_test(tc, exec_init_failed);
+  tcase_add_test(tc, exec_init_skipped_exec_failed_destroy_skipped);
+  tcase_add_test(tc, exec_init_skipped_exec_continue);
+  tcase_add_test(tc, exec_init_skipped_exec_continue_success);
+  tcase_add_test(tc, exec_init_skipped_exec_destroy_skipped);
+  tcase_add_test(tc, exec_init_skipped_exec_destroy);
+  tcase_add_test(tc, exec_init_exec_failed_destroy_skipped);
+  tcase_add_test(tc, exec_init_exec_continue);
+  tcase_add_test(tc, exec_init_exec_continue_success);
+  tcase_add_test(tc, exec_init_exec_destroy_skipped);
+  tcase_add_test(tc, exec_init_exec_destroy);
+  tcase_add_test(tc, exec_payload_check);
   tcase_add_test(tc, is_finished_null_session);
   tcase_add_test(tc, is_finished_no_exec);
-  tcase_add_test(tc, is_finished_error);
-  tcase_add_test(tc, is_finished_continue);
-  tcase_add_test(tc, is_finished_success);
 
   return tc;
 }

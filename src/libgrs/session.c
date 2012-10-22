@@ -30,7 +30,9 @@ struct _session {
   buffer_t in_buf;
   buffer_t out_buf;
   buffer_t err_buf;
+  int exec_count;
   int exec_finished;
+  void* payload;
 };
 
 static void tokenize(struct _session* session) {
@@ -61,6 +63,7 @@ session_t session_create(grs_t grs) {
   session->in_buf = buffer_create();
   session->out_buf = buffer_create();
   session->err_buf = buffer_create();
+  session->exec_count = 0;
   session->exec_finished = 0;
 
   return session;
@@ -161,10 +164,29 @@ int session_exec(session_t session) {
   }
 
   if ((hooks = grs_get_command_hooks(session->grs, session->command)) != NULL) {
-    int result = hooks->exec(session->command, session->in_buf,
-                             session->out_buf, session->err_buf);
-    session->exec_finished = (result != 1);
+    int result;
 
+    if (session->exec_count == 0 && hooks->init != NULL) {
+      // Command was never executed, initialize it
+      if (hooks->init(session->command, &session->payload) != 0) {
+        session->exec_finished = 1;
+        return -1;
+      }
+    }
+
+    // Command is initialized, now execute it
+    result = hooks->exec(session->command, session->in_buf, session->out_buf,
+                         session->err_buf);
+    session->exec_count++;
+
+    if (result <= 0) {
+      // Finished or error -> call destroy-hook
+      if (hooks->destroy != NULL) {
+        hooks->destroy(session->payload);
+      }
+    }
+
+    session->exec_finished = (result != 1);
     return result;
   } else {
     buffer_append(session->err_buf, "No such command\n", 16);
