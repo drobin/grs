@@ -25,6 +25,16 @@
 #include "git.h"
 #include "protocol.h"
 
+/**
+ * Payload-data for the git-upload-pack-command.
+ */
+struct git_upload_pack_data {
+  /**
+   * Path of the repository
+   */
+  char* repository;
+};
+
 static char* repository_path(const char* str) {
   char* repository;
 
@@ -100,10 +110,11 @@ static int get_refs_impl(const char* repository, binbuf_t refs) {
 }
 
 static int init_git_upload_pack(char *const command[], void** payload) {
-  char* repository;
+  struct git_upload_pack_data* data;
 
-  repository = repository_path(command[1]);
-  *payload = repository;
+  data = malloc(sizeof(struct git_upload_pack_data));
+  data->repository = repository_path(command[1]);
+  *payload = data;
 
   return 0;
 }
@@ -111,13 +122,16 @@ static int init_git_upload_pack(char *const command[], void** payload) {
 static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
                            buffer_t err_buf, void* payload) {
 
-  char *repository = (char*)payload;
+  struct git_upload_pack_data* data = (struct git_upload_pack_data*)payload;
 
-  return reference_discovery(repository, out_buf, err_buf, get_refs_impl);
+  return reference_discovery(data->repository, out_buf, err_buf, get_refs_impl);
 }
 
 static void destroy_git_upload_pack(void* payload) {
-  free(payload); // repository_path()
+  struct git_upload_pack_data* data = (struct git_upload_pack_data*)payload;
+
+  free(data->repository);
+  free(data);
 }
 
 int load_git_extension(grs_t grs) {
