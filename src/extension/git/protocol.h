@@ -45,14 +45,25 @@ struct git_ref {
  */
 enum packfile_negotiation_phase {
   /**
-   * upload-request
+   * Preparation-phase
    */
-  packfile_negotiation_upload_request = 0,
+  packfile_negotiation_prepare = 0,
 
   /**
-   * finished, no more to do
+   * upload-request
    */
-  packfile_negotiation_finished
+  packfile_negotiation_upload_request,
+
+  /**
+   * finished, clean up
+   */
+  packfile_negotiation_finished,
+
+
+  /**
+   * Finished with error, clean up
+   */
+  packfile_negotiation_error
 };
 
 /**
@@ -63,6 +74,11 @@ struct packfile_negotiation_data {
    * Current phase of negotiation
    */
   enum packfile_negotiation_phase phase;
+
+  /**
+   * A buffered pkt-line
+   */
+  buffer_t pkt_line;
 
   /**
    * want-list received from the client
