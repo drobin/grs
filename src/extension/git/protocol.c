@@ -20,6 +20,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <libgrs/log.h>
+
 #include "pkt_line.h"
 #include "protocol.h"
 
@@ -73,7 +75,66 @@ int reference_discovery(const char* repository,
   return 0;
 }
 
-int packfile_negotiation(const char* repository,
-                         struct packfile_negotiation_data* data) {
-  return 0;
+int packfile_negotiation(buffer_t in, struct packfile_negotiation_data* data) {
+  buffer_t pkt_line;
+
+  if (in == NULL || data == NULL) {
+    return -1;
+  }
+
+  pkt_line = buffer_create();
+
+  if (data->phase == packfile_negotiation_upload_request) {
+    if (data->want_list == NULL) {
+      log_debug("Start of upload-request");
+      data->want_list = binbuf_create(41);
+      data->shallow_list = binbuf_create(41);
+      data->depth = -1;
+    }
+
+    while (1) {
+      buffer_clear(pkt_line);
+      if (pkt_line_read(in, pkt_line) != 0) {
+        log_err("Failed to read a pkt-line");
+        buffer_destroy(pkt_line);
+        return 1;
+      }
+
+      if (buffer_get_size(pkt_line) == 0) {
+        // flush-pkt, this is the end of the want-list, switch to next state
+        log_debug("End of upload-request");
+        data->phase++;
+        break;
+      }
+
+      if (buffer_get_size(pkt_line) >= 5 &&
+          strncmp(buffer_get_data(pkt_line), "want ", 5) == 0) {
+        char* obj_id = binbuf_add(data->want_list);
+        strlcpy(obj_id, buffer_get_data(pkt_line) + 5,
+                binbuf_get_size_of(data->want_list));
+        log_debug("want %s", obj_id);
+      } else if (buffer_get_size(pkt_line) >= 8 &&
+                 strncmp(buffer_get_data(pkt_line), "shallow ", 8) == 0) {
+        char* obj_id = binbuf_add(data->shallow_list);
+        strlcpy(obj_id, buffer_get_data(pkt_line) + 8,
+                binbuf_get_size_of(data->shallow_list));
+        log_debug("shallow %s", obj_id);
+      } else if (buffer_get_size(pkt_line) >= 7 &&
+                 strncmp(buffer_get_data(pkt_line), "deepen ", 7) == 0) {
+        char num[buffer_get_size(pkt_line) - 7 + 1];
+        strlcpy(num, buffer_get_data(pkt_line) + 7,
+                buffer_get_size(pkt_line) - 7 + 1);
+        log_debug("depth %s", num);
+        data->depth = atoi(num);
+      } else {
+        log_err("Unsupported upload-request");
+        buffer_destroy(pkt_line);
+        return -1;
+      }
+    }
+  }
+
+  buffer_destroy(pkt_line);
+
+  return (data->phase == packfile_negotiation_finished) ? 0 : 1;
 }
