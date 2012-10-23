@@ -41,6 +41,20 @@ START_TEST(destroy_null_buf) {
 }
 END_TEST
 
+START_TEST(get_size_of_null_buf) {
+  fail_unless(binbuf_get_size_of(NULL) == -1);
+}
+END_TEST
+
+START_TEST(get_size_of) {
+  binbuf_t buf;
+
+  fail_unless((buf = binbuf_create(8)) != NULL);
+  fail_unless(binbuf_get_size_of(buf) == 8);
+  fail_unless(binbuf_destroy(buf) == 0);
+}
+END_TEST
+
 START_TEST(get_size_null_buf) {
   fail_unless(binbuf_get_size(NULL) == -1);
 }
@@ -112,6 +126,8 @@ TCase* binbuf_tcase() {
   tcase_add_checked_fixture(tc, setup, teardown);
 
   tcase_add_test(tc, destroy_null_buf);
+  tcase_add_test(tc, get_size_of_null_buf);
+  tcase_add_test(tc, get_size_of);
   tcase_add_test(tc, get_size_null_buf);
   tcase_add_test(tc, get_size_initial);
   tcase_add_test(tc, get_capacity_null_buf);

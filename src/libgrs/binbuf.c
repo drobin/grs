@@ -53,6 +53,14 @@ int binbuf_destroy(binbuf_t buf) {
   return 0;
 }
 
+int binbuf_get_size_of(binbuf_t buf) {
+  if (buf == NULL) {
+    return -1;
+  }
+
+  return buf->size;
+}
+
 int binbuf_get_size(binbuf_t buf) {
   if (buf == NULL) {
     return -1;

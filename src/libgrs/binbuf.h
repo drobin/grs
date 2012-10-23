@@ -41,6 +41,14 @@ binbuf_t binbuf_create(size_t size);
 int binbuf_destroy(binbuf_t buf);
 
 /**
+ * Returns the number of bytes reserved for each item in the list.
+ *
+ * @param buf The requested buffer
+ * @return The size of each item
+ */
+int binbuf_get_size_of(binbuf_t buf);
+
+/**
  * Returns the size of the buffer.
  *
  * This is the number of items actually stored in the buffer.
