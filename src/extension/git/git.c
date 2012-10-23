@@ -35,6 +35,11 @@ enum upload_pack_process {
   p_reference_discovery = 0,
 
   /**
+   * packfile_negotiation()
+   */
+  p_packfile_negotiation,
+
+  /**
    * No more processes!
    */
   p_finished
@@ -157,6 +162,10 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
     log_debug("reference discovery on %s", data->repository);
     result = reference_discovery(data->repository, out_buf, err_buf,
                                  get_refs_impl);
+    break;
+  case p_packfile_negotiation:
+    log_debug("packfile negotiation on %s", data->repository);
+    result = packfile_negotiation(data->repository);
     break;
   default:
     log_err("Unsupported process requested: %i", data->current_process);

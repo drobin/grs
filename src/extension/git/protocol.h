@@ -70,4 +70,13 @@ typedef int (*rd_get_refs)(const char* repository, binbuf_t refs);
 int reference_discovery(const char* repository,
                         buffer_t out, buffer_t err, rd_get_refs refs);
 
+/**
+ * Implementation of the <i>Packfile Negotiation</i>-process.
+ *
+ * @param repository The path of the requested repository
+ * @return On success <code>0</code> is returned.
+ * @see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt
+ */
+int packfile_negotiation(const char* repository);
+
 #endif  /* PROTOCOL_H */
