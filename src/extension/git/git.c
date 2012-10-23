@@ -55,6 +55,11 @@ struct git_upload_pack_data {
   char* repository;
 
   /**
+   * Data used internally by packfile_negotiation().
+   */
+  struct packfile_negotiation_data packfile_negotiation;
+
+  /**
    * Currently executed process
    */
   enum upload_pack_process current_process;
@@ -138,6 +143,8 @@ static int init_git_upload_pack(char *const command[], void** payload) {
 
   data = malloc(sizeof(struct git_upload_pack_data));
   data->repository = repository_path(command[1]);
+  memset(&data->packfile_negotiation, 0,
+         sizeof(struct packfile_negotiation_data));
   data->current_process = p_reference_discovery;
   *payload = data;
 
@@ -164,7 +171,8 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
     break;
   case p_packfile_negotiation:
     log_debug("packfile negotiation on %s", data->repository);
-    result = packfile_negotiation(data->repository);
+    result = packfile_negotiation(data->repository,
+                                  &data->packfile_negotiation);
     break;
   default:
     log_err("Unsupported process requested: %i", data->current_process);

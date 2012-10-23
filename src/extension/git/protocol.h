@@ -41,6 +41,12 @@ struct git_ref {
 };
 
 /**
+ * Data used to synchronize different invocations of packfile_negotiation().
+ */
+struct packfile_negotiation_data {
+};
+
+/**
  * A callback-function used by reference_discovery to fetch references from a
  * repository.
  *
@@ -74,9 +80,13 @@ int reference_discovery(const char* repository,
  * Implementation of the <i>Packfile Negotiation</i>-process.
  *
  * @param repository The path of the requested repository
+ * @param data Data used to synchronize between different invocations of the
+ *             function. Before the first invocation of packfile_negotiation()
+ *             the structure should be set to <code>0</code>.
  * @return On success <code>0</code> is returned.
  * @see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt
  */
-int packfile_negotiation(const char* repository);
+int packfile_negotiation(const char* repository,
+                         struct packfile_negotiation_data* data);
 
 #endif  /* PROTOCOL_H */

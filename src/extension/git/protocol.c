@@ -73,6 +73,7 @@ int reference_discovery(const char* repository,
   return 0;
 }
 
-int packfile_negotiation(const char* repository) {
+int packfile_negotiation(const char* repository,
+                         struct packfile_negotiation_data* data) {
   return 0;
 }
