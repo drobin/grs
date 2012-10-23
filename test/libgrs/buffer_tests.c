@@ -143,30 +143,30 @@ START_TEST(remove_over_size) {
 END_TEST
 
 START_TEST(add_remove) {
-  fail_unless(buffer_append(buffer, "123", 3) == 0);
-  fail_unless(buffer_get_capacity(buffer) == 3);
+  fail_unless(buffer_append(buffer, "12345", 5) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 5);
+  fail_unless(buffer_get_size(buffer) == 5);
+  fail_unless(memcmp(buffer_get_data(buffer), "12345", 5) == 0);
+
+  fail_unless(buffer_remove(buffer, 2) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 5);
   fail_unless(buffer_get_size(buffer) == 3);
-  fail_unless(memcmp(buffer_get_data(buffer), "123", 3) == 0);
+  fail_unless(memcmp(buffer_get_data(buffer), "345", 3) == 0);
 
-  fail_unless(buffer_remove(buffer, 2) == 0);
-  fail_unless(buffer_get_capacity(buffer) == 3);
-  fail_unless(buffer_get_size(buffer) == 1);
-  fail_unless(memcmp(buffer_get_data(buffer), "3", 1) == 0);
+  fail_unless(buffer_append(buffer, "67", 2) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 5);
+  fail_unless(buffer_get_size(buffer) == 5);
+  fail_unless(memcmp(buffer_get_data(buffer), "34567", 5) == 0);
 
-  fail_unless(buffer_append(buffer, "456", 3) == 0);
-  fail_unless(buffer_get_capacity(buffer) == 4);
-  fail_unless(buffer_get_size(buffer) == 4);
-  fail_unless(memcmp(buffer_get_data(buffer), "3456", 4) == 0);
-
-  fail_unless(buffer_remove(buffer, 2) == 0);
-  fail_unless(buffer_get_capacity(buffer) == 4);
+  fail_unless(buffer_remove(buffer, 3) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 5);
   fail_unless(buffer_get_size(buffer) == 2);
-  fail_unless(memcmp(buffer_get_data(buffer), "56", 2) == 0);
+  fail_unless(memcmp(buffer_get_data(buffer), "67", 2) == 0);
 
-  fail_unless(buffer_append(buffer, "7", 1) == 0);
-  fail_unless(buffer_get_capacity(buffer) == 4);
+  fail_unless(buffer_append(buffer, "8", 1) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 5);
   fail_unless(buffer_get_size(buffer) == 3);
-  fail_unless(memcmp(buffer_get_data(buffer), "567", 3) == 0);
+  fail_unless(memcmp(buffer_get_data(buffer), "678", 3) == 0);
 }
 END_TEST
 

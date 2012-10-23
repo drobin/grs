@@ -97,7 +97,7 @@ int buffer_remove(buffer_t buffer, unsigned int nbytes) {
   }
 
   if (buffer->size >= nbytes) {
-    memmove(buffer->buf, buffer->buf + nbytes, nbytes);
+    memcpy(buffer->buf, buffer->buf + nbytes, buffer->size - nbytes);
     buffer->size -= nbytes;
   } else {
     buffer->size = 0;
