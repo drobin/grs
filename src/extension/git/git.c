@@ -87,7 +87,7 @@ static int git_reference_foreach_cb(const char* ref_name, void* payload) {
   struct git_reference_foreach_data* data;
   git_reference* ref;
   int result;
-  struct rd_ref* return_ref;
+  struct git_ref* gref;
 
   data = (struct git_reference_foreach_data*)payload;
 
@@ -96,11 +96,10 @@ static int git_reference_foreach_cb(const char* ref_name, void* payload) {
     return 0; // Skip reference but try another one
   }
 
-  return_ref = binbuf_add(data->refs);
-  git_oid_fmt(return_ref->obj_id, git_reference_oid(ref));
-  return_ref->obj_id[40] = '\0';
-  strlcpy(return_ref->ref_name, git_reference_name(ref),
-          sizeof(return_ref->ref_name));
+  gref = binbuf_add(data->refs);
+  git_oid_fmt(gref->obj_id, git_reference_oid(ref));
+  gref->obj_id[40] = '\0';
+  strlcpy(gref->ref_name, git_reference_name(ref), sizeof(gref->ref_name));
 
   return 0;
 }

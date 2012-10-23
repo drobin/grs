@@ -28,7 +28,7 @@
 /**
  * A reference.
  */
-struct rd_ref {
+struct git_ref {
   /**
    * The SHA object-id of the reference
    */

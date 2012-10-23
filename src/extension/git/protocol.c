@@ -32,7 +32,7 @@ int reference_discovery(const char* repository,
     return -1;
   }
 
-  refs_buf = binbuf_create(sizeof(struct rd_ref));
+  refs_buf = binbuf_create(sizeof(struct git_ref));
 
   // Fetch the references
   if (refs(repository, refs_buf) != 0) {
@@ -50,7 +50,7 @@ int reference_discovery(const char* repository,
     int i;
 
     for (i = 0; i < binbuf_get_size(refs_buf); i++) {
-      struct rd_ref* ref = binbuf_get(refs_buf, i);
+      struct git_ref* ref = binbuf_get(refs_buf, i);
 
       buffer_clear(pkt);
       buffer_append(pkt, ref->obj_id, strlen(ref->obj_id));

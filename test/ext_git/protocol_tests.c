@@ -27,7 +27,7 @@ static int no_refs_stub(const char* repository, binbuf_t refs) {
 }
 
 static int refs_stub(const char* repository, binbuf_t refs) {
-  struct rd_ref* ref;
+  struct git_ref* ref;
 
   ref = binbuf_add(refs);
   strlcpy(ref->obj_id, "objid1", sizeof(ref->obj_id));
