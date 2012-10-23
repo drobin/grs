@@ -26,6 +26,21 @@
 #include "protocol.h"
 
 /**
+ * List of processes executed by git-upload-pack
+ */
+enum upload_pack_process {
+  /**
+   * reference_discovery()
+   */
+  p_reference_discovery = 0,
+
+  /**
+   * No more processes!
+   */
+  p_finished
+};
+
+/**
  * Payload-data for the git-upload-pack-command.
  */
 struct git_upload_pack_data {
@@ -33,6 +48,11 @@ struct git_upload_pack_data {
    * Path of the repository
    */
   char* repository;
+
+  /**
+   * Currently executed process
+   */
+  enum upload_pack_process current_process;
 };
 
 static char* repository_path(const char* str) {
@@ -114,6 +134,7 @@ static int init_git_upload_pack(char *const command[], void** payload) {
 
   data = malloc(sizeof(struct git_upload_pack_data));
   data->repository = repository_path(command[1]);
+  data->current_process = p_reference_discovery;
   *payload = data;
 
   return 0;
@@ -123,8 +144,37 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
                            buffer_t err_buf, void* payload) {
 
   struct git_upload_pack_data* data = (struct git_upload_pack_data*)payload;
+  int result;
 
-  return reference_discovery(data->repository, out_buf, err_buf, get_refs_impl);
+  if (buffer_get_size(out_buf) > 0 || buffer_get_size(err_buf) > 0) {
+    // You still have pending write-data, wait until everything is written back
+    // to the client
+    return 1;
+  }
+
+  switch (data->current_process) {
+  case p_reference_discovery:
+    log_debug("reference discovery on %s", data->repository);
+    result = reference_discovery(data->repository, out_buf, err_buf,
+                                 get_refs_impl);
+    break;
+  default:
+    log_err("Unsupported process requested: %i", data->current_process);
+    result = -1;
+    break;
+  }
+
+  if (result == 0) { // Success
+    // Switch to the next process
+    data->current_process++;
+
+    if (data->current_process < p_finished) {
+      // (Sub-process) finished, but there's at least another pending process.
+      result = 1;
+    }
+  }
+
+  return result;
 }
 
 static void destroy_git_upload_pack(void* payload) {
