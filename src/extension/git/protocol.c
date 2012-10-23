@@ -102,9 +102,15 @@ int packfile_negotiation(buffer_t in, struct packfile_negotiation_data* data) {
     }
 
     while (1) {
+      int result;
+
       buffer_clear(data->pkt_line);
-      if (pkt_line_read(in, data->pkt_line) != 0) {
-        log_err("Failed to read a pkt-line");
+      if ((result = pkt_line_read(in, data->pkt_line)) != 0) {
+        if (result < 0) {
+          log_err("Failed to read a pkt-line");
+          data->phase = packfile_negotiation_error;
+        }
+
         break;
       }
 

@@ -49,7 +49,7 @@ END_TEST
 
 START_TEST(pkt_line_read_incomplete_length) {
   fail_unless(buffer_append(src, "123", 3) == 0);
-  fail_unless(pkt_line_read(src, dest) == -1);
+  fail_unless(pkt_line_read(src, dest) == 1);
 
   fail_unless(buffer_get_size(src) == 3);
   fail_unless(strncmp(buffer_get_data(src), "123", 3) == 0);
@@ -59,7 +59,7 @@ END_TEST
 
 START_TEST(pkt_line_read_incomplete_payload) {
   fail_unless(buffer_append(src, "0006x", 5) == 0);
-  fail_unless(pkt_line_read(src, dest) == -1);
+  fail_unless(pkt_line_read(src, dest) == 1);
 
   fail_unless(buffer_get_size(src) == 5);
   fail_unless(strncmp(buffer_get_data(src), "0006x", 5) == 0);

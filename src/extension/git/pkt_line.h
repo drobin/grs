@@ -31,7 +31,9 @@
  *
  * @param src The source where to read the data.
  * @param dest The destination buffer, where to write the decoded data
- * @return On success <code>0</code> is returned.
+ * @return On success <code>0</code> is returned. If there is no complete
+ *         <i>pkt-line</i> is available in the buffer, then <code>1</code> is
+ *         returned. If an error occured, <code>-1</code> is returned.
  */
 int pkt_line_read(buffer_t src, buffer_t dest);
 

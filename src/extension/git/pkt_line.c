@@ -52,9 +52,9 @@ int pkt_line_read(buffer_t src, buffer_t dest) {
     return -1;
   }
 
-  // 4 bytes length-indicator, empty pkt-line "0004" is not allowed
+  // 4 bytes length-indicator
   if (buffer_get_size(src) < 4) {
-    return -1;
+    return 1;
   }
 
   // Length of pkt-line
@@ -70,7 +70,7 @@ int pkt_line_read(buffer_t src, buffer_t dest) {
     return 0;
   } else if (buffer_get_size(src) < size) {
     // You don't have the complete pkt-line
-    return -1;
+    return 1;
   } else {
     buffer_append(dest, buffer_get_data(src) + 4, size - 4);
     buffer_remove(src, size);
