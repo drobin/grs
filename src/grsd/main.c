@@ -376,10 +376,16 @@ int main(int argc, char** argv) {
             }
           }
 
-          if (session_can_exec(entry->grs_session) &&
-              ssh_channel_poll(entry->channel, 0) > 0) {
-            // Data available in the channel, forward to process
-            channel2buf(&session_list, entry);
+          if (session_can_exec(entry->grs_session)) {
+            int navail = ssh_channel_poll(entry->channel, 0);
+
+            if (navail > 0) {
+              // Data available in the channel, forward to process
+              channel2buf(&session_list, entry);
+            } else if (navail < 0) {
+              close_and_free_session_entry(&session_list, entry);
+              continue;
+            }
           }
         }
 
