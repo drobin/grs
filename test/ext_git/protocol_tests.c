@@ -120,6 +120,14 @@ START_TEST(packfile_negotiation_null_data) {
 }
 END_TEST
 
+START_TEST(packfile_negotiation_no_in_data) {
+  struct packfile_negotiation_data data;
+
+  memset(&data, 0, sizeof(struct packfile_negotiation_data));
+  fail_unless(packfile_negotiation(in, &data) == 1);
+}
+END_TEST
+
 START_TEST(packfile_negotiation_unknown_upload_request) {
   struct packfile_negotiation_data data;
 
@@ -228,6 +236,7 @@ TCase* git_protocol_tcase() {
   tcase_add_test(tc, reference_discovery_fetch);
   tcase_add_test(tc, packfile_negotiation_null_in);
   tcase_add_test(tc, packfile_negotiation_null_data);
+  tcase_add_test(tc, packfile_negotiation_no_in_data);
   tcase_add_test(tc, packfile_negotiation_unknown_upload_request);
   tcase_add_test(tc, packfile_negotiation_one_want);
   tcase_add_test(tc, packfile_negotiation_two_wants);

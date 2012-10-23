@@ -85,6 +85,12 @@ int packfile_negotiation(buffer_t in, struct packfile_negotiation_data* data) {
   pkt_line = buffer_create();
 
   if (data->phase == packfile_negotiation_upload_request) {
+    if (buffer_get_size(in) == 0) {
+      // Nothing to do
+      buffer_destroy(pkt_line);
+      return 1;
+    }
+
     if (data->want_list == NULL) {
       log_debug("Start of upload-request");
       data->want_list = binbuf_create(41);

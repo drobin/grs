@@ -400,8 +400,10 @@ int main(int argc, char** argv) {
             !session_is_finished(entry->grs_session)) {
 
           int result = session_exec(entry->grs_session);
-          ssh_channel_request_send_exit_status(entry->channel,
-                                               (result == 0) ? 0 : 127);
+          if (result != 1) {
+            ssh_channel_request_send_exit_status(entry->channel,
+                                                 (result == 0) ? 0 : 127);
+          }
         }
 
         if (session_is_finished(entry->grs_session)) {
