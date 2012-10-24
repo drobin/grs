@@ -25,85 +25,101 @@
 #include "pkt_line.h"
 #include "protocol.h"
 
+static void prepare(struct packfile_negotiation_data* data) {
+  log_debug("Prepare packfile negotiation");
+  data->pkt_line = buffer_create();
+  data->want_list = binbuf_create(41);
+  data->shallow_list = binbuf_create(41);
+  data->depth = -1;
+
+  // switch to next state
+  data->phase++;
+}
+
+static int upload_request(buffer_t in, struct packfile_negotiation_data* data) {
+  if (buffer_get_size(in) == 0) {
+    // Nothing to do
+    return 1;
+  }
+
+  if (binbuf_get_size(data->want_list) == 0) {
+    log_debug("Start of upload-request");
+  }
+
+  while (1) {
+    int result;
+
+    buffer_clear(data->pkt_line);
+    if ((result = pkt_line_read(in, data->pkt_line)) != 0) {
+      if (result < 0) {
+        log_err("Failed to read a pkt-line");
+        data->phase = packfile_negotiation_error;
+      }
+
+      break;
+    }
+
+    if (buffer_get_size(data->pkt_line) == 0) {
+      // flush-pkt, this is the end of the want-list, switch to next state
+      log_debug("End of upload-request");
+      data->phase++;
+      break;
+    }
+
+    if (buffer_get_size(data->pkt_line) >= 5 &&
+        strncmp(buffer_get_data(data->pkt_line), "want ", 5) == 0) {
+      char* obj_id = binbuf_add(data->want_list);
+      strlcpy(obj_id, buffer_get_data(data->pkt_line) + 5,
+              binbuf_get_size_of(data->want_list));
+      log_debug("want %s", obj_id);
+    } else if (buffer_get_size(data->pkt_line) >= 8 &&
+               strncmp(buffer_get_data(data->pkt_line), "shallow ", 8) == 0) {
+      char* obj_id = binbuf_add(data->shallow_list);
+      strlcpy(obj_id, buffer_get_data(data->pkt_line) + 8,
+              binbuf_get_size_of(data->shallow_list));
+      log_debug("shallow %s", obj_id);
+    } else if (buffer_get_size(data->pkt_line) >= 7 &&
+               strncmp(buffer_get_data(data->pkt_line), "deepen ", 7) == 0) {
+      char num[buffer_get_size(data->pkt_line) - 7 + 1];
+      strlcpy(num, buffer_get_data(data->pkt_line) + 7,
+              buffer_get_size(data->pkt_line) - 7 + 1);
+      log_debug("depth %s", num);
+      data->depth = atoi(num);
+    } else {
+      log_err("Unsupported upload-request");
+      data->phase = packfile_negotiation_error;
+      break;
+    }
+  }
+
+  return 0;
+}
+
+static void cleanup(struct packfile_negotiation_data* data) {
+  log_debug("Cleanup packfile negotiation");
+  buffer_destroy(data->pkt_line);
+  binbuf_destroy(data->want_list);
+  binbuf_destroy(data->shallow_list);
+}
+
 int packfile_negotiation(buffer_t in, struct packfile_negotiation_data* data) {
   if (in == NULL || data == NULL) {
     return -1;
   }
 
   if (data->phase == packfile_negotiation_prepare) {
-    log_debug("Prepare packfile negotiation");
-    data->pkt_line = buffer_create();
-    data->want_list = binbuf_create(41);
-    data->shallow_list = binbuf_create(41);
-    data->depth = -1;
-
-    // switch to next state
-    data->phase++;
+    prepare(data);
   }
 
   if (data->phase == packfile_negotiation_upload_request) {
-    if (buffer_get_size(in) == 0) {
-      // Nothing to do
+    if (upload_request(in, data) > 0) {
       return 1;
-    }
-
-    if (binbuf_get_size(data->want_list) == 0) {
-      log_debug("Start of upload-request");
-    }
-
-    while (1) {
-      int result;
-
-      buffer_clear(data->pkt_line);
-      if ((result = pkt_line_read(in, data->pkt_line)) != 0) {
-        if (result < 0) {
-          log_err("Failed to read a pkt-line");
-          data->phase = packfile_negotiation_error;
-        }
-
-        break;
-      }
-
-      if (buffer_get_size(data->pkt_line) == 0) {
-        // flush-pkt, this is the end of the want-list, switch to next state
-        log_debug("End of upload-request");
-        data->phase++;
-        break;
-      }
-
-      if (buffer_get_size(data->pkt_line) >= 5 &&
-          strncmp(buffer_get_data(data->pkt_line), "want ", 5) == 0) {
-        char* obj_id = binbuf_add(data->want_list);
-        strlcpy(obj_id, buffer_get_data(data->pkt_line) + 5,
-                binbuf_get_size_of(data->want_list));
-        log_debug("want %s", obj_id);
-      } else if (buffer_get_size(data->pkt_line) >= 8 &&
-                 strncmp(buffer_get_data(data->pkt_line), "shallow ", 8) == 0) {
-        char* obj_id = binbuf_add(data->shallow_list);
-        strlcpy(obj_id, buffer_get_data(data->pkt_line) + 8,
-                binbuf_get_size_of(data->shallow_list));
-        log_debug("shallow %s", obj_id);
-      } else if (buffer_get_size(data->pkt_line) >= 7 &&
-                 strncmp(buffer_get_data(data->pkt_line), "deepen ", 7) == 0) {
-        char num[buffer_get_size(data->pkt_line) - 7 + 1];
-        strlcpy(num, buffer_get_data(data->pkt_line) + 7,
-                buffer_get_size(data->pkt_line) - 7 + 1);
-        log_debug("depth %s", num);
-        data->depth = atoi(num);
-      } else {
-        log_err("Unsupported upload-request");
-        data->phase = packfile_negotiation_error;
-        break;
-      }
     }
   }
 
   if (data->phase == packfile_negotiation_finished ||
       data->phase == packfile_negotiation_error) {
-    log_debug("Cleanup packfile negotiation");
-    buffer_destroy(data->pkt_line);
-    binbuf_destroy(data->want_list);
-    binbuf_destroy(data->shallow_list);
+    cleanup(data);
   }
 
   if (data->phase == packfile_negotiation_finished) {
