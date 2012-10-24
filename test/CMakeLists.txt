@@ -21,8 +21,8 @@ SET(GRS_TEST_SOURCES
   ext_core/suite.c
   ext_core/tests.c
   ext_git/extension_tests.c
+  ext_git/packfile_negotiation_tests.c
   ext_git/pkt_line_tests.c
-  ext_git/protocol_tests.c
   ext_git/reference_discovery_tests.c
   ext_git/suite.c
   libgrs/acl_tests.c
