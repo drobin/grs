@@ -23,6 +23,7 @@ SET(GRS_TEST_SOURCES
   ext_git/extension_tests.c
   ext_git/pkt_line_tests.c
   ext_git/protocol_tests.c
+  ext_git/reference_discovery_tests.c
   ext_git/suite.c
   libgrs/acl_tests.c
   libgrs/binbuf_tests.c

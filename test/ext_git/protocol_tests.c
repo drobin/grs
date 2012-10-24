@@ -22,28 +22,6 @@
 
 #include "../../src/extension/git/protocol.h"
 
-static int no_refs_stub(const char* repository, binbuf_t refs) {
-  return 0;
-}
-
-static int refs_stub(const char* repository, binbuf_t refs) {
-  struct git_ref* ref;
-
-  ref = binbuf_add(refs);
-  strlcpy(ref->obj_id, "objid1", sizeof(ref->obj_id));
-  strlcpy(ref->ref_name, "foo", sizeof(ref->ref_name));
-
-  ref = binbuf_add(refs);
-  strlcpy(ref->obj_id, "objid2", sizeof(ref->obj_id));
-  strlcpy(ref->ref_name, "bar", sizeof(ref->ref_name));
-
-  return 0;
-}
-
-static int failed_stub(const char* repository, binbuf_t refs) {
-  return -1;
-}
-
 static buffer_t in;
 static buffer_t out;
 static buffer_t err;
@@ -62,52 +40,6 @@ static void teardown() {
   out = NULL;
   err = NULL;
 }
-
-START_TEST(reference_discovery_null_out_repository) {
-  fail_unless(reference_discovery(NULL, out, err, no_refs_stub) == -1);
-}
-END_TEST
-
-START_TEST(reference_discovery_null_out_buffer) {
-  fail_unless(reference_discovery("xxx", NULL, err, no_refs_stub) == -1);
-}
-END_TEST
-
-START_TEST(reference_discovery_null_err_buffer) {
-  fail_unless(reference_discovery("xxx", out, NULL, no_refs_stub) == -1);
-}
-END_TEST
-
-START_TEST(reference_discovery_null_refs) {
-  fail_unless(reference_discovery("xxx", out, err, NULL) == -1);
-}
-END_TEST
-
-START_TEST(reference_discovery_empty) {
-  fail_unless(reference_discovery("xxx", out, err, no_refs_stub) == 0);
-  fail_unless(buffer_get_size(out) == 4);
-  fail_unless(strncmp(buffer_get_data(out), "0000", 4) == 0);
-  fail_unless(buffer_get_size(err) == 0);
-}
-END_TEST
-
-START_TEST(reference_discovery_fetch_failed) {
-  fail_unless(reference_discovery("xxx", out, err, failed_stub) == -1);
-  fail_unless(buffer_get_size(out) == 0);
-  fail_unless(buffer_get_size(err) == 0);
-}
-END_TEST
-
-START_TEST(reference_discovery_fetch) {
-  fail_unless(reference_discovery("xxx", out, err, refs_stub) == 0);
-  fail_unless(buffer_get_size(out) == 34);
-  fail_unless(strncmp(buffer_get_data(out),
-                      "000fobjid1 foo\n"
-                      "000fobjid2 bar\n"
-                      "0000", 34) == 0);
-  fail_unless(buffer_get_size(err) == 0);
-}
-END_TEST
 
 START_TEST(packfile_negotiation_null_in) {
   struct packfile_negotiation_data data;
@@ -248,13 +180,6 @@ TCase* git_protocol_tcase() {
   TCase* tc = tcase_create("git protocol");
   tcase_add_checked_fixture(tc, setup, teardown);
 
-  tcase_add_test(tc, reference_discovery_null_out_repository);
-  tcase_add_test(tc, reference_discovery_null_out_buffer);
-  tcase_add_test(tc, reference_discovery_null_err_buffer);
-  tcase_add_test(tc, reference_discovery_null_refs);
-  tcase_add_test(tc, reference_discovery_empty);
-  tcase_add_test(tc, reference_discovery_fetch_failed);
-  tcase_add_test(tc, reference_discovery_fetch);
   tcase_add_test(tc, packfile_negotiation_null_in);
   tcase_add_test(tc, packfile_negotiation_null_out);
   tcase_add_test(tc, packfile_negotiation_null_data);
