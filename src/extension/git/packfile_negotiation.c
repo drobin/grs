@@ -105,7 +105,41 @@ static int upload_request(buffer_t in, struct packfile_negotiation_data* data) {
 
 static void upload_haves(buffer_t in, buffer_t out,
                          struct packfile_negotiation_data* data) {
-  data->phase++;
+
+  if (binbuf_get_size(data->have_list) == 0) {
+    log_debug("Start of upload-haves");
+  }
+
+  while (1) {
+    int result;
+
+    buffer_clear(data->pkt_line);
+    if ((result = pkt_line_read(in, data->pkt_line)) != 0) {
+      if (result < 0) {
+        log_err("Failed to read a pkt-line");
+        data->phase = packfile_negotiation_error;
+      }
+
+      break;
+    }
+
+    if (buffer_get_size(data->pkt_line) >= 4 &&
+        strncmp(buffer_get_data(data->pkt_line), "done", 4) == 0) {
+      // end of upload-haves, switch to next phase
+      log_debug("End of upload-haves");
+      data->phase++;
+
+      buffer_clear(data->pkt_line);
+      buffer_append(data->pkt_line, "NAK\n", 4);
+      pkt_line_write(data->pkt_line, out);
+
+      break;
+    } else {
+      log_err("Unsupported upload-haves");
+      data->phase = packfile_negotiation_error;
+      break;
+    }
+  }
 }
 
 static void cleanup(struct packfile_negotiation_data* data) {

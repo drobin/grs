@@ -32,6 +32,8 @@ static void setup() {
   fail_unless((in = buffer_create()) != NULL);
   fail_unless((out = buffer_create()) != NULL);
   fail_unless((err = buffer_create()) != NULL);
+
+  fail_unless(packfile_negotiation(in, out, &data) == 1);
 }
 
 static void teardown() {
@@ -143,6 +145,24 @@ START_TEST(upload_request_skipped_shallow_depth) {
 }
 END_TEST
 
+START_TEST(upload_haves_done) {
+  data.phase = packfile_negotiation_upload_haves;
+  buffer_append(in, "0009done\n", 9);
+  fail_unless(packfile_negotiation(in, out, &data) == 0);
+  fail_unless(binbuf_get_size(data.have_list) == 0);
+  fail_unless(memcmp(buffer_get_data(out), "0008NAK\n", 8) == 0);
+}
+END_TEST
+
+START_TEST(upload_haves_unknown_request) {
+  data.phase = packfile_negotiation_upload_haves;
+  buffer_append(in, "0007abc", 7);
+  fail_unless(packfile_negotiation(in, out, &data) == -1);
+  fail_unless(binbuf_get_size(data.have_list) == 0);
+  fail_unless(buffer_get_size(out) == 0);
+}
+END_TEST
+
 TCase* packfile_negotiation_tcase() {
   TCase* tc = tcase_create("packfile negotiation");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -157,6 +177,8 @@ TCase* packfile_negotiation_tcase() {
   tcase_add_test(tc, upload_request_shallow);
   tcase_add_test(tc, upload_request_shallow_depth);
   tcase_add_test(tc, upload_request_skipped_shallow_depth);
+  tcase_add_test(tc, upload_haves_done);
+  tcase_add_test(tc, upload_haves_unknown_request);
 
   return tc;
 }
