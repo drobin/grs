@@ -19,8 +19,9 @@
 
 SET(LIBEXT_GIT_SOURCES
   git.c
+  packfile_negotiation.c
   pkt_line.c
-  protocol.c
+  reference_discovery.c
 )
 
 include_directories(
