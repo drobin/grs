@@ -111,12 +111,18 @@ END_TEST
 
 START_TEST(packfile_negotiation_null_in) {
   struct packfile_negotiation_data data;
-  fail_unless(packfile_negotiation(NULL, &data) == -1);
+  fail_unless(packfile_negotiation(NULL, out, &data) == -1);
+}
+END_TEST
+
+START_TEST(packfile_negotiation_null_out) {
+  struct packfile_negotiation_data data;
+  fail_unless(packfile_negotiation(in, NULL, &data) == -1);
 }
 END_TEST
 
 START_TEST(packfile_negotiation_null_data) {
-  fail_unless(packfile_negotiation(in, NULL) == -1);
+  fail_unless(packfile_negotiation(in, out, NULL) == -1);
 }
 END_TEST
 
@@ -124,7 +130,7 @@ START_TEST(packfile_negotiation_no_in_data) {
   struct packfile_negotiation_data data;
 
   memset(&data, 0, sizeof(struct packfile_negotiation_data));
-  fail_unless(packfile_negotiation(in, &data) == 1);
+  fail_unless(packfile_negotiation(in, out, &data) == 1);
 }
 END_TEST
 
@@ -133,7 +139,7 @@ START_TEST(packfile_negotiation_unknown_upload_request) {
 
   memset(&data, 0, sizeof(struct packfile_negotiation_data));
   buffer_append(in, "0007xxx", 7);
-  fail_unless(packfile_negotiation(in, &data) == -1);
+  fail_unless(packfile_negotiation(in, out, &data) == -1);
 }
 END_TEST
 
@@ -142,7 +148,7 @@ START_TEST(packfile_negotiation_one_want) {
 
   memset(&data, 0, sizeof(struct packfile_negotiation_data));
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
-  fail_unless(packfile_negotiation(in, &data) == 1);
+  fail_unless(packfile_negotiation(in, out, &data) == 1);
   fail_unless(binbuf_get_size(data.want_list) == 1);
   fail_unless(memcmp(binbuf_get(data.want_list, 0),
                      "0123456789012345678901234567890123456789", 40) == 0);
@@ -151,7 +157,7 @@ START_TEST(packfile_negotiation_one_want) {
 
   buffer_clear(in);
   buffer_append(in, "0000", 4);
-  fail_unless(packfile_negotiation(in, &data) == 0);
+  fail_unless(packfile_negotiation(in, out, &data) == 0);
 }
 END_TEST
 
@@ -161,7 +167,7 @@ START_TEST(packfile_negotiation_two_wants) {
   memset(&data, 0, sizeof(struct packfile_negotiation_data));
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
   buffer_append(in, "0032want 9876543210987654321098765432109876543210\n", 50);
-  fail_unless(packfile_negotiation(in, &data) == 1);
+  fail_unless(packfile_negotiation(in, out, &data) == 1);
   fail_unless(binbuf_get_size(data.want_list) == 2);
   fail_unless(memcmp(binbuf_get(data.want_list, 0),
                      "0123456789012345678901234567890123456789", 40) == 0);
@@ -172,7 +178,7 @@ START_TEST(packfile_negotiation_two_wants) {
 
   buffer_clear(in);
   buffer_append(in, "0000", 4);
-  fail_unless(packfile_negotiation(in, &data) == 0);
+  fail_unless(packfile_negotiation(in, out, &data) == 0);
 }
 END_TEST
 
@@ -182,7 +188,7 @@ START_TEST(packfile_negotiation_shallow) {
   memset(&data, 0, sizeof(struct packfile_negotiation_data));
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
   buffer_append(in, "0034shallow 9876543210987654321098765432109876543210", 52);
-  fail_unless(packfile_negotiation(in, &data) == 1);
+  fail_unless(packfile_negotiation(in, out, &data) == 1);
   fail_unless(binbuf_get_size(data.want_list) == 1);
   fail_unless(memcmp(binbuf_get(data.want_list, 0),
                      "0123456789012345678901234567890123456789", 40) == 0);
@@ -193,7 +199,7 @@ START_TEST(packfile_negotiation_shallow) {
 
   buffer_clear(in);
   buffer_append(in, "0000", 4);
-  fail_unless(packfile_negotiation(in, &data) == 0);
+  fail_unless(packfile_negotiation(in, out, &data) == 0);
 }
 END_TEST
 
@@ -204,7 +210,7 @@ START_TEST(packfile_negotiation_shallow_depth) {
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
   buffer_append(in, "0034shallow 9876543210987654321098765432109876543210", 52);
   buffer_append(in, "000cdeepen 7", 12);
-  fail_unless(packfile_negotiation(in, &data) == 1);
+  fail_unless(packfile_negotiation(in, out, &data) == 1);
   fail_unless(binbuf_get_size(data.want_list) == 1);
   fail_unless(memcmp(binbuf_get(data.want_list, 0),
                      "0123456789012345678901234567890123456789", 40) == 0);
@@ -215,7 +221,7 @@ START_TEST(packfile_negotiation_shallow_depth) {
 
   buffer_clear(in);
   buffer_append(in, "0000", 4);
-  fail_unless(packfile_negotiation(in, &data) == 0);
+  fail_unless(packfile_negotiation(in, out, &data) == 0);
 }
 END_TEST
 
@@ -225,7 +231,7 @@ START_TEST(packfile_negotiation_skipped_shallow_depth) {
   memset(&data, 0, sizeof(struct packfile_negotiation_data));
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
   buffer_append(in, "000cdeepen 7", 12);
-  fail_unless(packfile_negotiation(in, &data) == 1);
+  fail_unless(packfile_negotiation(in, out, &data) == 1);
   fail_unless(binbuf_get_size(data.want_list) == 1);
   fail_unless(memcmp(binbuf_get(data.want_list, 0),
                      "0123456789012345678901234567890123456789", 40) == 0);
@@ -234,7 +240,7 @@ START_TEST(packfile_negotiation_skipped_shallow_depth) {
 
   buffer_clear(in);
   buffer_append(in, "0000", 4);
-  fail_unless(packfile_negotiation(in, &data) == 0);
+  fail_unless(packfile_negotiation(in, out, &data) == 0);
 }
 END_TEST
 
@@ -250,6 +256,7 @@ TCase* git_protocol_tcase() {
   tcase_add_test(tc, reference_discovery_fetch_failed);
   tcase_add_test(tc, reference_discovery_fetch);
   tcase_add_test(tc, packfile_negotiation_null_in);
+  tcase_add_test(tc, packfile_negotiation_null_out);
   tcase_add_test(tc, packfile_negotiation_null_data);
   tcase_add_test(tc, packfile_negotiation_no_in_data);
   tcase_add_test(tc, packfile_negotiation_unknown_upload_request);

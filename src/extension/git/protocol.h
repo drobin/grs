@@ -55,6 +55,11 @@ enum packfile_negotiation_phase {
   packfile_negotiation_upload_request,
 
   /**
+   * upload-haves
+   */
+  packfile_negotiation_upload_haves,
+
+  /**
    * finished, clean up
    */
   packfile_negotiation_finished,
@@ -89,6 +94,11 @@ struct packfile_negotiation_data {
    * shallow-list received from the client
    */
   binbuf_t shallow_list;
+
+  /**
+   * have-list received from the client
+   */
+  binbuf_t have_list;
 
   /**
    * Maximum commit history depth received from the client
@@ -130,12 +140,15 @@ int reference_discovery(const char* repository,
  * Implementation of the <i>Packfile Negotiation</i>-process.
  *
  * @param in The function consumes data from this buffer
+ * @param out The function writes data into this buffer, which should be send
+ *            back to the client
  * @param data Data used to synchronize between different invocations of the
  *             function. Before the first invocation of packfile_negotiation()
  *             the structure should be set to <code>0</code>.
  * @return On success <code>0</code> is returned.
  * @see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt
  */
-int packfile_negotiation(buffer_t in, struct packfile_negotiation_data* data);
+int packfile_negotiation(buffer_t in, buffer_t out,
+                         struct packfile_negotiation_data* data);
 
 #endif  /* PROTOCOL_H */

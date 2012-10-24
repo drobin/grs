@@ -171,7 +171,7 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
     break;
   case p_packfile_negotiation:
     log_debug("packfile negotiation on %s", data->repository);
-    result = packfile_negotiation(in_buf, &data->packfile_negotiation);
+    result = packfile_negotiation(in_buf, out_buf, &data->packfile_negotiation);
     break;
   default:
     log_err("Unsupported process requested: %i", data->current_process);

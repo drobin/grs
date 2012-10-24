@@ -30,6 +30,7 @@ static void prepare(struct packfile_negotiation_data* data) {
   data->pkt_line = buffer_create();
   data->want_list = binbuf_create(41);
   data->shallow_list = binbuf_create(41);
+  data->have_list = binbuf_create(41);
   data->depth = -1;
 
   // switch to next state
@@ -62,7 +63,14 @@ static int upload_request(buffer_t in, struct packfile_negotiation_data* data) {
     if (buffer_get_size(data->pkt_line) == 0) {
       // flush-pkt, this is the end of the want-list, switch to next state
       log_debug("End of upload-request");
-      data->phase++;
+
+      if (binbuf_get_size(data->want_list) > 0) {
+        data->phase++;
+      } else {
+        // no wants -> no upload-request: switch to end
+        data->phase = packfile_negotiation_finished;
+      }
+
       break;
     }
 
@@ -95,15 +103,22 @@ static int upload_request(buffer_t in, struct packfile_negotiation_data* data) {
   return 0;
 }
 
+static void upload_haves(buffer_t in, buffer_t out,
+                         struct packfile_negotiation_data* data) {
+  data->phase++;
+}
+
 static void cleanup(struct packfile_negotiation_data* data) {
   log_debug("Cleanup packfile negotiation");
   buffer_destroy(data->pkt_line);
   binbuf_destroy(data->want_list);
   binbuf_destroy(data->shallow_list);
+  binbuf_destroy(data->have_list);
 }
 
-int packfile_negotiation(buffer_t in, struct packfile_negotiation_data* data) {
-  if (in == NULL || data == NULL) {
+int packfile_negotiation(buffer_t in, buffer_t out,
+                         struct packfile_negotiation_data* data) {
+  if (in == NULL || out == NULL || data == NULL) {
     return -1;
   }
 
@@ -115,6 +130,10 @@ int packfile_negotiation(buffer_t in, struct packfile_negotiation_data* data) {
     if (upload_request(in, data) > 0) {
       return 1;
     }
+  }
+
+  if (data->phase == packfile_negotiation_upload_haves) {
+    upload_haves(in, out, data);
   }
 
   if (data->phase == packfile_negotiation_finished ||
