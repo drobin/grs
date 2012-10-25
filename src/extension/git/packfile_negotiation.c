@@ -172,6 +172,17 @@ int packfile_negotiation(buffer_t in, buffer_t out, binbuf_t commits,
 
   if (data->phase == packfile_negotiation_finished ||
       data->phase == packfile_negotiation_error) {
+
+    int idx;
+
+    // FIXME This is a very early implementation, simply copy all wants into the
+    //       commits-array
+    for (idx = 0; idx < binbuf_get_size(data->want_list); idx++) {
+      char* hex = binbuf_add(commits);
+      strlcpy(hex, binbuf_get(data->want_list, idx),
+              binbuf_get_size_of(commits));
+    }
+
     cleanup(data);
   }
 

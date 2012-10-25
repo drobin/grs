@@ -159,7 +159,6 @@ START_TEST(upload_haves_done) {
   fail_unless(packfile_negotiation(in, out, commits, &data) == 0);
   fail_unless(binbuf_get_size(data.have_list) == 0);
   fail_unless(memcmp(buffer_get_data(out), "0008NAK\n", 8) == 0);
-  fail_unless(binbuf_get_size(commits) == 0);
 }
 END_TEST
 
@@ -169,6 +168,17 @@ START_TEST(upload_haves_unknown_request) {
   fail_unless(packfile_negotiation(in, out, commits, &data) == -1);
   fail_unless(binbuf_get_size(data.have_list) == 0);
   fail_unless(buffer_get_size(out) == 0);
+}
+END_TEST
+
+START_TEST(filled_commits) {
+  buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
+  buffer_append(in, "0000", 4);
+  buffer_append(in, "0009done\n", 9);
+  fail_unless(packfile_negotiation(in, out, commits, &data) == 0);
+  fail_unless(binbuf_get_size(commits) == 1);
+  fail_unless(memcmp(binbuf_get(commits, 0),
+                     "0123456789012345678901234567890123456789", 40) == 0);
 }
 END_TEST
 
@@ -189,6 +199,7 @@ TCase* packfile_negotiation_tcase() {
   tcase_add_test(tc, upload_request_skipped_shallow_depth);
   tcase_add_test(tc, upload_haves_done);
   tcase_add_test(tc, upload_haves_unknown_request);
+  tcase_add_test(tc, filled_commits);
 
   return tc;
 }
