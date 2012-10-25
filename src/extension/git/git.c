@@ -40,6 +40,11 @@ enum upload_pack_process {
   p_packfile_negotiation,
 
   /**
+   * packfile_transfer()
+   */
+  p_packfile_transfer,
+
+  /**
    * No more processes!
    */
   p_finished
@@ -180,6 +185,10 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
     log_debug("packfile negotiation on %s", data->repository);
     result = packfile_negotiation(in_buf, out_buf, data->commits,
                                   &data->packfile_negotiation);
+    break;
+  case p_packfile_transfer:
+    log_debug("packfile transfer on %s", data->repository);
+    result = packfile_transfer(data->commits, out_buf);
     break;
   default:
     log_err("Unsupported process requested: %i", data->current_process);

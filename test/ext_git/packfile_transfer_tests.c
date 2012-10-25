@@ -19,20 +19,37 @@
 
 #include <check.h>
 
-extern TCase* git_extension_tcase();
-extern TCase* packfile_negotiation_tcase();
-extern TCase* packfile_transfer_tcase();
-extern TCase* pkt_line_tcase();
-extern TCase* reference_discovery_tcase();
+#include "../../src/extension/git/protocol.h"
 
-Suite* git_extension_suite() {
-  Suite* s = suite_create("git extension");
+static binbuf_t commits;
+static buffer_t out;
 
-  suite_add_tcase(s, git_extension_tcase());
-  suite_add_tcase(s, packfile_negotiation_tcase());
-  suite_add_tcase(s, packfile_transfer_tcase());
-  suite_add_tcase(s, pkt_line_tcase());
-  suite_add_tcase(s, reference_discovery_tcase());
+static void setup() {
+  fail_unless((commits = binbuf_create(41)) != NULL);
+  fail_unless((out = buffer_create()) != NULL);
+}
 
-  return s;
+static void teardown() {
+  fail_unless(binbuf_destroy(commits) == 0);
+  fail_unless(buffer_destroy(out) == 0);
+}
+
+START_TEST(null_commits) {
+  fail_unless(packfile_transfer(NULL, out) == -1);
+}
+END_TEST
+
+START_TEST(null_out) {
+  fail_unless(packfile_transfer(commits, NULL) == -1);
+}
+END_TEST
+
+TCase* packfile_transfer_tcase() {
+  TCase* tc = tcase_create("packfile transfer");
+  tcase_add_checked_fixture(tc, setup, teardown);
+
+  tcase_add_test(tc, null_commits);
+  tcase_add_test(tc, null_out);
+
+  return tc;
 }

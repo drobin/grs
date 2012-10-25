@@ -154,4 +154,18 @@ int reference_discovery(const char* repository,
 int packfile_negotiation(buffer_t in, buffer_t out, binbuf_t commits,
                          struct packfile_negotiation_data* data);
 
+/**
+ * Stores the packfiles of the given commits into the given output-buffer.
+ *
+ * This is the last step of the <i>git-upload-pack</i>-process.
+ *
+ * @param commits An array of hex-commits, which should be encoded into
+ *                packfiles
+ * @param out Buffer, where to store the encoded packfiles
+ * @return On success <code>0</code> is returned
+ *
+ * @see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt
+ */
+int packfile_transfer(binbuf_t commits, buffer_t out);
+
 #endif  /* PROTOCOL_H */

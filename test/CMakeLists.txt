@@ -22,6 +22,7 @@ SET(GRS_TEST_SOURCES
   ext_core/tests.c
   ext_git/extension_tests.c
   ext_git/packfile_negotiation_tests.c
+  ext_git/packfile_transfer_tests.c
   ext_git/pkt_line_tests.c
   ext_git/reference_discovery_tests.c
   ext_git/suite.c

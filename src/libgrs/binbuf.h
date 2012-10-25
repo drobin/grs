@@ -20,6 +20,8 @@
 #ifndef BINBUF_H
 #define BINBUF_H
 
+#include <stdlib.h>
+
 typedef struct _binbuf* binbuf_t;
 
 /**

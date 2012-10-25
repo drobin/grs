@@ -20,6 +20,7 @@
 SET(LIBEXT_GIT_SOURCES
   git.c
   packfile_negotiation.c
+  packfile_transfer.c
   pkt_line.c
   reference_discovery.c
 )

@@ -17,22 +17,12 @@
  *
  ******************************************************************************/
 
-#include <check.h>
+#include "protocol.h"
 
-extern TCase* git_extension_tcase();
-extern TCase* packfile_negotiation_tcase();
-extern TCase* packfile_transfer_tcase();
-extern TCase* pkt_line_tcase();
-extern TCase* reference_discovery_tcase();
+int packfile_transfer(binbuf_t commits, buffer_t out) {
+  if (commits == NULL || out == NULL) {
+    return -1;
+  }
 
-Suite* git_extension_suite() {
-  Suite* s = suite_create("git extension");
-
-  suite_add_tcase(s, git_extension_tcase());
-  suite_add_tcase(s, packfile_negotiation_tcase());
-  suite_add_tcase(s, packfile_transfer_tcase());
-  suite_add_tcase(s, pkt_line_tcase());
-  suite_add_tcase(s, reference_discovery_tcase());
-
-  return s;
+  return 0;
 }
