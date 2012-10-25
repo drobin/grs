@@ -142,13 +142,16 @@ int reference_discovery(const char* repository,
  * @param in The function consumes data from this buffer
  * @param out The function writes data into this buffer, which should be send
  *            back to the client
+ * @param commits Here you have to provide an empty array, where the function
+ *                will store all the commits, which have to be transfered to
+ *                the client.
  * @param data Data used to synchronize between different invocations of the
  *             function. Before the first invocation of packfile_negotiation()
  *             the structure should be set to <code>0</code>.
  * @return On success <code>0</code> is returned.
  * @see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt
  */
-int packfile_negotiation(buffer_t in, buffer_t out,
+int packfile_negotiation(buffer_t in, buffer_t out, binbuf_t commits,
                          struct packfile_negotiation_data* data);
 
 #endif  /* PROTOCOL_H */

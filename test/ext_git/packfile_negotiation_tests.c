@@ -26,14 +26,16 @@ static struct packfile_negotiation_data data;
 static buffer_t in;
 static buffer_t out;
 static buffer_t err;
+static binbuf_t commits;
 
 static void setup() {
   memset(&data, 0, sizeof(struct packfile_negotiation_data));
   fail_unless((in = buffer_create()) != NULL);
   fail_unless((out = buffer_create()) != NULL);
   fail_unless((err = buffer_create()) != NULL);
+  fail_unless((commits = binbuf_create(41)) != NULL);
 
-  fail_unless(packfile_negotiation(in, out, &data) == 1);
+  fail_unless(packfile_negotiation(in, out, commits, &data) == 1);
 }
 
 static void teardown() {
@@ -42,9 +44,10 @@ static void teardown() {
     data.phase = packfile_negotiation_finished;
     buffer_clear(in);
     buffer_append(in, "0000", 4);
-    fail_unless(packfile_negotiation(in, out, &data) == 0);
+    fail_unless(packfile_negotiation(in, out, commits, &data) == 0);
   }
 
+  fail_unless(binbuf_destroy(commits) == 0);
   fail_unless(buffer_destroy(in) == 0);
   fail_unless(buffer_destroy(out) == 0);
   fail_unless(buffer_destroy(err) == 0);
@@ -54,34 +57,39 @@ static void teardown() {
 }
 
 START_TEST(null_in) {
-  fail_unless(packfile_negotiation(NULL, out, &data) == -1);
+  fail_unless(packfile_negotiation(NULL, out, commits, &data) == -1);
 }
 END_TEST
 
 START_TEST(null_out) {
-  fail_unless(packfile_negotiation(in, NULL, &data) == -1);
+  fail_unless(packfile_negotiation(in, NULL, commits, &data) == -1);
+}
+END_TEST
+
+START_TEST(null_commits) {
+  fail_unless(packfile_negotiation(in, out, NULL, &data) == -1);
 }
 END_TEST
 
 START_TEST(null_data) {
-  fail_unless(packfile_negotiation(in, out, NULL) == -1);
+  fail_unless(packfile_negotiation(in, out, commits, NULL) == -1);
 }
 END_TEST
 
 START_TEST(upload_request_no_in_data) {
-  fail_unless(packfile_negotiation(in, out, &data) == 1);
+  fail_unless(packfile_negotiation(in, out, commits, &data) == 1);
 }
 END_TEST
 
 START_TEST(upload_request_unknown_request) {
   buffer_append(in, "0007xxx", 7);
-  fail_unless(packfile_negotiation(in, out, &data) == -1);
+  fail_unless(packfile_negotiation(in, out, commits, &data) == -1);
 }
 END_TEST
 
 START_TEST(upload_request_one_want) {
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
-  fail_unless(packfile_negotiation(in, out, &data) == 1);
+  fail_unless(packfile_negotiation(in, out, commits, &data) == 1);
   fail_unless(binbuf_get_size(data.want_list) == 1);
   fail_unless(memcmp(binbuf_get(data.want_list, 0),
                      "0123456789012345678901234567890123456789", 40) == 0);
@@ -93,7 +101,7 @@ END_TEST
 START_TEST(upload_request_two_wants) {
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
   buffer_append(in, "0032want 9876543210987654321098765432109876543210\n", 50);
-  fail_unless(packfile_negotiation(in, out, &data) == 1);
+  fail_unless(packfile_negotiation(in, out, commits, &data) == 1);
   fail_unless(binbuf_get_size(data.want_list) == 2);
   fail_unless(memcmp(binbuf_get(data.want_list, 0),
                      "0123456789012345678901234567890123456789", 40) == 0);
@@ -107,7 +115,7 @@ END_TEST
 START_TEST(upload_request_shallow) {
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
   buffer_append(in, "0034shallow 9876543210987654321098765432109876543210", 52);
-  fail_unless(packfile_negotiation(in, out, &data) == 1);
+  fail_unless(packfile_negotiation(in, out, commits, &data) == 1);
   fail_unless(binbuf_get_size(data.want_list) == 1);
   fail_unless(memcmp(binbuf_get(data.want_list, 0),
                      "0123456789012345678901234567890123456789", 40) == 0);
@@ -122,7 +130,7 @@ START_TEST(upload_request_shallow_depth) {
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
   buffer_append(in, "0034shallow 9876543210987654321098765432109876543210", 52);
   buffer_append(in, "000cdeepen 7", 12);
-  fail_unless(packfile_negotiation(in, out, &data) == 1);
+  fail_unless(packfile_negotiation(in, out, commits, &data) == 1);
   fail_unless(binbuf_get_size(data.want_list) == 1);
   fail_unless(memcmp(binbuf_get(data.want_list, 0),
                      "0123456789012345678901234567890123456789", 40) == 0);
@@ -136,7 +144,7 @@ END_TEST
 START_TEST(upload_request_skipped_shallow_depth) {
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
   buffer_append(in, "000cdeepen 7", 12);
-  fail_unless(packfile_negotiation(in, out, &data) == 1);
+  fail_unless(packfile_negotiation(in, out, commits, &data) == 1);
   fail_unless(binbuf_get_size(data.want_list) == 1);
   fail_unless(memcmp(binbuf_get(data.want_list, 0),
                      "0123456789012345678901234567890123456789", 40) == 0);
@@ -148,16 +156,17 @@ END_TEST
 START_TEST(upload_haves_done) {
   data.phase = packfile_negotiation_upload_haves;
   buffer_append(in, "0009done\n", 9);
-  fail_unless(packfile_negotiation(in, out, &data) == 0);
+  fail_unless(packfile_negotiation(in, out, commits, &data) == 0);
   fail_unless(binbuf_get_size(data.have_list) == 0);
   fail_unless(memcmp(buffer_get_data(out), "0008NAK\n", 8) == 0);
+  fail_unless(binbuf_get_size(commits) == 0);
 }
 END_TEST
 
 START_TEST(upload_haves_unknown_request) {
   data.phase = packfile_negotiation_upload_haves;
   buffer_append(in, "0007abc", 7);
-  fail_unless(packfile_negotiation(in, out, &data) == -1);
+  fail_unless(packfile_negotiation(in, out, commits, &data) == -1);
   fail_unless(binbuf_get_size(data.have_list) == 0);
   fail_unless(buffer_get_size(out) == 0);
 }
@@ -169,6 +178,7 @@ TCase* packfile_negotiation_tcase() {
 
   tcase_add_test(tc, null_in);
   tcase_add_test(tc, null_out);
+  tcase_add_test(tc, null_commits);
   tcase_add_test(tc, null_data);
   tcase_add_test(tc, upload_request_no_in_data);
   tcase_add_test(tc, upload_request_unknown_request);

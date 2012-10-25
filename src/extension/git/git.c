@@ -55,6 +55,12 @@ struct git_upload_pack_data {
   char* repository;
 
   /**
+   * Commits (as a result of the packfile-negotiation), which are send to the
+   * client.
+   */
+  binbuf_t commits;
+
+  /**
    * Data used internally by packfile_negotiation().
    */
   struct packfile_negotiation_data packfile_negotiation;
@@ -143,6 +149,7 @@ static int init_git_upload_pack(char *const command[], void** payload) {
 
   data = malloc(sizeof(struct git_upload_pack_data));
   data->repository = repository_path(command[1]);
+  data->commits = binbuf_create(41);
   memset(&data->packfile_negotiation, 0,
          sizeof(struct packfile_negotiation_data));
   data->current_process = p_reference_discovery;
@@ -171,7 +178,8 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
     break;
   case p_packfile_negotiation:
     log_debug("packfile negotiation on %s", data->repository);
-    result = packfile_negotiation(in_buf, out_buf, &data->packfile_negotiation);
+    result = packfile_negotiation(in_buf, out_buf, data->commits,
+                                  &data->packfile_negotiation);
     break;
   default:
     log_err("Unsupported process requested: %i", data->current_process);
@@ -196,6 +204,7 @@ static void destroy_git_upload_pack(void* payload) {
   struct git_upload_pack_data* data = (struct git_upload_pack_data*)payload;
 
   free(data->repository);
+  binbuf_destroy(data->commits);
   free(data);
 }
 

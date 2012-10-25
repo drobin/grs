@@ -150,9 +150,9 @@ static void cleanup(struct packfile_negotiation_data* data) {
   binbuf_destroy(data->have_list);
 }
 
-int packfile_negotiation(buffer_t in, buffer_t out,
+int packfile_negotiation(buffer_t in, buffer_t out, binbuf_t commits,
                          struct packfile_negotiation_data* data) {
-  if (in == NULL || out == NULL || data == NULL) {
+  if (in == NULL || out == NULL || commits == NULL || data == NULL) {
     return -1;
   }
 
