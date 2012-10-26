@@ -123,6 +123,7 @@ static int git_reference_foreach_cb(const char* ref_name, void* payload) {
 static int get_refs_impl(const char* repository, binbuf_t refs) {
   struct git_reference_foreach_data data;
   git_repository* repo;
+  git_reference* head;
   int result;
 
   log_debug("Fetch reference from %s", repository);
@@ -134,6 +135,22 @@ static int get_refs_impl(const char* repository, binbuf_t refs) {
     return result;
   }
 
+  // Fetch current HEAD from repository
+  if ((result = git_repository_head(&head, repo)) == 0) {
+    const git_oid* head_oid = git_reference_oid(head);
+    struct git_ref* head_ref = binbuf_add(refs);
+
+    git_oid_fmt(head_ref->obj_id, head_oid);
+    head_ref->obj_id[40] = '\0';
+    strlcpy(head_ref->ref_name, "HEAD", sizeof(head_ref->ref_name));
+  } else {
+    log_err("Failed to receive HEAD from %s: %s",
+            repository, giterr_last()->message);
+    git_repository_free(repo);
+    return result;
+  }
+
+  // Fetch references from repository
   data.repo = repo;
   data.refs = refs;
   result = git_reference_foreach(repo, GIT_REF_LISTALL,

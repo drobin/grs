@@ -39,16 +39,11 @@ Dir.mktmpdir do |dir1|
       git.remote("set-url origin ssh://localhost:4711#{dir1}")
       refs = git.ls_remote(:password => true).split("\n")
 
-      assert(refs.count == 1, "Only one ref expected")
-
-      ref = refs.first
-      ref = ref.split.each{ |r| r.strip! }
-
       head_oid = Dir.chdir(dir1) { git.rev_parse("HEAD") }
-      head_oid.strip!
 
-      assert(head_oid == ref[0], "Unexpected oid received")
-      assert(ref[1] == "refs/heads/master", "Unexpected ref_name received")
+      assert(refs.count == 2, "Only two refs expected")
+      assert_ref([head_oid, "HEAD"], refs[0].split)
+      assert_ref([head_oid, "refs/heads/master"], refs[1].split)
     end
   end
 end

@@ -24,6 +24,22 @@ module Grs
         raise failure_message || test.to_s
       end
     end
+
+    def assert_ref(expected_ref, actual_ref)
+      expected_oid = expected_ref[0].strip
+      actual_oid = actual_ref[0].strip
+
+      assert(expected_oid == actual_oid,
+             "Unexpected object-id. " +
+             "Expected #{expected_oid} but is #{actual_oid}")
+
+      expected_ref_name = expected_ref[1].strip
+      actual_ref_name = actual_ref[1].strip
+
+      assert(expected_ref_name == actual_ref_name,
+             "Unexpected reference-name. " +
+             "Expected #{expected_ref_name} but is #{actual_ref_name}")
+    end
   end
 end
 
