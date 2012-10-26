@@ -68,7 +68,7 @@ static int upload_request(buffer_t in, struct packfile_negotiation_data* data) {
         data->phase++;
       } else {
         // no wants -> no upload-request: switch to end
-        data->phase = packfile_negotiation_finished;
+        data->phase = packfile_negotiation_quit;
       }
 
       break;
@@ -171,6 +171,7 @@ int packfile_negotiation(buffer_t in, buffer_t out, binbuf_t commits,
   }
 
   if (data->phase == packfile_negotiation_finished ||
+      data->phase == packfile_negotiation_quit ||
       data->phase == packfile_negotiation_error) {
 
     int idx;
@@ -188,6 +189,8 @@ int packfile_negotiation(buffer_t in, buffer_t out, binbuf_t commits,
 
   if (data->phase == packfile_negotiation_finished) {
     return 0;
+  } else if (data->phase == packfile_negotiation_quit) {
+    return 2;
   } else if (data->phase == packfile_negotiation_error) {
     return -1;
   } else {

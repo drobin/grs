@@ -64,6 +64,10 @@ enum packfile_negotiation_phase {
    */
   packfile_negotiation_finished,
 
+  /**
+   * Finished, cleanup, not execute another phase
+   */
+  packfile_negotiation_quit,
 
   /**
    * Finished with error, clean up

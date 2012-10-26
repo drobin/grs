@@ -221,6 +221,9 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
       // (Sub-process) finished, but there's at least another pending process.
       result = 1;
     }
+  } else if (result == 2) { // Success, but don't execute another sub-process
+    data->current_process = p_finished;
+    result = 0;
   }
 
   return result;
