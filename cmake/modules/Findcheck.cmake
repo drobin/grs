@@ -1,21 +1,11 @@
-find_path(CHECK_INCLUDE_DIR
-  NAMES
-    check.h
-  PATHS
-    ${_CHECK_DIR}/include
-    /usr/include
-    /usr/local/include
-    /opt/local/include
+find_path(
+  CHECK_INCLUDE_DIR
+  check.h
 )
 
-find_library(CHECK_LIBRARY
-  NAMES
-    check
-  PATHS
-    ${_CHECK_DIR}/lib
-    /usr/lib
-    /usr/local/lib
-    /opt/local/lib
+find_library(
+  CHECK_LIBRARY
+  check
 )
 
 if(CHECK_INCLUDE_DIR)

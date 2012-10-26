@@ -1,21 +1,11 @@
-find_path(LIBGIT2_INCLUDE_DIR
-  NAMES
-    git2.h
-  PATHS
-    ${_LIBGIT2_DIR}/include
-    /usr/include
-    /usr/local/include
-    /opt/local/include
+find_path(
+  LIBGIT2_INCLUDE_DIR
+  git2.h
 )
 
-find_library(LIBGIT2_LIBRARY
-  NAMES
-    git2
-  PATHS
-    ${_LIBGIT2_DIR}/lib
-    /usr/lib
-    /usr/local/lib
-    /opt/local/lib
+find_library(
+  LIBGIT2_LIBRARY
+  git2
 )
 
 if(LIBGIT2_INCLUDE_DIR)

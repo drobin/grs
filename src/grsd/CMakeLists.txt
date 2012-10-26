@@ -34,5 +34,4 @@ target_link_libraries(grsd
   libgrs libext_core libext_git
   ${LIBSSH_LIBRARY}
   ${LIBGIT2_LIBRARY}
-  ${LIBEVENT_LIBRARY}
 )

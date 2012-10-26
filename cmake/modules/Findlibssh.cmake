@@ -1,22 +1,11 @@
-find_path(LIBSSH_INCLUDE_DIR
-  NAMES
-    libssh/libssh.h
-  PATHS
-    ${_LIBSSH_DIR}/include
-    /usr/include
-    /usr/local/include
-    /opt/local/include
+find_path(
+  LIBSSH_INCLUDE_DIR
+  libssh/libssh.h
 )
 
-
-find_library(LIBSSH_LIBRARY
-  NAMES
-    ssh
-  PATHS
-    ${_LIBSSH_DIR}/lib
-    /usr/lib
-    /usr/local/lib
-    /opt/local/lib
+find_library(
+  LIBSSH_LIBRARY
+  ssh
 )
 
 if(LIBSSH_INCLUDE_DIR)
