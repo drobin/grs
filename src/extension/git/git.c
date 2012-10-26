@@ -108,7 +108,7 @@ static int git_reference_foreach_cb(const char* ref_name, void* payload) {
   data = (struct git_reference_foreach_data*)payload;
 
   if ((result = git_reference_lookup(&ref, data->repo, ref_name)) != 0) {
-    log_err("Reference lookup failed: %s", git_strerror(result));
+    log_err("Reference lookup failed: %s", giterr_last()->message);
     return 0; // Skip reference but try another one
   }
 
@@ -130,7 +130,7 @@ static int get_refs_impl(const char* repository, binbuf_t refs) {
   if ((result = git_repository_open(&repo, repository)) == 0) {
     log_debug("Repository is open");
   } else {
-    log_err("Failed to open repository: %s", git_strerror(result));
+    log_err("Failed to open repository: %s", giterr_last()->message);
     return result;
   }
 
@@ -139,7 +139,7 @@ static int get_refs_impl(const char* repository, binbuf_t refs) {
   result = git_reference_foreach(repo, GIT_REF_LISTALL,
                                  git_reference_foreach_cb, &data);
   if (result != 0) {
-    log_err("Failed to loop over references: %s", git_strerror(result));
+    log_err("Failed to loop over references: %s", giterr_last()->message);
     git_repository_free(repo);
     return result;
   }
