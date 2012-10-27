@@ -58,7 +58,7 @@ int pkt_line_read(buffer_t src, buffer_t dest) {
   }
 
   // Length of pkt-line
-  size = hex2int(buffer_get_data(src));
+  size = hex2int((char*)buffer_get_data(src));
 
   // Empty pkt-line "0004" is not allowed
   if (size == 4) {

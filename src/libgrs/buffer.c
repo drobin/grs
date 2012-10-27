@@ -80,7 +80,7 @@ size_t buffer_get_size(buffer_t buffer) {
   return buffer->size;
 }
 
-char* buffer_get_data(buffer_t buffer) {
+const void* buffer_get_data(buffer_t buffer) {
   if (buffer == NULL) {
     return NULL;
   }
@@ -88,7 +88,7 @@ char* buffer_get_data(buffer_t buffer) {
   return buffer->buf;
 }
 
-int buffer_append(buffer_t buffer, char* data, size_t nbytes) {
+int buffer_append(buffer_t buffer, const void* data, size_t nbytes) {
   if (buffer == NULL || data == NULL) {
     return -1;
   }

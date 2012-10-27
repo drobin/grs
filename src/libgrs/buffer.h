@@ -83,7 +83,7 @@ size_t buffer_get_size(buffer_t buffer);
  * @param buffer The requested buffer
  * @return If the buffer is not empty, then the data-pointer is returned.
  */
-char* buffer_get_data(buffer_t buffer);
+const void* buffer_get_data(buffer_t buffer);
 
 /**
  * Appends data onto the buffer.
@@ -96,7 +96,7 @@ char* buffer_get_data(buffer_t buffer);
  * @param nbytes Size of <code>data</code>
  * @return On success <code>0</code> is returned.
  */
-int buffer_append(buffer_t buffer, char* data, size_t nbytes);
+int buffer_append(buffer_t buffer, const void* data, size_t nbytes);
 
 /**
  * Removes data from the beginning of the buffer.
