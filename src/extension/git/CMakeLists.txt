@@ -18,6 +18,7 @@
 ################################################################################
 
 SET(LIBEXT_GIT_SOURCES
+  compress.c
   git.c
   packfile_negotiation.c
   packfile_transfer.c

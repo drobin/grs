@@ -17,24 +17,21 @@
  *
  ******************************************************************************/
 
-#include <check.h>
+#ifndef COMPRESS_H
+#define COMPRESS_H
 
-extern TCase* compress_tcase();
-extern TCase* git_extension_tcase();
-extern TCase* packfile_negotiation_tcase();
-extern TCase* packfile_transfer_tcase();
-extern TCase* pkt_line_tcase();
-extern TCase* reference_discovery_tcase();
+#include <libgrs/buffer.h>
 
-Suite* git_extension_suite() {
-  Suite* s = suite_create("git extension");
+/**
+ * Compresses the content of the <code>source</code>-buffer.
+ *
+ * The compressed result into written into the <code>dest</code>-buffer.
+ *
+ * @param source The source buffer, which contains the uncompressed data
+ * @param dest The destination buffer. The function writes the compressed data
+ *             into this buffer.
+ * @return On success <code>0</code> is returned
+ */
+int buffer_compress(buffer_t source, buffer_t dest);
 
-  suite_add_tcase(s, compress_tcase());
-  suite_add_tcase(s, git_extension_tcase());
-  suite_add_tcase(s, packfile_negotiation_tcase());
-  suite_add_tcase(s, packfile_transfer_tcase());
-  suite_add_tcase(s, pkt_line_tcase());
-  suite_add_tcase(s, reference_discovery_tcase());
-
-  return s;
-}
+#endif  /* COMPRESS_H */

@@ -32,6 +32,7 @@ include_directories(
 )
 target_link_libraries(grsd
   libgrs libext_core libext_git
+  ${ZLIB_LIBRARIES}
   ${LIBSSH_LIBRARY}
   ${LIBGIT2_LIBRARY}
 )
