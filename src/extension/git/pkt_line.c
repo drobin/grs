@@ -88,7 +88,7 @@ int pkt_line_write(buffer_t src, buffer_t dest) {
   } else {
     char hex[5];
 
-    snprintf(hex, 5, "%04x", buffer_get_size(src) + 4);
+    snprintf(hex, 5, "%04x", (unsigned int)buffer_get_size(src) + 4);
 
     if (buffer_append(dest, hex, 4) == 0 &&
         buffer_append(dest, buffer_get_data(src), buffer_get_size(src)) == 0) {

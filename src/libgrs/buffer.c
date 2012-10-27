@@ -23,9 +23,9 @@
 #include "buffer.h"
 
 struct _buffer {
-  unsigned int capacity;
-  unsigned int size;
-  char* buf;
+  size_t capacity;
+  size_t size;
+  void* buf;
 };
 
 buffer_t buffer_create() {
@@ -51,7 +51,7 @@ int buffer_destroy(buffer_t buffer) {
   return 0;
 }
 
-int buffer_get_capacity(buffer_t buffer) {
+size_t buffer_get_capacity(buffer_t buffer) {
   if (buffer == NULL) {
     return -1;
   }
@@ -59,7 +59,7 @@ int buffer_get_capacity(buffer_t buffer) {
   return buffer->capacity;
 }
 
-int buffer_ensure_capacity(buffer_t buffer, unsigned int capacity) {
+int buffer_ensure_capacity(buffer_t buffer, size_t capacity) {
   if (buffer == NULL) {
     return -1;
   }
@@ -72,7 +72,7 @@ int buffer_ensure_capacity(buffer_t buffer, unsigned int capacity) {
   return 0;
 }
 
-int buffer_get_size(buffer_t buffer) {
+size_t buffer_get_size(buffer_t buffer) {
   if (buffer == NULL) {
     return -1;
   }
@@ -88,7 +88,7 @@ char* buffer_get_data(buffer_t buffer) {
   return buffer->buf;
 }
 
-int buffer_append(buffer_t buffer, char* data, unsigned int nbytes) {
+int buffer_append(buffer_t buffer, char* data, size_t nbytes) {
   if (buffer == NULL || data == NULL) {
     return -1;
   }
@@ -100,7 +100,7 @@ int buffer_append(buffer_t buffer, char* data, unsigned int nbytes) {
   return 0;
 }
 
-int buffer_remove(buffer_t buffer, unsigned int nbytes) {
+int buffer_remove(buffer_t buffer, size_t nbytes) {
   if (buffer == NULL) {
     return -1;
   }

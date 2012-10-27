@@ -49,7 +49,7 @@ int buffer_destroy(buffer_t buffer);
  * @param buffer The requested buffer
  * @return The capacity of the buffer.
  */
-int buffer_get_capacity(buffer_t buffer);
+size_t buffer_get_capacity(buffer_t buffer);
 
 /**
  * Ensures, that the buffer has the given capacity.
@@ -61,7 +61,7 @@ int buffer_get_capacity(buffer_t buffer);
  * @param capacity The new capacity
  * @return On success <code>0</code> is returned
  */
-int buffer_ensure_capacity(buffer_t buffer, unsigned int capacity);
+int buffer_ensure_capacity(buffer_t buffer, size_t capacity);
 
 /**
  * Returns the size of the buffer.
@@ -71,7 +71,7 @@ int buffer_ensure_capacity(buffer_t buffer, unsigned int capacity);
  * @param The requested buffer
  * @preturn The number of bytes stored in the buffer.
  */
-int buffer_get_size(buffer_t buffer);
+size_t buffer_get_size(buffer_t buffer);
 
 /**
  * Returns the data of the buffer.
@@ -96,7 +96,7 @@ char* buffer_get_data(buffer_t buffer);
  * @param nbytes Size of <code>data</code>
  * @return On success <code>0</code> is returned.
  */
-int buffer_append(buffer_t buffer, char* data, unsigned int nbytes);
+int buffer_append(buffer_t buffer, char* data, size_t nbytes);
 
 /**
  * Removes data from the beginning of the buffer.
@@ -108,7 +108,7 @@ int buffer_append(buffer_t buffer, char* data, unsigned int nbytes);
  * @param nbytes Number of bytes to removed from the buffer
  * @return On success <code>0</code> is returned.
  */
-int buffer_remove(buffer_t buffer, unsigned int nbytes);
+int buffer_remove(buffer_t buffer, size_t nbytes);
 
 /**
  * Removes all data from the buffer.
