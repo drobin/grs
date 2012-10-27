@@ -20,6 +20,7 @@
 SET(GRS_TEST_SOURCES
   ext_core/suite.c
   ext_core/tests.c
+  ext_git/checksum_tests.c
   ext_git/compress_tests.c
   ext_git/extension_tests.c
   ext_git/packfile_negotiation_tests.c
@@ -52,6 +53,7 @@ include_directories(
 target_link_libraries(grs_test
   libgrs libext_core libext_git
   ${ZLIB_LIBRARIES}
+  ${OPENSSL_LIBRARIES}
   ${LIBGIT2_LIBRARY}
   ${CHECK_LIBRARY}
 )

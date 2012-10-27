@@ -17,26 +17,20 @@
  *
  ******************************************************************************/
 
-#include <check.h>
+#ifndef CHECKSUM_H
+#define CHECKSUM_H
 
-extern TCase* checksum_tcase();
-extern TCase* compress_tcase();
-extern TCase* git_extension_tcase();
-extern TCase* packfile_negotiation_tcase();
-extern TCase* packfile_transfer_tcase();
-extern TCase* pkt_line_tcase();
-extern TCase* reference_discovery_tcase();
+#include <libgrs/buffer.h>
 
-Suite* git_extension_suite() {
-  Suite* s = suite_create("git extension");
+/**
+ * Calculates the SHA1-checksum over the content of the given buffer.
+ *
+ * The checksum is stored into the <code>sha</code>-argument.
+ *
+ * @param buffer The source-buffer
+ * @param sha A 20-byte-wide array. The function stores the checksum here
+ * @return On success <code>0</code> is returned.
+ */
+int buffer_checksum(buffer_t buffer, unsigned char sha[]);
 
-  suite_add_tcase(s, checksum_tcase());
-  suite_add_tcase(s, compress_tcase());
-  suite_add_tcase(s, git_extension_tcase());
-  suite_add_tcase(s, packfile_negotiation_tcase());
-  suite_add_tcase(s, packfile_transfer_tcase());
-  suite_add_tcase(s, pkt_line_tcase());
-  suite_add_tcase(s, reference_discovery_tcase());
-
-  return s;
-}
+#endif  /* CHECKSUM_H */

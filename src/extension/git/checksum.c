@@ -17,26 +17,17 @@
  *
  ******************************************************************************/
 
-#include <check.h>
+#include <stdlib.h>
+#include <openssl/sha.h>
 
-extern TCase* checksum_tcase();
-extern TCase* compress_tcase();
-extern TCase* git_extension_tcase();
-extern TCase* packfile_negotiation_tcase();
-extern TCase* packfile_transfer_tcase();
-extern TCase* pkt_line_tcase();
-extern TCase* reference_discovery_tcase();
+#include "checksum.h"
 
-Suite* git_extension_suite() {
-  Suite* s = suite_create("git extension");
+int buffer_checksum(buffer_t buffer, unsigned char sha[]) {
+  if (buffer == NULL || sha == NULL) {
+    return -1;
+  }
 
-  suite_add_tcase(s, checksum_tcase());
-  suite_add_tcase(s, compress_tcase());
-  suite_add_tcase(s, git_extension_tcase());
-  suite_add_tcase(s, packfile_negotiation_tcase());
-  suite_add_tcase(s, packfile_transfer_tcase());
-  suite_add_tcase(s, pkt_line_tcase());
-  suite_add_tcase(s, reference_discovery_tcase());
+  SHA1((unsigned char*)buffer_get_data(buffer), buffer_get_size(buffer), sha);
 
-  return s;
+  return 0;
 }

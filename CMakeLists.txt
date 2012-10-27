@@ -28,6 +28,7 @@ set(CMAKE_MODULE_PATH
 find_package(libssh)
 find_package(libgit2)
 find_package(ZLIB)
+find_package(OpenSSL)
 find_package(check)
 
 if(NOT LIBSSH_FOUND)
@@ -41,6 +42,10 @@ endif(NOT LIBGIT2_FOUND)
 if(NOT ZLIB_FOUND)
   message(FATAL_ERROR "Could not find zlib")
 endif(NOT ZLIB_FOUND)
+
+if(NOT OPENSSL_FOUND)
+  message(FATAL_ERROR "Could not find OpenSSL")
+endif(NOT OPENSSL_FOUND)
 
 if(NOT CHECK_FOUND)
   message(FATAL_ERROR "Could not find check")
