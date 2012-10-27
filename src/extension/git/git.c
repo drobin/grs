@@ -166,6 +166,11 @@ static int get_refs_impl(const char* repository, binbuf_t refs) {
   return 0;
 }
 
+static int packfile_objects_impl(const char* repository, binbuf_t commits,
+                                 binbuf_t objects) {
+  return 0;
+}
+
 static int init_git_upload_pack(char *const command[], void** payload) {
   struct git_upload_pack_data* data;
 
@@ -205,7 +210,7 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
     break;
   case p_packfile_transfer:
     log_debug("packfile transfer on %s", data->repository);
-    result = packfile_transfer(data->commits, out_buf);
+    result = packfile_transfer(data->commits, packfile_objects_impl, out_buf);
     break;
   default:
     log_err("Unsupported process requested: %i", data->current_process);

@@ -21,6 +21,11 @@
 
 #include "../../src/extension/git/protocol.h"
 
+int packfile_objects_stub(const char* repository, binbuf_t commits,
+                          binbuf_t objects) {
+  return 0;
+}
+
 static binbuf_t commits;
 static buffer_t out;
 
@@ -35,12 +40,17 @@ static void teardown() {
 }
 
 START_TEST(null_commits) {
-  fail_unless(packfile_transfer(NULL, out) == -1);
+  fail_unless(packfile_transfer(NULL, packfile_objects_stub, out) == -1);
+}
+END_TEST
+
+START_TEST(null_callback) {
+  fail_unless(packfile_transfer(commits, NULL, out) == -1);
 }
 END_TEST
 
 START_TEST(null_out) {
-  fail_unless(packfile_transfer(commits, NULL) == -1);
+  fail_unless(packfile_transfer(commits, packfile_objects_stub, NULL) == -1);
 }
 END_TEST
 
@@ -49,6 +59,7 @@ TCase* packfile_transfer_tcase() {
   tcase_add_checked_fixture(tc, setup, teardown);
 
   tcase_add_test(tc, null_commits);
+  tcase_add_test(tc, null_callback);
   tcase_add_test(tc, null_out);
 
   return tc;

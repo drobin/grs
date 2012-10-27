@@ -111,6 +111,23 @@ struct packfile_negotiation_data {
 };
 
 /**
+ * A single object, which is encoded into a packfile.
+ *
+ * A packfile can contain more than one object.
+ */
+struct packfile_object {
+  /**
+   * Type of object.
+   */
+  unsigned char type;
+
+  /**
+   * The content of the object.
+   */
+  buffer_t content;
+};
+
+/**
  * A callback-function used by reference_discovery to fetch references from a
  * repository.
  *
@@ -124,6 +141,21 @@ struct packfile_negotiation_data {
  *         successful.
  */
 typedef int (*rd_get_refs)(const char* repository, binbuf_t refs);
+
+/**
+ * A callback-functions used by packfile_transfer to fetch the objects for a
+ * packfile.
+ *
+ * The callback-implementation should store the objects of type
+ * <code>struct packfile_object</code> into the <code>objects</code>-argument.
+ *
+ * @param repository The path of the requested repository
+ * @param commits An array with object-ids of COMMIT-objects to fetch from
+ *                the repository.
+ * @param objects The callback-implementation should store the objects here.
+ */
+typedef int (*packfile_objects_cb)(const char* repository, binbuf_t commits,
+                                   binbuf_t objects);
 
 /**
  * Implementation of the <i>Reference Discovery</i>-process.
@@ -165,11 +197,14 @@ int packfile_negotiation(buffer_t in, buffer_t out, binbuf_t commits,
  *
  * @param commits An array of hex-commits, which should be encoded into
  *                packfiles
+ * @param obj_cb Callback is invoked by packfile-transfer to receive the objects
+ *               for the packfile(s)
  * @param out Buffer, where to store the encoded packfiles
  * @return On success <code>0</code> is returned
  *
  * @see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt
  */
-int packfile_transfer(binbuf_t commits, buffer_t out);
+int packfile_transfer(binbuf_t commits, packfile_objects_cb obj_cb,
+                      buffer_t out);
 
 #endif  /* PROTOCOL_H */
