@@ -19,9 +19,9 @@
 
 #include "protocol.h"
 
-int packfile_transfer(binbuf_t commits, packfile_objects_cb obj_cb,
-                      buffer_t out) {
-  if (commits == NULL || obj_cb == NULL || out == NULL) {
+int packfile_transfer(const char* repository, binbuf_t commits,
+                      packfile_objects_cb obj_cb, buffer_t out) {
+  if (repository == NULL || commits == NULL || obj_cb == NULL || out == NULL) {
     return -1;
   }
 

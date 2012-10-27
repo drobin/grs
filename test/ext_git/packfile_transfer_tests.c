@@ -39,18 +39,25 @@ static void teardown() {
   fail_unless(buffer_destroy(out) == 0);
 }
 
+START_TEST(null_repository) {
+  fail_unless(
+    packfile_transfer(NULL, commits, packfile_objects_stub, out) == -1);
+}
+END_TEST
+
 START_TEST(null_commits) {
-  fail_unless(packfile_transfer(NULL, packfile_objects_stub, out) == -1);
+  fail_unless(packfile_transfer("xxx", NULL, packfile_objects_stub, out) == -1);
 }
 END_TEST
 
 START_TEST(null_callback) {
-  fail_unless(packfile_transfer(commits, NULL, out) == -1);
+  fail_unless(packfile_transfer("xxx", commits, NULL, out) == -1);
 }
 END_TEST
 
 START_TEST(null_out) {
-  fail_unless(packfile_transfer(commits, packfile_objects_stub, NULL) == -1);
+  fail_unless(
+    packfile_transfer("xxx", commits, packfile_objects_stub, NULL) == -1);
 }
 END_TEST
 
@@ -58,6 +65,7 @@ TCase* packfile_transfer_tcase() {
   TCase* tc = tcase_create("packfile transfer");
   tcase_add_checked_fixture(tc, setup, teardown);
 
+  tcase_add_test(tc, null_repository);
   tcase_add_test(tc, null_commits);
   tcase_add_test(tc, null_callback);
   tcase_add_test(tc, null_out);

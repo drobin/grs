@@ -195,6 +195,7 @@ int packfile_negotiation(buffer_t in, buffer_t out, binbuf_t commits,
  *
  * This is the last step of the <i>git-upload-pack</i>-process.
  *
+ * @param repository The path of the requested repository
  * @param commits An array of hex-commits, which should be encoded into
  *                packfiles
  * @param obj_cb Callback is invoked by packfile-transfer to receive the objects
@@ -204,7 +205,7 @@ int packfile_negotiation(buffer_t in, buffer_t out, binbuf_t commits,
  *
  * @see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt
  */
-int packfile_transfer(binbuf_t commits, packfile_objects_cb obj_cb,
-                      buffer_t out);
+int packfile_transfer(const char* repository, binbuf_t commits,
+                      packfile_objects_cb obj_cb, buffer_t out);
 
 #endif  /* PROTOCOL_H */

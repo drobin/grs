@@ -210,7 +210,8 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
     break;
   case p_packfile_transfer:
     log_debug("packfile transfer on %s", data->repository);
-    result = packfile_transfer(data->commits, packfile_objects_impl, out_buf);
+    result = packfile_transfer(data->repository, data->commits,
+                               packfile_objects_impl, out_buf);
     break;
   default:
     log_err("Unsupported process requested: %i", data->current_process);
