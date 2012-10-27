@@ -52,6 +52,18 @@ int buffer_destroy(buffer_t buffer);
 int buffer_get_capacity(buffer_t buffer);
 
 /**
+ * Ensures, that the buffer has the given capacity.
+ *
+ * If the buffer already has the given capacity, then nothing happens, otherwise
+ * the capacity is increased to the desired value.
+ *
+ * @param buffer The requested buffer
+ * @param capacity The new capacity
+ * @return On success <code>0</code> is returned
+ */
+int buffer_ensure_capacity(buffer_t buffer, unsigned int capacity);
+
+/**
  * Returns the size of the buffer.
  *
  * This is the number of bytes actually stored in the buffer.

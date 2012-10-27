@@ -59,6 +59,19 @@ int buffer_get_capacity(buffer_t buffer) {
   return buffer->capacity;
 }
 
+int buffer_ensure_capacity(buffer_t buffer, unsigned int capacity) {
+  if (buffer == NULL) {
+    return -1;
+  }
+
+  if (buffer->capacity < capacity) {
+    buffer->buf = realloc(buffer->buf, capacity);
+    buffer->capacity = capacity;
+  }
+
+  return 0;
+}
+
 int buffer_get_size(buffer_t buffer) {
   if (buffer == NULL) {
     return -1;
@@ -80,11 +93,7 @@ int buffer_append(buffer_t buffer, char* data, unsigned int nbytes) {
     return -1;
   }
 
-  if (buffer->capacity < buffer->size + nbytes) {
-    buffer->buf = realloc(buffer->buf, buffer->size + nbytes);
-    buffer->capacity = buffer->size + nbytes;
-  }
-
+  buffer_ensure_capacity(buffer, buffer->size + nbytes);
   memcpy(buffer->buf + buffer->size, data, nbytes);
   buffer->size += nbytes;
 

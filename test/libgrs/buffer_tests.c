@@ -47,6 +47,35 @@ START_TEST(get_capacity_initial) {
 }
 END_TEST
 
+START_TEST(ensure_capacity_null_buffer) {
+  fail_unless(buffer_ensure_capacity(NULL, 5) == -1);
+}
+END_TEST
+
+START_TEST(ensure_capacity_new_capacity) {
+  fail_unless(buffer_append(buffer, "123", 3) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 3);
+  fail_unless(buffer_remove(buffer, 1) == 0);
+  fail_unless(buffer_ensure_capacity(buffer, 5) == 0);
+
+  fail_unless(buffer_get_capacity(buffer) == 5);
+  fail_unless(buffer_get_size(buffer) == 2);
+  fail_unless(memcmp(buffer_get_data(buffer), "23", 2) == 0);
+}
+END_TEST
+
+START_TEST(ensure_capacity_old_capacity) {
+  fail_unless(buffer_append(buffer, "123", 3) == 0);
+  fail_unless(buffer_get_capacity(buffer) == 3);
+  fail_unless(buffer_remove(buffer, 2) == 0);
+  fail_unless(buffer_ensure_capacity(buffer, 3) == 0);
+
+  fail_unless(buffer_get_capacity(buffer) == 3);
+  fail_unless(buffer_get_size(buffer) == 1);
+  fail_unless(memcmp(buffer_get_data(buffer), "3", 1) == 0);
+}
+END_TEST
+
 START_TEST(get_size_null_buffer) {
   fail_unless(buffer_get_size(NULL) == -1);
 }
@@ -201,6 +230,9 @@ TCase* buffer_tcase() {
   tcase_add_test(tc, destroy_null_buffer);
   tcase_add_test(tc, get_capacity_null_buffer);
   tcase_add_test(tc, get_capacity_initial);
+  tcase_add_test(tc, ensure_capacity_null_buffer);
+  tcase_add_test(tc, ensure_capacity_new_capacity);
+  tcase_add_test(tc, ensure_capacity_old_capacity);
   tcase_add_test(tc, get_size_null_buffer);
   tcase_add_test(tc, get_size_empty_buffer);
   tcase_add_test(tc, get_data_null_buffer);
