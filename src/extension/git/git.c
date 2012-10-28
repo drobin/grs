@@ -166,9 +166,130 @@ static int get_refs_impl(const char* repository, binbuf_t refs) {
   return 0;
 }
 
+static void log_oid_err(const char* message, const git_oid* oid,
+                        const char* err) {
+  char hex[41];
+
+  git_oid_fmt(hex, oid);
+  hex[40] = '\0';
+
+  log_err(message, hex, err);
+}
+
+static int create_and_add_packfile_object(const git_oid *obj_id, git_odb* odb,
+                                          binbuf_t objects) {
+  struct packfile_object* pf_obj;
+  git_odb_object *obj;
+
+  if (git_odb_read(&obj, odb, obj_id) != 0) {
+    log_oid_err("Failed to read object %s from object database: %s",
+                obj_id, giterr_last()->message);
+    return -1;
+  }
+
+  pf_obj = binbuf_add(objects);
+  pf_obj->type = git_odb_object_type(obj);
+  pf_obj->content = buffer_create();
+  buffer_append(pf_obj->content, git_odb_object_data(obj),
+                git_odb_object_size(obj));
+
+  git_odb_object_free(obj);
+
+  return 0;
+}
+
+static int packfile_objects_for_commit(git_odb* odb, git_commit* commit,
+                                       binbuf_t objects) {
+  git_tree* tree;
+  const git_oid* oid;
+  int idx;
+
+  // The commit-object
+  oid = git_commit_id(commit);
+  if (create_and_add_packfile_object(oid, odb, objects) != 0) {
+    return -1;
+  }
+
+  // The tree-object
+  if (git_commit_tree(&tree, commit) == 0) {
+    oid = git_tree_id(tree);
+
+    if (create_and_add_packfile_object(oid, odb, objects) != 0) {
+      git_tree_free(tree);
+      return -1;
+    }
+  } else {
+    log_oid_err("Failed to read tree object %s from object database: %s",
+            git_commit_id(commit), giterr_last()->message);
+    return -1;
+  }
+
+  // The tree-entry-objects
+  for (idx = 0; idx < git_tree_entrycount(tree); idx++) {
+    const git_tree_entry* entry;
+
+    entry = git_tree_entry_byindex(tree, idx);
+    oid = git_tree_entry_id(entry);
+    if (create_and_add_packfile_object(oid, odb, objects) != 0) {
+      git_tree_free(tree);
+      return -1;
+    }
+  }
+
+  git_tree_free(tree);
+
+  return 0;
+}
+
 static int packfile_objects_impl(const char* repository, binbuf_t commits,
                                  binbuf_t objects) {
-  return 0;
+  git_repository* repo;
+  git_odb* odb;
+  int result, idx;
+
+  repo = NULL;
+  odb = NULL;
+
+  log_debug("Fetch commit objects from %s", repository);
+
+  if ((result = git_repository_open(&repo, repository)) == 0) {
+    log_debug("Repository is open");
+  } else {
+    log_err("Failed to open repository: %s", giterr_last()->message);
+  }
+
+  if (result == 0) {
+    if ((result = git_repository_odb(&odb, repo)) == 0) {
+      log_debug("Object database is open");
+    } else {
+      log_err("Failed to open object database: %s", giterr_last()->message);
+    }
+  }
+
+  for (idx = 0; idx < binbuf_get_size(commits) && result == 0; idx++) {
+    const char* hex = binbuf_get(commits, idx);
+    git_commit* commit;
+    git_oid oid;
+
+    git_oid_fromstr(&oid, hex);
+    if ((result = git_commit_lookup(&commit, repo, &oid)) == 0) {
+      log_debug("Extracting objects for commit %s", hex);
+      result = packfile_objects_for_commit(odb, commit, objects);
+      git_commit_free(commit);
+    } else {
+      log_err("Commit lookup for %s failed: %s", hex, giterr_last()->message);
+    }
+  }
+
+  if (odb != NULL) {
+    git_odb_free(odb);
+  }
+
+  if (repo != NULL) {
+    git_repository_free(repo);
+  }
+
+  return result;
 }
 
 static int init_git_upload_pack(char *const command[], void** payload) {
