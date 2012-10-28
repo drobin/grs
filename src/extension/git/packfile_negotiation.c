@@ -76,16 +76,20 @@ static int upload_request(buffer_t in, struct packfile_negotiation_data* data) {
 
     if (buffer_get_size(data->pkt_line) >= 5 &&
         strncmp(buffer_get_data(data->pkt_line), "want ", 5) == 0) {
-      char* obj_id = binbuf_add(data->want_list);
-      strlcpy(obj_id, buffer_get_data(data->pkt_line) + 5,
-              binbuf_get_size_of(data->want_list));
-      log_debug("want %s", obj_id);
+      const char* want = buffer_get_data(data->pkt_line) + 5;
+      if (binbuf_find(data->want_list, want, 40) == -1) {
+        char* obj_id = binbuf_add(data->want_list);
+        strlcpy(obj_id, want, binbuf_get_size_of(data->want_list));
+        log_debug("want %s", obj_id);
+      }
     } else if (buffer_get_size(data->pkt_line) >= 8 &&
                strncmp(buffer_get_data(data->pkt_line), "shallow ", 8) == 0) {
-      char* obj_id = binbuf_add(data->shallow_list);
-      strlcpy(obj_id, buffer_get_data(data->pkt_line) + 8,
-              binbuf_get_size_of(data->shallow_list));
-      log_debug("shallow %s", obj_id);
+      const char* shallow = buffer_get_data(data->pkt_line) + 8;
+      if (binbuf_find(data->shallow_list, shallow, 40) == -1) {
+        char* obj_id = binbuf_add(data->shallow_list);
+        strlcpy(obj_id, shallow, binbuf_get_size_of(data->shallow_list));
+        log_debug("shallow %s", obj_id);
+      }
     } else if (buffer_get_size(data->pkt_line) >= 7 &&
                strncmp(buffer_get_data(data->pkt_line), "deepen ", 7) == 0) {
       char num[buffer_get_size(data->pkt_line) - 7 + 1];

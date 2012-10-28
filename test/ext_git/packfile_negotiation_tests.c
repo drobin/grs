@@ -112,6 +112,21 @@ START_TEST(upload_request_two_wants) {
 }
 END_TEST
 
+START_TEST(upload_request_double_wants) {
+  buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
+  buffer_append(in, "0032want 9876543210987654321098765432109876543210\n", 50);
+  buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
+  fail_unless(packfile_negotiation(in, out, commits, &data) == 1);
+  fail_unless(binbuf_get_size(data.want_list) == 2);
+  fail_unless(memcmp(binbuf_get(data.want_list, 0),
+                     "0123456789012345678901234567890123456789", 40) == 0);
+  fail_unless(memcmp(binbuf_get(data.want_list, 1),
+                     "9876543210987654321098765432109876543210", 40) == 0);
+  fail_unless(binbuf_get_size(data.shallow_list) == 0);
+  fail_unless(data.depth == -1);
+}
+END_TEST
+
 START_TEST(upload_request_shallow) {
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
   buffer_append(in, "0034shallow 9876543210987654321098765432109876543210", 52);
@@ -150,6 +165,21 @@ START_TEST(upload_request_skipped_shallow_depth) {
                      "0123456789012345678901234567890123456789", 40) == 0);
   fail_unless(binbuf_get_size(data.shallow_list) == 0);
   fail_unless(data.depth == 7);
+}
+END_TEST
+
+START_TEST(upload_request_double_shallows) {
+  buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
+  buffer_append(in, "0034shallow 9876543210987654321098765432109876543210", 52);
+  buffer_append(in, "0034shallow 9876543210987654321098765432109876543210", 52);
+  fail_unless(packfile_negotiation(in, out, commits, &data) == 1);
+  fail_unless(binbuf_get_size(data.want_list) == 1);
+  fail_unless(memcmp(binbuf_get(data.want_list, 0),
+                     "0123456789012345678901234567890123456789", 40) == 0);
+  fail_unless(binbuf_get_size(data.shallow_list) == 1);
+  fail_unless(memcmp(binbuf_get(data.shallow_list, 0),
+                     "9876543210987654321098765432109876543210", 40) == 0);
+  fail_unless(data.depth == -1);
 }
 END_TEST
 
@@ -194,9 +224,11 @@ TCase* packfile_negotiation_tcase() {
   tcase_add_test(tc, upload_request_unknown_request);
   tcase_add_test(tc, upload_request_one_want);
   tcase_add_test(tc, upload_request_two_wants);
+  tcase_add_test(tc, upload_request_double_wants);
   tcase_add_test(tc, upload_request_shallow);
   tcase_add_test(tc, upload_request_shallow_depth);
   tcase_add_test(tc, upload_request_skipped_shallow_depth);
+  tcase_add_test(tc, upload_request_double_shallows);
   tcase_add_test(tc, upload_haves_done);
   tcase_add_test(tc, upload_haves_unknown_request);
   tcase_add_test(tc, filled_commits);
