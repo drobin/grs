@@ -89,6 +89,25 @@ const void* binbuf_get(binbuf_t buf, size_t idx) {
   return buf->data + buf->size * idx;
 }
 
+int binbuf_find(binbuf_t buf, const void* cmp, size_t n) {
+  int idx;
+  size_t nbytes;
+
+  if (buf == NULL || cmp == NULL) {
+    return -1;
+  }
+
+  nbytes = (n > buf->size) ? buf->size : n;
+
+  for (idx = 0; idx < buf->nelems; idx++) {
+    if (memcmp(buf->data + buf->size * idx, cmp, nbytes) == 0) {
+      return idx;
+    }
+  }
+
+  return -1;
+}
+
 void* binbuf_add(binbuf_t buf) {
   if (buf == NULL) {
     return NULL;

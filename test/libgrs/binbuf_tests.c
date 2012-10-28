@@ -18,11 +18,12 @@
  ******************************************************************************/
 
 #include <check.h>
+#include <stdint.h>
 
 #include "../../src/libgrs/binbuf.h"
 
 struct test_buf {
-  int i;
+  uint32_t i;
 };
 
 static binbuf_t buffer;
@@ -86,6 +87,74 @@ START_TEST(get_empty) {
 }
 END_TEST
 
+START_TEST(find_null_buf) {
+  struct test_buf cmp;
+  fail_unless(binbuf_find(NULL, &cmp, sizeof(struct test_buf)) == -1);
+}
+END_TEST
+
+START_TEST(find_null_cmp) {
+  fail_unless(binbuf_find(buffer, NULL, sizeof(struct test_buf)) == -1);
+}
+END_TEST
+
+START_TEST(find_empty) {
+  struct test_buf cmp;
+  cmp.i = 1;
+
+  fail_unless(binbuf_find(buffer, &cmp, sizeof(struct test_buf)) == -1);
+}
+END_TEST
+
+START_TEST(find_found) {
+  struct test_buf* entry;
+  uint32_t cmp;
+
+  fail_unless((entry = binbuf_add(buffer)) != NULL);
+  entry->i = 1;
+  fail_unless((entry = binbuf_add(buffer)) != NULL);
+  entry->i = 2;
+  fail_unless(binbuf_get_size(buffer) == 2);
+
+  cmp = 1;
+  fail_unless(binbuf_find(buffer, &cmp, sizeof(uint32_t)) == 0);
+
+  cmp = 2;
+  fail_unless(binbuf_find(buffer, &cmp, sizeof(uint32_t)) == 1);
+}
+END_TEST
+
+START_TEST(find_found_smaller_size) {
+  struct test_buf* entry;
+  uint32_t cmp;
+
+  fail_unless((entry = binbuf_add(buffer)) != NULL);
+  entry->i = ntohl(0x1000100);
+  fail_unless((entry = binbuf_add(buffer)) != NULL);
+  entry->i = ntohl(0x3000101);
+  fail_unless(binbuf_get_size(buffer) == 2);
+
+  cmp = ntohl(0x3000103);
+  fail_unless(binbuf_find(buffer, &cmp, sizeof(uint32_t)) == -1);
+  fail_unless(binbuf_find(buffer, &cmp, sizeof(uint16_t)) == 1);
+}
+END_TEST
+
+START_TEST(find_not_found) {
+  struct test_buf* entry;
+  uint32_t cmp;
+
+  fail_unless((entry = binbuf_add(buffer)) != NULL);
+  entry->i = 1;
+  fail_unless((entry = binbuf_add(buffer)) != NULL);
+  entry->i = 2;
+  fail_unless(binbuf_get_size(buffer) == 2);
+
+  cmp = 3;
+  fail_unless(binbuf_find(buffer, &cmp, sizeof(uint32_t)) == -1);
+}
+END_TEST
+
 START_TEST(add_null_buf) {
   fail_unless(binbuf_add(NULL) == NULL);
 }
@@ -134,6 +203,12 @@ TCase* binbuf_tcase() {
   tcase_add_test(tc, get_capacity_initial);
   tcase_add_test(tc, get_null_buf);
   tcase_add_test(tc, get_empty);
+  tcase_add_test(tc, find_null_buf);
+  tcase_add_test(tc, find_null_cmp);
+  tcase_add_test(tc, find_empty);
+  tcase_add_test(tc, find_found);
+  tcase_add_test(tc, find_found_smaller_size);
+  tcase_add_test(tc, find_not_found);
   tcase_add_test(tc, add_null_buf);
   tcase_add_test(tc, add_success);
   tcase_add_test(tc, add_out_of_range);

@@ -82,6 +82,22 @@ size_t binbuf_get_capacity(binbuf_t buf);
 const void* binbuf_get(binbuf_t buf, size_t idx);
 
 /**
+ * Searches for an entry.
+ *
+ * Searches for the given image with a size specified with
+ * <code>binbuf_create()</code>. If found, the index, where the entry is stored,
+ * is returned.
+ *
+ * @param buf The requested buffer
+ * @param cmp The entry, you are looking for
+ * @param n Number of bytes to compare. If <code>n</code> is greater than
+ *          <code>binbuf_get_size_of()</code>, then the whole entry is compared.
+ * @return The index of the entry. If the image could not be found,
+ *         <code>-1</code> is returned.
+ */
+int binbuf_find(binbuf_t buf, const void* cmp, size_t n);
+
+/**
  * Assigns a new item to the buffer.
  *
  * If the capacity of the buffer is not big enough to hold a new item, then
