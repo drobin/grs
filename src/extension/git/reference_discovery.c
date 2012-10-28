@@ -54,7 +54,7 @@ int reference_discovery(const char* repository,
     int i;
 
     for (i = 0; i < binbuf_get_size(refs_buf); i++) {
-      struct git_ref* ref = binbuf_get(refs_buf, i);
+      const struct git_ref* ref = binbuf_get(refs_buf, i);
       log_debug("ref %s %s", ref->obj_id, ref->ref_name);
 
       buffer_clear(pkt);

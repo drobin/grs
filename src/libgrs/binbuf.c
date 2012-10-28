@@ -77,7 +77,7 @@ size_t binbuf_get_capacity(binbuf_t buf) {
   return buf->capacity;
 }
 
-void* binbuf_get(binbuf_t buf, size_t idx) {
+const void* binbuf_get(binbuf_t buf, size_t idx) {
   if (buf == NULL) {
     return NULL;
   }

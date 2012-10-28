@@ -79,7 +79,7 @@ size_t binbuf_get_capacity(binbuf_t buf);
  * @return The item at the requested index. If <code>idx</code> is out of range,
  *         <code>NULL</code> is returned.
  */
-void* binbuf_get(binbuf_t buf, size_t idx);
+const void* binbuf_get(binbuf_t buf, size_t idx);
 
 /**
  * Assigns a new item to the buffer.

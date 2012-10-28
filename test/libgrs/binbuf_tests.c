@@ -93,7 +93,7 @@ END_TEST
 
 START_TEST(add_success) {
   struct test_buf* e1;
-  struct test_buf* e2;
+  const struct test_buf* e2;
 
   fail_unless((e1 = binbuf_add(buffer)) != NULL);
   e1->i = 1;
