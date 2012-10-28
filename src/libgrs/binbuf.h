@@ -48,7 +48,7 @@ int binbuf_destroy(binbuf_t buf);
  * @param buf The requested buffer
  * @return The size of each item
  */
-int binbuf_get_size_of(binbuf_t buf);
+size_t binbuf_get_size_of(binbuf_t buf);
 
 /**
  * Returns the size of the buffer.
@@ -58,7 +58,7 @@ int binbuf_get_size_of(binbuf_t buf);
  * @param The requested buffer
  * @preturn The number of items stored in the buffer.
  */
-int binbuf_get_size(binbuf_t buf);
+size_t binbuf_get_size(binbuf_t buf);
 
 /**
  * Returns the capacity of the buffer.
@@ -69,7 +69,7 @@ int binbuf_get_size(binbuf_t buf);
  * @param buffer The requested buffer
  * @return The capacity of the buffer.
  */
-int binbuf_get_capacity(binbuf_t buf);
+size_t binbuf_get_capacity(binbuf_t buf);
 
 /**
  * Returns the item at the given index.
@@ -79,7 +79,7 @@ int binbuf_get_capacity(binbuf_t buf);
  * @return The item at the requested index. If <code>idx</code> is out of range,
  *         <code>NULL</code> is returned.
  */
-void* binbuf_get(binbuf_t buf, unsigned int idx);
+void* binbuf_get(binbuf_t buf, size_t idx);
 
 /**
  * Assigns a new item to the buffer.

@@ -53,7 +53,7 @@ int binbuf_destroy(binbuf_t buf) {
   return 0;
 }
 
-int binbuf_get_size_of(binbuf_t buf) {
+size_t binbuf_get_size_of(binbuf_t buf) {
   if (buf == NULL) {
     return -1;
   }
@@ -61,7 +61,7 @@ int binbuf_get_size_of(binbuf_t buf) {
   return buf->size;
 }
 
-int binbuf_get_size(binbuf_t buf) {
+size_t binbuf_get_size(binbuf_t buf) {
   if (buf == NULL) {
     return -1;
   }
@@ -69,7 +69,7 @@ int binbuf_get_size(binbuf_t buf) {
   return buf->nelems;
 }
 
-int binbuf_get_capacity(binbuf_t buf) {
+size_t binbuf_get_capacity(binbuf_t buf) {
   if (buf == NULL) {
     return -1;
   }
@@ -77,7 +77,7 @@ int binbuf_get_capacity(binbuf_t buf) {
   return buf->capacity;
 }
 
-void* binbuf_get(binbuf_t buf, unsigned int idx) {
+void* binbuf_get(binbuf_t buf, size_t idx) {
   if (buf == NULL) {
     return NULL;
   }
