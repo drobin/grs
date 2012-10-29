@@ -30,7 +30,21 @@ static binbuf_t commits;
 
 static int log_stub(const char* repository, const char* obj_id,
                      binbuf_t commits) {
+
+  char* hex;
+
+  fail_unless(strcmp(repository, "XXX") == 0);
+  fail_unless(strlen(obj_id) == 40);
+
+  hex = binbuf_add(commits);
+  strlcpy(hex, obj_id, binbuf_get_size_of(commits));
+
   return 0;
+}
+
+static int failed_log_stub(const char* repository, const char* obj_id,
+                           binbuf_t commits) {
+  return -1;
 }
 
 static void setup() {
@@ -247,6 +261,16 @@ START_TEST(filled_commits) {
 }
 END_TEST
 
+START_TEST(failed_log_cb) {
+  buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
+  buffer_append(in, "0000", 4);
+  buffer_append(in, "0009done\n", 9);
+  fail_unless(packfile_negotiation("XXX", in, out, commits, failed_log_stub,
+                                   &data) == -1);
+  fail_unless(binbuf_get_size(commits) == 0);
+}
+END_TEST
+
 TCase* packfile_negotiation_tcase() {
   TCase* tc = tcase_create("packfile negotiation");
   tcase_add_checked_fixture(tc, setup, teardown);
@@ -269,6 +293,7 @@ TCase* packfile_negotiation_tcase() {
   tcase_add_test(tc, upload_haves_done);
   tcase_add_test(tc, upload_haves_unknown_request);
   tcase_add_test(tc, filled_commits);
+  tcase_add_test(tc, failed_log_cb);
 
   return tc;
 }

@@ -243,6 +243,10 @@ static int packfile_objects_for_commit(git_odb* odb, git_commit* commit,
 
 static int commit_log_impl(const char* repository, const char* obj_id,
                            binbuf_t commits) {
+
+  char* hex = binbuf_add(commits);
+  strlcpy(hex, obj_id, binbuf_get_size_of(commits));
+
   return 0;
 }
 
