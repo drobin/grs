@@ -155,8 +155,10 @@ static void cleanup(struct packfile_negotiation_data* data) {
 }
 
 int packfile_negotiation(buffer_t in, buffer_t out, binbuf_t commits,
+                         commit_log_cb log_cb,
                          struct packfile_negotiation_data* data) {
-  if (in == NULL || out == NULL || commits == NULL || data == NULL) {
+  if (in == NULL || out == NULL || commits == NULL || log_cb == NULL ||
+      data == NULL) {
     return -1;
   }
 

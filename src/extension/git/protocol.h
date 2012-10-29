@@ -143,6 +143,22 @@ struct packfile_object {
 typedef int (*reference_discovery_cb)(const char* repository, binbuf_t refs);
 
 /**
+ * A callback-function used to collect a commit-log of the given object.
+ *
+ * This is similar to a <code>git log</code>-invocation. The implementation
+ * should fill the <code>commits/code>-array wil the object-ids of the commits
+ * of the log. <code>obj_id</code> should be also included.
+ *
+ * @param repository The path of the requested repository
+ * @param obj_if The head of the log-operation
+ * @param commits The implementation should fill this array with the
+ *                log-results.
+ * @return On success <code>0</code> should be returned.
+ */
+typedef int (*commit_log_cb)(const char* repository, const char* obj_id,
+                             binbuf_t commits);
+
+/**
  * A callback-functions used by packfile_transfer to fetch the objects for a
  * packfile.
  *
@@ -189,6 +205,7 @@ int reference_discovery(const char* repository,
  * @see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt
  */
 int packfile_negotiation(buffer_t in, buffer_t out, binbuf_t commits,
+                         commit_log_cb log_cb,
                          struct packfile_negotiation_data* data);
 
 /**

@@ -241,6 +241,11 @@ static int packfile_objects_for_commit(git_odb* odb, git_commit* commit,
   return 0;
 }
 
+static int commit_log_impl(const char* repository, const char* obj_id,
+                           binbuf_t commits) {
+  return 0;
+}
+
 static int packfile_objects_impl(const char* repository, binbuf_t commits,
                                  binbuf_t objects) {
   git_repository* repo;
@@ -327,7 +332,7 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
   case p_packfile_negotiation:
     log_debug("packfile negotiation on %s", data->repository);
     result = packfile_negotiation(in_buf, out_buf, data->commits,
-                                  &data->packfile_negotiation);
+                                  commit_log_impl, &data->packfile_negotiation);
     break;
   case p_packfile_transfer:
     log_debug("packfile transfer on %s", data->repository);
