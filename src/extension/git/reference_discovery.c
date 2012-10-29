@@ -26,7 +26,8 @@
 #include "protocol.h"
 
 int reference_discovery(const char* repository,
-                        buffer_t out, buffer_t err, rd_get_refs refs) {
+                        buffer_t out, buffer_t err,
+                        reference_discovery_cb refs) {
   binbuf_t refs_buf;
   buffer_t pkt;
 

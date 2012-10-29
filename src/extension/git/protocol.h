@@ -140,7 +140,7 @@ struct packfile_object {
  * @return The implementation should return <code>0</code>, if the operation was
  *         successful.
  */
-typedef int (*rd_get_refs)(const char* repository, binbuf_t refs);
+typedef int (*reference_discovery_cb)(const char* repository, binbuf_t refs);
 
 /**
  * A callback-functions used by packfile_transfer to fetch the objects for a
@@ -170,7 +170,8 @@ typedef int (*packfile_objects_cb)(const char* repository, binbuf_t commits,
  * @see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt
  */
 int reference_discovery(const char* repository,
-                        buffer_t out, buffer_t err, rd_get_refs refs);
+                        buffer_t out, buffer_t err,
+                        reference_discovery_cb refs);
 
 /**
  * Implementation of the <i>Packfile Negotiation</i>-process.
