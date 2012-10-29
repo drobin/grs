@@ -243,9 +243,50 @@ static int packfile_objects_for_commit(git_odb* odb, git_commit* commit,
 
 static int commit_log_impl(const char* repository, const char* obj_id,
                            binbuf_t commits) {
+  git_repository* repo;
+  git_revwalk* walk;
+  git_oid oid;
+  int result;
 
-  char* hex = binbuf_add(commits);
-  strlcpy(hex, obj_id, binbuf_get_size_of(commits));
+  log_debug("Fetch commit-log from %s", repository);
+
+  if ((result = git_repository_open(&repo, repository)) == 0) {
+    log_debug("Repository is open");
+  } else {
+    log_err("Failed to open repository: %s", giterr_last()->message);
+  }
+
+  git_oid_fromstr(&oid, obj_id);
+
+  if (git_revwalk_new(&walk, repo) != 0) {
+    log_err("Failed to creata revision-walker: %s", giterr_last()->message);
+
+    git_repository_free(repo);
+
+    return -1;
+  }
+
+  git_revwalk_sorting(walk, GIT_SORT_TOPOLOGICAL | GIT_SORT_REVERSE);
+
+  if (git_revwalk_push(walk, &oid) != 0) {
+    log_oid_err("Failed to push %s on revision-walker: %s",
+                &oid, giterr_last()->message);
+
+    git_revwalk_free(walk);
+    git_repository_free(repo);
+
+    return -1;
+  }
+
+  while ((git_revwalk_next(&oid, walk)) == 0) {
+    char* hex = binbuf_add(commits);
+    git_oid_fmt(hex, &oid);
+    hex[40] = '\0';
+    log_debug("log %s", hex);
+  }
+
+  git_revwalk_free(walk);
+  git_repository_free(repo);
 
   return 0;
 }

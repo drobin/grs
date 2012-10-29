@@ -36,6 +36,11 @@ Dir.mktmpdir do |dir1|
       git.add("f1.txt")
       git.commit("-m 'Initial commit'")
       git.push("origin master:master")
+
+      File.open("f2.txt", "w") { |f| f.write("Hallo") }
+      git.add("f2.txt")
+      git.commit("-m '2nd commit'")
+      git.push("origin master:master")
     end
   end
 
@@ -43,10 +48,13 @@ Dir.mktmpdir do |dir1|
     git.__clone("ssh://localhost:4711#{dir1}", dir2, :password => true)
 
     Dir.chdir(dir2) do
-      oid = git.log("--pretty='format:%H'").strip
-      bare_oid = Dir.chdir(dir1) { git.rev_parse("HEAD") }.strip
+      log = git.log("--pretty='format:%H'").strip.split
+      bare_log = Dir.chdir(dir1) { git.log("--pretty='format:%H'") }.strip.split
 
-      assert(oid == bare_oid)
+      assert(log.size == 2)
+      assert(bare_log.size == 2)
+      assert(log[0] == bare_log[0])
+      assert(log[1] == bare_log[1])
     end
   end
 end
