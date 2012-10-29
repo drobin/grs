@@ -192,6 +192,7 @@ int reference_discovery(const char* repository,
 /**
  * Implementation of the <i>Packfile Negotiation</i>-process.
  *
+ * @param repository The path of the requested repository
  * @param in The function consumes data from this buffer
  * @param out The function writes data into this buffer, which should be send
  *            back to the client
@@ -204,8 +205,8 @@ int reference_discovery(const char* repository,
  * @return On success <code>0</code> is returned.
  * @see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt
  */
-int packfile_negotiation(buffer_t in, buffer_t out, binbuf_t commits,
-                         commit_log_cb log_cb,
+int packfile_negotiation(const char* repository,buffer_t in, buffer_t out,
+                         binbuf_t commits, commit_log_cb log_cb,
                          struct packfile_negotiation_data* data);
 
 /**

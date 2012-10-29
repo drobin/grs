@@ -154,11 +154,11 @@ static void cleanup(struct packfile_negotiation_data* data) {
   binbuf_destroy(data->have_list);
 }
 
-int packfile_negotiation(buffer_t in, buffer_t out, binbuf_t commits,
-                         commit_log_cb log_cb,
+int packfile_negotiation(const char* repository,buffer_t in, buffer_t out,
+                         binbuf_t commits, commit_log_cb log_cb,
                          struct packfile_negotiation_data* data) {
-  if (in == NULL || out == NULL || commits == NULL || log_cb == NULL ||
-      data == NULL) {
+  if (repository == NULL || in == NULL || out == NULL || commits == NULL ||
+      log_cb == NULL || data == NULL) {
     return -1;
   }
 

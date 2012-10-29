@@ -331,8 +331,9 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
     break;
   case p_packfile_negotiation:
     log_debug("packfile negotiation on %s", data->repository);
-    result = packfile_negotiation(in_buf, out_buf, data->commits,
-                                  commit_log_impl, &data->packfile_negotiation);
+    result = packfile_negotiation(data->repository, in_buf, out_buf,
+                                  data->commits, commit_log_impl,
+                                  &data->packfile_negotiation);
     break;
   case p_packfile_transfer:
     log_debug("packfile transfer on %s", data->repository);
