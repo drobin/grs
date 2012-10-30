@@ -34,12 +34,17 @@ Dir.mktmpdir do |dir1|
     Dir.chdir(dir2) do
       File.open("f1.txt", "w") { |f| f.write("Holla") }
       git.add("f1.txt")
-      git.commit("-m 'Initial commit'")
+      git.commit("-m '1st commit'")
       git.push("origin master:master")
 
       File.open("f2.txt", "w") { |f| f.write("Hallo") }
       git.add("f2.txt")
       git.commit("-m '2nd commit'")
+      git.push("origin master:master")
+
+      File.open("f1.txt", "w") { |f| f.write("Holla die Waldfee") }
+      git.add("f1.txt")
+      git.commit("-m '3rd commit'")
       git.push("origin master:master")
     end
   end
@@ -51,10 +56,11 @@ Dir.mktmpdir do |dir1|
       log = git.log("--pretty='format:%H'").strip.split
       bare_log = Dir.chdir(dir1) { git.log("--pretty='format:%H'") }.strip.split
 
-      assert(log.size == 2)
-      assert(bare_log.size == 2)
+      assert(log.size == 3)
+      assert(bare_log.size == 3)
       assert(log[0] == bare_log[0])
       assert(log[1] == bare_log[1])
+      assert(log[2] == bare_log[2])
     end
   end
 end
