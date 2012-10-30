@@ -195,45 +195,55 @@ static int create_and_add_packfile_object(const git_oid *obj_id, git_odb* odb,
 
   git_odb_object_free(obj);
 
+  log_debug("packfile-object: %s", git_object_type2string(pf_obj->type));
+
   return 0;
 }
+
+struct treewalk_cb_data {
+  git_odb* odb;
+  binbuf_t objects;
+};
+
+static int treewalk_cb(const char* root, const git_tree_entry* entry,
+                       void* payload) {
+  struct treewalk_cb_data* data = (struct treewalk_cb_data*)payload;
+  const git_oid* oid = git_tree_entry_id(entry);
+
+  return create_and_add_packfile_object(oid, data->odb, data->objects);
+}
+
 
 static int packfile_objects_for_commit(git_odb* odb, git_commit* commit,
                                        binbuf_t objects) {
   git_tree* tree;
-  const git_oid* oid;
-  int idx;
+  struct treewalk_cb_data data;
 
   // The commit-object
-  oid = git_commit_id(commit);
-  if (create_and_add_packfile_object(oid, odb, objects) != 0) {
+  if (create_and_add_packfile_object(git_commit_id(commit), odb, objects) != 0) {
     return -1;
   }
 
   // The tree-object
-  if (git_commit_tree(&tree, commit) == 0) {
-    oid = git_tree_id(tree);
-
-    if (create_and_add_packfile_object(oid, odb, objects) != 0) {
-      git_tree_free(tree);
-      return -1;
-    }
-  } else {
-    log_oid_err("Failed to read tree object %s from object database: %s",
-            git_commit_id(commit), giterr_last()->message);
+  if (git_commit_tree(&tree, commit) != 0) {
+    log_oid_err("Failed to receive tree object %s from object database: %s",
+                git_commit_id(commit), giterr_last()->message);
     return -1;
   }
 
-  // The tree-entry-objects
-  for (idx = 0; idx < git_tree_entrycount(tree); idx++) {
-    const git_tree_entry* entry;
+  if (create_and_add_packfile_object(git_tree_id(tree), odb, objects) != 0) {
+    git_tree_free(tree);
+    return -1;
+  }
 
-    entry = git_tree_entry_byindex(tree, idx);
-    oid = git_tree_entry_id(entry);
-    if (create_and_add_packfile_object(oid, odb, objects) != 0) {
-      git_tree_free(tree);
-      return -1;
-    }
+  // The tree-entries
+  data.odb = odb;
+  data.objects = objects;
+  if (git_tree_walk(tree, treewalk_cb, GIT_TREEWALK_PRE, &data) != 0) {
+    log_oid_err("Failed to read commit-tree for %s from object database: %s",
+                git_commit_id(commit), giterr_last()->message);
+    git_tree_free(tree);
+    return -1;
   }
 
   git_tree_free(tree);

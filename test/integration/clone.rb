@@ -46,6 +46,12 @@ Dir.mktmpdir do |dir1|
       git.add("f1.txt")
       git.commit("-m '3rd commit'")
       git.push("origin master:master")
+
+      Dir.mkdir("d")
+      File.open("d/f3.txt", "w") { |f| f.write("foo") }
+      git.add("d/f3.txt")
+      git.commit("-m '4th commit'")
+      git.push("origin master:master")
     end
   end
 
@@ -56,11 +62,12 @@ Dir.mktmpdir do |dir1|
       log = git.log("--pretty='format:%H'").strip.split
       bare_log = Dir.chdir(dir1) { git.log("--pretty='format:%H'") }.strip.split
 
-      assert(log.size == 3)
-      assert(bare_log.size == 3)
+      assert(log.size == 4)
+      assert(bare_log.size == 4)
       assert(log[0] == bare_log[0])
       assert(log[1] == bare_log[1])
       assert(log[2] == bare_log[2])
+      assert(log[3] == bare_log[3])
     end
   end
 end
