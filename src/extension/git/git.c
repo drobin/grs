@@ -265,7 +265,8 @@ static int packfile_objects_for_commit(git_odb* odb, git_commit* commit,
 }
 
 static int commit_log_impl(const char* repository, const char* obj_id,
-                           binbuf_t commits) {
+                           const binbuf_t haves, binbuf_t commits,
+                           int* common_base) {
   git_repository* repo;
   git_revwalk* walk;
   git_oid oid;

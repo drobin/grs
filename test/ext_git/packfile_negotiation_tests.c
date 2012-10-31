@@ -29,12 +29,14 @@ static buffer_t err;
 static binbuf_t commits;
 
 static int log_stub(const char* repository, const char* obj_id,
-                     binbuf_t commits) {
+                    const binbuf_t haves, binbuf_t commits,
+                    int* common_base) {
 
   char* hex;
 
   fail_unless(strcmp(repository, "XXX") == 0);
   fail_unless(strlen(obj_id) == 40);
+  fail_unless(*common_base == -1);
 
   hex = binbuf_add(commits);
   strlcpy(hex, obj_id, binbuf_get_size_of(commits));
@@ -43,7 +45,8 @@ static int log_stub(const char* repository, const char* obj_id,
 }
 
 static int failed_log_stub(const char* repository, const char* obj_id,
-                           binbuf_t commits) {
+                           const binbuf_t haves, binbuf_t commits,
+                           int* common_base) {
   return -1;
 }
 

@@ -151,12 +151,21 @@ typedef int (*reference_discovery_cb)(const char* repository, binbuf_t refs);
  *
  * @param repository The path of the requested repository
  * @param obj_if The head of the log-operation
+ * @param haves An array with object-ids the client already has. You don't need
+ *              to transfer these commits.
  * @param commits The implementation should fill this array with the
  *                log-results.
+ * @param common_base The implementation should fill this argument with the
+ *                    index, where the base-commit in <code>haves</code> is
+ *                    located. <code>commit_base</code> is predefined with
+ *                    <code>-1</code>. So if you don't have a
+ *                    commit-base-commit, fill it with <code>-1</code> or leave
+ *                    it as it is.
  * @return On success <code>0</code> should be returned.
  */
 typedef int (*commit_log_cb)(const char* repository, const char* obj_id,
-                             binbuf_t commits);
+                             const binbuf_t haves, binbuf_t commits,
+                             int* common_base);
 
 /**
  * A callback-functions used by packfile_transfer to fetch the objects for a

@@ -194,8 +194,9 @@ int packfile_negotiation(const char* repository,buffer_t in, buffer_t out,
 
     for (idx = 0; idx < binbuf_get_size(data->want_list); idx++) {
       const char* hex = binbuf_get(data->want_list, idx);
+      int common_base = -1;
 
-      if (log_cb(repository, hex, commits) != 0) {
+      if (log_cb(repository, hex, data->have_list, commits, &common_base) != 0) {
         data->phase = packfile_negotiation_error;
         break;
       }
