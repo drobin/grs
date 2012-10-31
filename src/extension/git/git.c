@@ -99,11 +99,24 @@ struct git_reference_foreach_data {
   binbuf_t refs;
 };
 
+static int reference_is_branch_or_tag(const char* ref_name) {
+  const char* branch_prefix = "refs/heads";
+  const char* tag_prefix = "refs/tags";
+
+  return strncmp(ref_name, branch_prefix, strlen(branch_prefix)) == 0 ||
+         strncmp(ref_name, tag_prefix, strlen(tag_prefix)) == 0;
+}
+
 static int git_reference_foreach_cb(const char* ref_name, void* payload) {
   struct git_reference_foreach_data* data;
   git_reference* ref;
   int result;
   struct git_ref* gref;
+
+  if (!reference_is_branch_or_tag(ref_name)) {
+    log_info("Skipping reference %s", ref_name);
+    return 0;
+  }
 
   data = (struct git_reference_foreach_data*)payload;
 
