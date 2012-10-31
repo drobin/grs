@@ -111,7 +111,8 @@ static int upload_request(buffer_t in, struct packfile_negotiation_data* data) {
   return 0;
 }
 
-static void upload_haves(buffer_t in, buffer_t out,
+static void upload_haves(const char* repository, buffer_t in, buffer_t out,
+                         binbuf_t commits, commit_log_cb log_cb,
                          struct packfile_negotiation_data* data) {
 
   if (binbuf_get_size(data->have_list) == 0) {
@@ -139,13 +140,31 @@ static void upload_haves(buffer_t in, buffer_t out,
       log_debug("have %s", obj_id);
     } else if (buffer_get_size(data->pkt_line) >= 4 &&
                strncmp(buffer_get_data(data->pkt_line), "done", 4) == 0) {
+      const char* hex;
+      int common_base = -1;
+
+      hex = binbuf_get(data->want_list, 0);
+      if (log_cb(repository, hex, data->have_list, commits, &common_base) != 0) {
+        data->phase = packfile_negotiation_error;
+        break;
+      }
+
+      buffer_clear(data->pkt_line);
+
+      if (common_base >= 0) {
+        buffer_append(data->pkt_line, "ACK ", 4);
+        buffer_append(data->pkt_line, binbuf_get(data->have_list, common_base),
+                      binbuf_get_size_of(data->have_list) - 1);
+        buffer_append(data->pkt_line, "\n", 1);
+      } else {
+        buffer_append(data->pkt_line, "NAK\n", 4);
+      }
+
+      pkt_line_write(data->pkt_line, out);
+
       // end of upload-haves, switch to next phase
       log_debug("End of upload-haves");
       data->phase++;
-
-      buffer_clear(data->pkt_line);
-      buffer_append(data->pkt_line, "NAK\n", 4);
-      pkt_line_write(data->pkt_line, out);
 
       break;
     } else {
@@ -183,25 +202,12 @@ int packfile_negotiation(const char* repository,buffer_t in, buffer_t out,
   }
 
   if (data->phase == packfile_negotiation_upload_haves) {
-    upload_haves(in, out, data);
+    upload_haves(repository, in, out, commits, log_cb, data);
   }
 
   if (data->phase == packfile_negotiation_finished ||
       data->phase == packfile_negotiation_quit ||
       data->phase == packfile_negotiation_error) {
-
-    int idx;
-
-    for (idx = 0; idx < binbuf_get_size(data->want_list); idx++) {
-      const char* hex = binbuf_get(data->want_list, idx);
-      int common_base = -1;
-
-      if (log_cb(repository, hex, data->have_list, commits, &common_base) != 0) {
-        data->phase = packfile_negotiation_error;
-        break;
-      }
-    }
-
     cleanup(data);
   }
 
