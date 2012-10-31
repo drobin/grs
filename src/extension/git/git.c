@@ -290,7 +290,7 @@ static int commit_log_impl(const char* repository, const char* obj_id,
     return -1;
   }
 
-  git_revwalk_sorting(walk, GIT_SORT_TOPOLOGICAL | GIT_SORT_REVERSE);
+  git_revwalk_sorting(walk, GIT_SORT_TOPOLOGICAL);
 
   if (git_revwalk_push(walk, &oid) != 0) {
     log_oid_err("Failed to push %s on revision-walker: %s",
@@ -303,10 +303,21 @@ static int commit_log_impl(const char* repository, const char* obj_id,
   }
 
   while ((git_revwalk_next(&oid, walk)) == 0) {
-    char* hex = binbuf_add(commits);
+    char hex[41];
+    int idx;
+
     git_oid_fmt(hex, &oid);
     hex[40] = '\0';
-    log_debug("log %s", hex);
+
+    if ((idx = binbuf_find(haves, hex, 40)) >= 0) {
+      *common_base = idx;
+      log_debug("log (common-base): %s", hex);
+      break;
+    } else {
+      char* commit_id = binbuf_add(commits);
+      strlcpy(commit_id, hex, sizeof(hex));
+      log_debug("log %s", hex);
+    }
   }
 
   git_revwalk_free(walk);
