@@ -141,29 +141,20 @@ END_TEST
 START_TEST(upload_request_two_wants) {
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
   buffer_append(in, "0032want 9876543210987654321098765432109876543210\n", 50);
+  buffer_append(in, "0000", 4);
   fail_unless(
-    packfile_negotiation("XXX", in, out, commits, log_stub, &data) == 1);
-  fail_unless(binbuf_get_size(data.want_list) == 2);
-  fail_unless(memcmp(binbuf_get(data.want_list, 0),
-                     "0123456789012345678901234567890123456789", 40) == 0);
-  fail_unless(memcmp(binbuf_get(data.want_list, 1),
-                     "9876543210987654321098765432109876543210", 40) == 0);
-  fail_unless(binbuf_get_size(data.shallow_list) == 0);
-  fail_unless(data.depth == -1);
+    packfile_negotiation("XXX", in, out, commits, log_stub, &data) == -1);
 }
 END_TEST
 
 START_TEST(upload_request_double_wants) {
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
-  buffer_append(in, "0032want 9876543210987654321098765432109876543210\n", 50);
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
   fail_unless(
     packfile_negotiation("XXX", in, out, commits, log_stub, &data) == 1);
-  fail_unless(binbuf_get_size(data.want_list) == 2);
+  fail_unless(binbuf_get_size(data.want_list) == 1);
   fail_unless(memcmp(binbuf_get(data.want_list, 0),
                      "0123456789012345678901234567890123456789", 40) == 0);
-  fail_unless(memcmp(binbuf_get(data.want_list, 1),
-                     "9876543210987654321098765432109876543210", 40) == 0);
   fail_unless(binbuf_get_size(data.shallow_list) == 0);
   fail_unless(data.depth == -1);
 }

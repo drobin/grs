@@ -64,8 +64,12 @@ static int upload_request(buffer_t in, struct packfile_negotiation_data* data) {
       // flush-pkt, this is the end of the want-list, switch to next state
       log_debug("End of upload-request");
 
-      if (binbuf_get_size(data->want_list) > 0) {
+      if (binbuf_get_size(data->want_list) == 1) {
         data->phase++;
+      } else if (binbuf_get_size(data->want_list) > 1) {
+        // FIXME This is a limitation and should be supported somehow/any time
+        log_err("Currently only one want-line is supported");
+        data->phase = packfile_negotiation_error;
       } else {
         // no wants -> no upload-request: switch to end
         data->phase = packfile_negotiation_quit;
