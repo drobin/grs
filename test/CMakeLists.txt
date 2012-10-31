@@ -43,6 +43,7 @@ add_executable(grs_test ${GRS_TEST_SOURCES})
 add_test(grs_test grs_test)
 add_test(ls_remote ${INTEGRATION_TESTS}/ls_remote.rb)
 add_test(clone ${INTEGRATION_TESTS}/clone.rb)
+add_test(pull ${INTEGRATION_TESTS}/pull.rb)
 
 include_directories(
   ${LIBEVENT_INCLUDE_DIR}

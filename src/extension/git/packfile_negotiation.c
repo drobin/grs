@@ -127,8 +127,14 @@ static void upload_haves(buffer_t in, buffer_t out,
       break;
     }
 
-    if (buffer_get_size(data->pkt_line) >= 4 &&
-        strncmp(buffer_get_data(data->pkt_line), "done", 4) == 0) {
+    if (buffer_get_size(data->pkt_line) >= 5 &&
+        strncmp(buffer_get_data(data->pkt_line), "have ", 5) == 0) {
+      const char* have = buffer_get_data(data->pkt_line) + 5;
+      char* obj_id = binbuf_add(data->have_list);
+      strlcpy(obj_id, have, binbuf_get_size_of(data->have_list));
+      log_debug("have %s", obj_id);
+    } else if (buffer_get_size(data->pkt_line) >= 4 &&
+               strncmp(buffer_get_data(data->pkt_line), "done", 4) == 0) {
       // end of upload-haves, switch to next phase
       log_debug("End of upload-haves");
       data->phase++;

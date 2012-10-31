@@ -229,6 +229,20 @@ START_TEST(upload_request_double_shallows) {
 }
 END_TEST
 
+START_TEST(upload_haves_with_haves) {
+  data.phase = packfile_negotiation_upload_haves;
+  buffer_append(in, "0032have 0123456789012345678901234567890123456789\n", 50);
+  buffer_append(in, "0032have 9876543210987654321098765432109876543210\n", 50);
+  fail_unless(
+    packfile_negotiation("XXX", in, out, commits, log_stub, &data) == 1);
+  fail_unless(binbuf_get_size(data.have_list) == 2);
+  fail_unless(memcmp(binbuf_get(data.have_list, 0),
+                     "0123456789012345678901234567890123456789", 40) == 0);
+  fail_unless(memcmp(binbuf_get(data.have_list, 1),
+                     "9876543210987654321098765432109876543210", 40) == 0);
+}
+END_TEST
+
 START_TEST(upload_haves_done) {
   data.phase = packfile_negotiation_upload_haves;
   buffer_append(in, "0009done\n", 9);
@@ -290,6 +304,7 @@ TCase* packfile_negotiation_tcase() {
   tcase_add_test(tc, upload_request_shallow_depth);
   tcase_add_test(tc, upload_request_skipped_shallow_depth);
   tcase_add_test(tc, upload_request_double_shallows);
+  tcase_add_test(tc, upload_haves_with_haves);
   tcase_add_test(tc, upload_haves_done);
   tcase_add_test(tc, upload_haves_unknown_request);
   tcase_add_test(tc, filled_commits);
