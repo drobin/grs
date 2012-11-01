@@ -39,7 +39,7 @@ static void prepare(struct packfile_negotiation_data* data) {
   data->want_list = binbuf_create(41);
   data->shallow_list = binbuf_create(41);
   data->have_list = binbuf_create(41);
-  data->depth = -1;
+  data->depth = 0;
 
   // switch to next state
   data->phase++;
@@ -75,6 +75,10 @@ static int upload_request(buffer_t in, struct packfile_negotiation_data* data) {
       if (binbuf_get_size(data->shallow_list) > 0) {
         // FIXME This is a limitation and should be supported somehow/any time
         log_err("Currently no shallow-lines are supported");
+        data->phase = packfile_negotiation_error;
+      } else if (data->depth > 0) {
+        // FIXME This is a limitation and should be supported somehow/any time
+        log_err("Currently the deepen-line is not supported");
         data->phase = packfile_negotiation_error;
       } else if (binbuf_get_size(data->want_list) == 1) {
         data->phase++;
