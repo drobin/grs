@@ -240,6 +240,15 @@ START_TEST(upload_request_double_shallows) {
 }
 END_TEST
 
+START_TEST(upload_request_shallow_unsupported) {
+  buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
+  buffer_append(in, "0034shallow 9876543210987654321098765432109876543210", 52);
+  buffer_append(in, "0000", 4);
+  fail_unless(
+    packfile_negotiation("XXX", in, out, commits, log_stub, &data) == -1);
+}
+END_TEST
+
 START_TEST(upload_haves_with_haves) {
   data.phase = packfile_negotiation_upload_haves;
   buffer_append(in, "0032have 0123456789012345678901234567890123456789\n", 50);
@@ -321,6 +330,7 @@ TCase* packfile_negotiation_tcase() {
   tcase_add_test(tc, upload_request_shallow_depth);
   tcase_add_test(tc, upload_request_skipped_shallow_depth);
   tcase_add_test(tc, upload_request_double_shallows);
+  tcase_add_test(tc, upload_request_shallow_unsupported);
   tcase_add_test(tc, upload_haves_with_haves);
   tcase_add_test(tc, upload_haves_unknown_request);
   tcase_add_test(tc, filled_commits_ack);
