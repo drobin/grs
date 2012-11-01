@@ -24,50 +24,55 @@ require_relative "grs/assert"
 require_relative "grs/git_wrapper"
 
 git = Grs::Git.new
-dir1 = Dir.mktmpdir
-dir2 = Dir.mktmpdir
-dir3 = Dir.mktmpdir
+bare_repo = Dir.mktmpdir
+clone_repo = Dir.mktmpdir
+grs_repo = Dir.mktmpdir
 
 begin
-  git.init("--bare", dir1)
+  git.init("--bare", bare_repo)
 
-  git.__clone(dir1, dir2)
+  git.__clone(bare_repo, clone_repo)
 
-  Dir.chdir(dir2) do
+  Dir.chdir(clone_repo) do
     File.open("f1.txt", "w") { |f| f.write("Holla") }
     git.add("f1.txt")
     git.commit("-m '1st commit'")
-    git.push("origin master:master")
 
     File.open("f2.txt", "w") { |f| f.write("Hallo") }
     git.add("f2.txt")
     git.commit("-m '2nd commit'")
+
     git.push("origin master:master")
+  end
 
-    git.__clone("ssh://localhost:4711#{dir1}", dir3, :password => true)
+  git.__clone("ssh://localhost:4711#{bare_repo}", grs_repo, :password => true)
 
-    Dir.chdir(dir2) do
-      File.open("f1.txt", "w") { |f| f.write("Holla die Waldfee") }
-      git.add("f1.txt")
-      git.commit("-m '3rd commit'")
-      git.push("origin master:master")
-    end
+  Dir.chdir(clone_repo) do
+    File.open("f1.txt", "w") { |f| f.write("Holla die Waldfee") }
+    git.add("f1.txt")
+    git.commit("-m '3rd commit'")
 
-    Dir.chdir(dir3) do
-      git.pull(:password => true)
+    git.rm("f2.txt")
+    git.commit("-m '4th commit'")
 
-      log = git.log("--pretty='format:%H'").strip.split
-      bare_log = Dir.chdir(dir1) { git.log("--pretty='format:%H'") }.strip.split
+    git.push("origin master:master")
+  end
 
-      assert(log.size == 3)
-      assert(bare_log.size == 3)
-      assert(log[0] == bare_log[0])
-      assert(log[1] == bare_log[1])
-      assert(log[2] == bare_log[2])
-    end
+  Dir.chdir(grs_repo) do
+    git.pull(:password => true)
+
+    log = git.log("--pretty='format:%H'").strip.split
+    bare_log = Dir.chdir(bare_repo) { git.log("--pretty='format:%H'") }.strip.split
+
+    assert(log.size == 4)
+    assert(bare_log.size == 4)
+    assert(log[0] == bare_log[0])
+    assert(log[1] == bare_log[1])
+    assert(log[2] == bare_log[2])
+    assert(log[3] == bare_log[3])
   end
 ensure
-  FileUtils.remove_entry_secure(dir1)
-  FileUtils.remove_entry_secure(dir2)
-  FileUtils.remove_entry_secure(dir3)
+  FileUtils.remove_entry_secure(bare_repo)
+  FileUtils.remove_entry_secure(clone_repo)
+  FileUtils.remove_entry_secure(grs_repo)
 end
