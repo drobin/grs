@@ -25,6 +25,14 @@
 #include "pkt_line.h"
 #include "protocol.h"
 
+static int have_pkt_line(buffer_t pkt_line, const char* word) {
+  const int len = strlen(word);
+  const char* data = buffer_get_data(pkt_line);
+
+  return buffer_get_size(pkt_line) >= len + 1 &&
+         strncmp(data, word, len) == 0 && data[len] == ' ';
+}
+
 static void prepare(struct packfile_negotiation_data* data) {
   log_debug("Prepare packfile negotiation");
   data->pkt_line = buffer_create();
@@ -78,24 +86,21 @@ static int upload_request(buffer_t in, struct packfile_negotiation_data* data) {
       break;
     }
 
-    if (buffer_get_size(data->pkt_line) >= 5 &&
-        strncmp(buffer_get_data(data->pkt_line), "want ", 5) == 0) {
+    if (have_pkt_line(data->pkt_line, "want")) {
       const char* want = buffer_get_data(data->pkt_line) + 5;
       if (binbuf_find(data->want_list, want, 40) == -1) {
         char* obj_id = binbuf_add(data->want_list);
         strlcpy(obj_id, want, binbuf_get_size_of(data->want_list));
         log_debug("want %s", obj_id);
       }
-    } else if (buffer_get_size(data->pkt_line) >= 8 &&
-               strncmp(buffer_get_data(data->pkt_line), "shallow ", 8) == 0) {
+    } else if (have_pkt_line(data->pkt_line, "shallow")) {
       const char* shallow = buffer_get_data(data->pkt_line) + 8;
       if (binbuf_find(data->shallow_list, shallow, 40) == -1) {
         char* obj_id = binbuf_add(data->shallow_list);
         strlcpy(obj_id, shallow, binbuf_get_size_of(data->shallow_list));
         log_debug("shallow %s", obj_id);
       }
-    } else if (buffer_get_size(data->pkt_line) >= 7 &&
-               strncmp(buffer_get_data(data->pkt_line), "deepen ", 7) == 0) {
+    } else if (have_pkt_line(data->pkt_line, "deepen")) {
       char num[buffer_get_size(data->pkt_line) - 7 + 1];
       strlcpy(num, buffer_get_data(data->pkt_line) + 7,
               buffer_get_size(data->pkt_line) - 7 + 1);
@@ -132,8 +137,7 @@ static void upload_haves(const char* repository, buffer_t in, buffer_t out,
       break;
     }
 
-    if (buffer_get_size(data->pkt_line) >= 5 &&
-        strncmp(buffer_get_data(data->pkt_line), "have ", 5) == 0) {
+    if (have_pkt_line(data->pkt_line, "have")) {
       const char* have = buffer_get_data(data->pkt_line) + 5;
       char* obj_id = binbuf_add(data->have_list);
       strlcpy(obj_id, have, binbuf_get_size_of(data->have_list));
