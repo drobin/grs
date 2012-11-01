@@ -25,25 +25,35 @@ require_relative "grs/git_wrapper"
 
 git = Grs::Git.new
 
-Dir.mktmpdir do |dir1|
-  git.init("--bare", dir1)
+bare_repo = Dir.mktmpdir
+clone_repo = Dir.mktmpdir
 
-  Dir.mktmpdir do |dir2|
-    git.__clone(dir1, dir2)
+begin
+  git.init("--bare", bare_repo)
 
-    Dir.chdir(dir2) do
-      File.open("f1.txt", "w") { |f| f.write("Holla") }
-      git.add("f1.txt")
-      git.commit("-m 'Initial commit'")
-      git.push("origin master:master")
-      git.remote("set-url origin ssh://localhost:4711#{dir1}")
-      refs = git.ls_remote(:password => true).split("\n")
+  git.__clone(bare_repo, clone_repo)
 
-      head_oid = Dir.chdir(dir1) { git.rev_parse("HEAD") }
+  Dir.chdir(clone_repo) do
+    File.open("f1.txt", "w") { |f| f.write("Holla") }
+    git.add("f1.txt")
+    git.commit("-m '1st commit'")
 
-      assert(refs.count == 2, "Only two refs expected")
-      assert_ref([head_oid, "HEAD"], refs[0].split)
-      assert_ref([head_oid, "refs/heads/master"], refs[1].split)
-    end
+    git.tag("t1", "HEAD")
+
+    git.push("origin master:master")
+    git.push("origin t1")
+
+    git.remote("set-url origin ssh://localhost:4711#{bare_repo}")
+    refs = git.ls_remote(:password => true).split("\n")
+
+    head_oid = Dir.chdir(bare_repo) { git.rev_parse("HEAD") }
+
+    assert(refs.count == 3, "Three refs expected")
+    assert_ref([head_oid, "HEAD"], refs[0].split)
+    assert_ref([head_oid, "refs/heads/master"], refs[1].split)
+    assert_ref([head_oid, "refs/tags/t1"], refs[2].split)
   end
+ensure
+  FileUtils.remove_entry_secure(bare_repo)
+  FileUtils.remove_entry_secure(clone_repo)
 end
