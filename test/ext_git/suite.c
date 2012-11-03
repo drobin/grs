@@ -19,6 +19,7 @@
 
 #include <check.h>
 
+extern TCase* capabilities_tcase();
 extern TCase* checksum_tcase();
 extern TCase* compress_tcase();
 extern TCase* git_extension_tcase();
@@ -30,6 +31,7 @@ extern TCase* reference_discovery_tcase();
 Suite* git_extension_suite() {
   Suite* s = suite_create("git extension");
 
+  suite_add_tcase(s, capabilities_tcase());
   suite_add_tcase(s, checksum_tcase());
   suite_add_tcase(s, compress_tcase());
   suite_add_tcase(s, git_extension_tcase());

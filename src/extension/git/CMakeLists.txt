@@ -18,6 +18,7 @@
 ################################################################################
 
 SET(LIBEXT_GIT_SOURCES
+  capabilities.c
   checksum.c
   compress.c
   git.c

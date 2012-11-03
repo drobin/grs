@@ -20,6 +20,7 @@
 SET(GRS_TEST_SOURCES
   ext_core/suite.c
   ext_core/tests.c
+  ext_git/capabilities_tests.c
   ext_git/checksum_tests.c
   ext_git/compress_tests.c
   ext_git/extension_tests.c
