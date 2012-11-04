@@ -60,10 +60,9 @@ struct git_upload_pack_data {
   char* repository;
 
   /**
-   * Commits (as a result of the packfile-negotiation), which are send to the
-   * client.
+   * The results from the packfile-negotiation.
    */
-  binbuf_t commits;
+  struct packfile_negotiation_result result;
 
   /**
    * Data used internally by packfile_negotiation().
@@ -382,7 +381,7 @@ static int init_git_upload_pack(char *const command[], void** payload) {
 
   data = malloc(sizeof(struct git_upload_pack_data));
   data->repository = repository_path(command[1]);
-  data->commits = binbuf_create(41);
+  data->result.commits = binbuf_create(41);
   memset(&data->packfile_negotiation, 0,
          sizeof(struct packfile_negotiation_data));
   data->current_process = p_reference_discovery;
@@ -412,12 +411,12 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
   case p_packfile_negotiation:
     log_debug("packfile negotiation on %s", data->repository);
     result = packfile_negotiation(data->repository, in_buf, out_buf,
-                                  data->commits, commit_log_impl,
+                                  &data->result, commit_log_impl,
                                   &data->packfile_negotiation);
     break;
   case p_packfile_transfer:
     log_debug("packfile transfer on %s", data->repository);
-    result = packfile_transfer(data->repository, data->commits,
+    result = packfile_transfer(data->repository, data->result.commits,
                                packfile_objects_impl, out_buf);
     break;
   default:
@@ -446,7 +445,7 @@ static void destroy_git_upload_pack(void* payload) {
   struct git_upload_pack_data* data = (struct git_upload_pack_data*)payload;
 
   free(data->repository);
-  binbuf_destroy(data->commits);
+  binbuf_destroy(data->result.commits);
   free(data);
 }
 

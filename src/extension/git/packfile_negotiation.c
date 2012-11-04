@@ -45,7 +45,9 @@ static void prepare(struct packfile_negotiation_data* data) {
   data->phase++;
 }
 
-static int upload_request(buffer_t in, struct packfile_negotiation_data* data) {
+static int upload_request(buffer_t in,
+                          struct packfile_negotiation_result* pn_results,
+                          struct packfile_negotiation_data* data) {
   if (buffer_get_size(in) == 0) {
     // Nothing to do
     return 1;
@@ -196,9 +198,10 @@ static void cleanup(struct packfile_negotiation_data* data) {
 }
 
 int packfile_negotiation(const char* repository,buffer_t in, buffer_t out,
-                         binbuf_t commits, commit_log_cb log_cb,
+                         struct packfile_negotiation_result* pn_results,
+                         commit_log_cb log_cb,
                          struct packfile_negotiation_data* data) {
-  if (repository == NULL || in == NULL || out == NULL || commits == NULL ||
+  if (repository == NULL || in == NULL || out == NULL || pn_results == NULL ||
       log_cb == NULL || data == NULL) {
     return -1;
   }
@@ -208,13 +211,13 @@ int packfile_negotiation(const char* repository,buffer_t in, buffer_t out,
   }
 
   if (data->phase == packfile_negotiation_upload_request) {
-    if (upload_request(in, data) > 0) {
+    if (upload_request(in, pn_results, data) > 0) {
       return 1;
     }
   }
 
   if (data->phase == packfile_negotiation_upload_haves) {
-    upload_haves(repository, in, out, commits, log_cb, data);
+    upload_haves(repository, in, out, pn_results->commits, log_cb, data);
   }
 
   if (data->phase == packfile_negotiation_finished ||
