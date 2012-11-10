@@ -35,4 +35,10 @@ int libgit2_commit_log_cb(const char* repository, const char* obj_id,
                           const binbuf_t haves, binbuf_t commits,
                           int* common_base);
 
+/**
+ * Implementation of the packfile_objects_cb-callback using the libgit2-library.
+ */
+int libgit2_packfile_objects_cb(const char* repository, binbuf_t commits,
+                                binbuf_t objects);
+
 #endif  /* LIBGIT2_H */
