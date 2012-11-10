@@ -17,47 +17,41 @@
 #
 ################################################################################
 
-require 'open3'
-require_relative 'ssh_wrapper'
+require 'pty'
 
 module Grs
-  class Git
-    def self.sh(args)
-      Open3.popen3("git #{args}") do |stdin, stdout, stderr, wait_thr|
-        out = stdout.read
-        err = stderr.read
-        exit_status = wait_thr.value
+  class Ssh
+    def self.pass(command)
+      password = ENV["USER"]
+      r, w = IO.pipe
 
-        unless exit_status.success?
-          $stderr.puts err
-          raise "Failed to exec 'git #{args}'"
+      PTY.spawn(command, :out => w) do |out, input, pid|
+        buffer = ""
+
+        while c = out.getc
+          buffer << c.chr
+          if buffer =~ /password:/
+            input.write "#{password}\r"
+            break
+          end
         end
-        out
+
+        Process.wait(pid)
       end
-    end
 
-    def self.pass(args)
-      Ssh.pass("git #{args}")
-    end
-
-    def method_missing(method, *args)
-      options = Git.pop_options(args)
-
-      git_method = method.to_s.sub(/^_{1,}/, "").sub(/_/, "-")
-      git_args = [git_method, args].flatten.join(" ")
-
-      if options[:password]
-        Git.pass(git_args)
-      else
-        Git.sh(git_args)
+      buffer = ""
+      loop do
+        begin
+          buffer << r.read_nonblock(16)
+        rescue
+          break
+        end
       end
-    end
 
-    private
+      r.close
+      w.close
 
-    def self.pop_options(args)
-      options = args.last
-      options.is_a?(Hash) ? args.pop : {}
+      return buffer
     end
   end
 end
