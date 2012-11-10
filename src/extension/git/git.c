@@ -167,13 +167,27 @@ static void destroy_git_upload_pack(void* payload) {
   free(data);
 }
 
+static int git_receive_pack(buffer_t in_buf, buffer_t out_buf,
+                            buffer_t err_buf, void* payload) {
+  return 0;
+}
+
 int load_git_extension(grs_t grs) {
-  char* command[] = { "git-upload-pack", NULL };
-  struct command_hooks hooks;
+  char* upload_pack_command[] = { "git-upload-pack", NULL };
+  char* receive_pack_command[] =  { "git-receive-pack", NULL };
+  struct command_hooks upload_pack_hooks;
+  struct command_hooks receive_pack_hooks;
+  int result;
 
-  hooks.init = init_git_upload_pack;
-  hooks.exec = git_upload_pack;
-  hooks.destroy = destroy_git_upload_pack;
+  upload_pack_hooks.init = init_git_upload_pack;
+  upload_pack_hooks.exec = git_upload_pack;
+  upload_pack_hooks.destroy = destroy_git_upload_pack;
 
-  return grs_register_command(grs, command, &hooks);
+  receive_pack_hooks.init = NULL;
+  receive_pack_hooks.exec = git_receive_pack;
+  receive_pack_hooks.destroy = NULL;
+
+  result = grs_register_command(grs, upload_pack_command, &upload_pack_hooks) -
+    grs_register_command(grs, receive_pack_command, &receive_pack_hooks);
+  return result < 0 ? -1 : result;
 }

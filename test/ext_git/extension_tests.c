@@ -21,7 +21,7 @@
 
 #include "../../src/extension/git/git.h"
 
-START_TEST(load_extension) {
+START_TEST(upload_pack_command) {
   char* command[] = { "git-upload-pack", NULL };
   grs_t grs;
   struct command_hooks* hooks;
@@ -38,10 +38,28 @@ START_TEST(load_extension) {
 }
 END_TEST
 
+START_TEST(receive_pack_command) {
+  char* command[] = { "git-receive-pack", NULL };
+  grs_t grs;
+  struct command_hooks* hooks;
+
+  fail_unless((grs = grs_init()) != NULL);
+  fail_unless(load_git_extension(grs) == 0);
+
+  fail_unless((hooks = grs_get_command_hooks(grs, command)) != NULL);
+  fail_unless(hooks->init == NULL);
+  fail_unless(hooks->exec != NULL);
+  fail_unless(hooks->destroy == NULL);
+
+  fail_unless(grs_destroy(grs) == 0);
+}
+END_TEST
+
 TCase* git_extension_tcase() {
   TCase* tc = tcase_create("git extension");
 
-  tcase_add_test(tc, load_extension);
+  tcase_add_test(tc, upload_pack_command);
+  tcase_add_test(tc, receive_pack_command);
 
   return tc;
 }
