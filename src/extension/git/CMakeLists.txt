@@ -22,6 +22,7 @@ SET(LIBEXT_GIT_SOURCES
   checksum.c
   compress.c
   git.c
+  libgit2.c
   packfile_negotiation.c
   packfile_transfer.c
   pkt_line.c
