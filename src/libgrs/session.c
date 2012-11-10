@@ -21,10 +21,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "log.h"
 #include "session.h"
 
 struct _session {
   grs_t grs;
+  char* in_command;
   char* raw_command;
   char* command[ARG_MAX];
   buffer_t in_buf;
@@ -58,6 +60,7 @@ session_t session_create(grs_t grs) {
   }
 
   session->grs = grs;
+  session->in_command = NULL;
   session->raw_command = NULL;
   session->command[0] = NULL;
   session->in_buf = buffer_create();
@@ -74,6 +77,7 @@ int session_destroy(session_t session) {
     return -1;
   }
 
+  free(session->in_command);
   free(session->raw_command);
   buffer_destroy(session->in_buf);
   buffer_destroy(session->out_buf);
@@ -118,6 +122,7 @@ int session_set_command(session_t session, const char* command) {
     return -1;
   }
 
+  session->in_command = strdup(command);
   session->raw_command = strdup(command);
   tokenize(session);
 
@@ -169,27 +174,43 @@ int session_exec(session_t session) {
     if (session->exec_count == 0 && hooks->init != NULL) {
       // Command was never executed, initialize it
       if (hooks->init(session->command, &session->payload) != 0) {
+        log_err("Failed to initialize command '%s'", session->in_command);
         session->exec_finished = 1;
         return -1;
       }
+
+      log_debug("Command '%s' initialized", session->in_command);
     }
 
     // Command is initialized, now execute it
     result = hooks->exec(session->in_buf, session->out_buf, session->err_buf,
                          session->payload);
     session->exec_count++;
+    log_debug("Command '%s' executed, exec_count = %i, result = %i",
+      session->in_command, session->exec_count, result);
 
     if (result <= 0) {
       // Finished or error -> call destroy-hook
       if (hooks->destroy != NULL) {
         hooks->destroy(session->payload);
+        log_debug("Command '%s' destroyed", session->in_command);
       }
     }
 
     session->exec_finished = (result != 1);
     return result;
   } else {
-    buffer_append(session->err_buf, "No such command\n", 16);
+    log_err("Could not locate command for '%s'", session->in_command);
+
+    if (session->in_command != NULL) {
+      buffer_append(session->err_buf, "No such command: ", 17);
+      buffer_append(session->err_buf,
+        session->in_command, strlen(session->in_command));
+      buffer_append(session->err_buf, "\n", 1);
+    } else {
+      buffer_append(session->err_buf, "No command available\n", 21);
+    }
+
     session->exec_finished = 1;
     return -1;
   }
