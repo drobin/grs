@@ -28,4 +28,11 @@
  */
 int libgit2_reference_discovery_cb(const char* repository, binbuf_t refs);
 
+/**
+ * Implementation of the commit_log_cb-callback using the libgit2-library.
+ */
+int libgit2_commit_log_cb(const char* repository, const char* obj_id,
+                          const binbuf_t haves, binbuf_t commits,
+                          int* common_base);
+
 #endif  /* LIBGIT2_H */

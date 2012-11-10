@@ -30,6 +30,16 @@ struct git_reference_foreach_data {
   binbuf_t refs;
 };
 
+static void log_oid_err(const char* message, const git_oid* oid,
+                        const char* err) {
+  char hex[41];
+
+  git_oid_fmt(hex, oid);
+  hex[40] = '\0';
+
+  log_err(message, hex, err);
+}
+
 static int reference_is_branch_or_tag(const char* ref_name) {
   const char* branch_prefix = "refs/heads";
   const char* tag_prefix = "refs/tags";
@@ -105,6 +115,68 @@ int libgit2_reference_discovery_cb(const char* repository, binbuf_t refs) {
     return result;
   }
 
+  git_repository_free(repo);
+
+  return 0;
+}
+
+int libgit2_commit_log_cb(const char* repository, const char* obj_id,
+                          const binbuf_t haves, binbuf_t commits,
+                          int* common_base) {
+  git_repository* repo;
+  git_revwalk* walk;
+  git_oid oid;
+  int result;
+
+  log_debug("Fetch commit-log from %s", repository);
+
+  if ((result = git_repository_open(&repo, repository)) == 0) {
+    log_debug("Repository is open");
+  } else {
+    log_err("Failed to open repository: %s", giterr_last()->message);
+  }
+
+  git_oid_fromstr(&oid, obj_id);
+
+  if (git_revwalk_new(&walk, repo) != 0) {
+    log_err("Failed to creata revision-walker: %s", giterr_last()->message);
+
+    git_repository_free(repo);
+
+    return -1;
+  }
+
+  git_revwalk_sorting(walk, GIT_SORT_TOPOLOGICAL);
+
+  if (git_revwalk_push(walk, &oid) != 0) {
+    log_oid_err("Failed to push %s on revision-walker: %s",
+                &oid, giterr_last()->message);
+
+    git_revwalk_free(walk);
+    git_repository_free(repo);
+
+    return -1;
+  }
+
+  while ((git_revwalk_next(&oid, walk)) == 0) {
+    char hex[41];
+    int idx;
+
+    git_oid_fmt(hex, &oid);
+    hex[40] = '\0';
+
+    if ((idx = binbuf_find(haves, hex, 40)) >= 0) {
+      *common_base = idx;
+      log_debug("log (common-base): %s", hex);
+      break;
+    } else {
+      char* commit_id = binbuf_add(commits);
+      strlcpy(commit_id, hex, sizeof(hex));
+      log_debug("log %s", hex);
+    }
+  }
+
+  git_revwalk_free(walk);
   git_repository_free(repo);
 
   return 0;
