@@ -26,6 +26,23 @@
 #include "pkt_line.h"
 #include "protocol.h"
 
+static int capabilities_supported(int capabilities) {
+  int result = capabilities;
+
+  if (result & thin_pack) {
+    result ^= thin_pack;
+  }
+
+  if (result & include_tag) {
+    result ^= include_tag;
+  }
+
+  // TODO thin_pack and include_tag are marked as implemented but the
+  //      implementation is still missing!
+
+  return result == 0;
+}
+
 static int have_pkt_line(buffer_t pkt_line, const char* word) {
   const int len = strlen(word);
   const char* data = buffer_get_data(pkt_line);
@@ -75,7 +92,7 @@ static int upload_request(buffer_t in,
       // flush-pkt, this is the end of the want-list, switch to next state
       log_debug("End of upload-request");
 
-      if (pn_results->capabilities != 0) {
+      if (!capabilities_supported(pn_results->capabilities)) {
         log_err("Unsupported capabilities received from client: 0x%02x",
           pn_results->capabilities);
         data->phase = packfile_negotiation_error;
