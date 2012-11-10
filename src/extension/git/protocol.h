@@ -115,6 +115,12 @@ struct packfile_negotiation_data {
  */
 struct packfile_negotiation_result {
   /**
+   * List of or'ed client-capabilities. The capabilities are defined in
+   * <code>enum capabilities</code>.
+   */
+  int capabilities;
+
+  /**
    * Buffer contains the commits as a result of the packfile-negotiation with
    * the client.
    */

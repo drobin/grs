@@ -21,6 +21,7 @@
 #include <stdlib.h>
 
 #include "../../src/extension/git/protocol.h"
+#include "../../src/extension/git/capabilities.h"
 
 static struct packfile_negotiation_data data;
 static struct packfile_negotiation_result pn_results;
@@ -180,6 +181,27 @@ START_TEST(upload_request_double_wants) {
 }
 END_TEST
 
+START_TEST(upload_request_with_capabilities) {
+  buffer_append(in, "0044want 0123456789012345678901234567890123456789 "
+                    "thin-pack shallow\n", 68);
+  fail_unless(
+    packfile_negotiation("XXX", in, out, &pn_results, log_stub, &data) == 1);
+  fail_unless(binbuf_get_size(data.want_list) == 1);
+  fail_unless(memcmp(binbuf_get(data.want_list, 0),
+                     "0123456789012345678901234567890123456789", 40) == 0);
+  fail_unless(pn_results.capabilities == (thin_pack | shallow));
+}
+END_TEST
+
+START_TEST(upload_request_capability_error) {
+  buffer_append(in, "0036want 0123456789012345678901234567890123456789 "
+                    "xxx\n", 54);
+  fail_unless(
+    packfile_negotiation("XXX", in, out, &pn_results, log_stub, &data) == -1);
+  fail_unless(pn_results.capabilities == -1);
+}
+END_TEST
+
 START_TEST(upload_request_shallow) {
   buffer_append(in, "0032want 0123456789012345678901234567890123456789\n", 50);
   buffer_append(in, "0034shallow 9876543210987654321098765432109876543210", 52);
@@ -335,6 +357,8 @@ TCase* packfile_negotiation_tcase() {
   tcase_add_test(tc, upload_request_one_want);
   tcase_add_test(tc, upload_request_two_wants);
   tcase_add_test(tc, upload_request_double_wants);
+  tcase_add_test(tc, upload_request_with_capabilities);
+  tcase_add_test(tc, upload_request_capability_error);
   tcase_add_test(tc, upload_request_shallow);
   tcase_add_test(tc, upload_request_shallow_depth);
   tcase_add_test(tc, upload_request_skipped_shallow_depth);

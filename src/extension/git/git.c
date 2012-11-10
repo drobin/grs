@@ -381,6 +381,7 @@ static int init_git_upload_pack(char *const command[], void** payload) {
 
   data = malloc(sizeof(struct git_upload_pack_data));
   data->repository = repository_path(command[1]);
+  data->result.capabilities = 0;
   data->result.commits = binbuf_create(41);
   memset(&data->packfile_negotiation, 0,
          sizeof(struct packfile_negotiation_data));

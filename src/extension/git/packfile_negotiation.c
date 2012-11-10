@@ -22,6 +22,7 @@
 
 #include <libgrs/log.h>
 
+#include "capabilities.h"
 #include "pkt_line.h"
 #include "protocol.h"
 
@@ -74,7 +75,11 @@ static int upload_request(buffer_t in,
       // flush-pkt, this is the end of the want-list, switch to next state
       log_debug("End of upload-request");
 
-      if (binbuf_get_size(data->shallow_list) > 0) {
+      if (pn_results->capabilities != 0) {
+        log_err("Unsupported capabilities received from client: 0x%02x",
+          pn_results->capabilities);
+        data->phase = packfile_negotiation_error;
+      } else if (binbuf_get_size(data->shallow_list) > 0) {
         // FIXME This is a limitation and should be supported somehow/any time
         log_err("Currently no shallow-lines are supported");
         data->phase = packfile_negotiation_error;
@@ -102,6 +107,18 @@ static int upload_request(buffer_t in,
         char* obj_id = binbuf_add(data->want_list);
         strlcpy(obj_id, want, binbuf_get_size_of(data->want_list));
         log_debug("want %s", obj_id);
+
+        if (binbuf_get_size(data->want_list) == 1) {
+          // first-want also contains capability-list
+          const char* str = buffer_get_data(data->pkt_line) + 46;
+          const size_t len = buffer_get_size(data->pkt_line) - 46;
+          pn_results->capabilities = capabilities_parse(str, len);
+
+          if (pn_results->capabilities == -1) {
+            data->phase = packfile_negotiation_error;
+            break;
+          }
+        }
       }
     } else if (have_pkt_line(data->pkt_line, "shallow")) {
       const char* shallow = buffer_get_data(data->pkt_line) + 8;
