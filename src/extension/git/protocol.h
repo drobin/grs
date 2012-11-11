@@ -26,6 +26,21 @@
 #include <libgrs/buffer.h>
 
 /**
+ * Enumeration lists the git-processes supported by this implementation.
+ */
+enum git_process {
+  /**
+   * git-upload-pack (fetch data from a server)
+   */
+  process_upload_pack,
+
+  /**
+   * git-receive-pack (push data to a server)
+   */
+  process_receive_pack
+};
+
+/**
  * A reference.
  */
 struct git_ref {
@@ -203,6 +218,8 @@ typedef int (*packfile_objects_cb)(const char* repository, binbuf_t commits,
  * Implementation of the <i>Reference Discovery</i>-process.
  *
  * @param repository The path of the requested repository
+ * @param process The currently executed git-process, the capabilities send
+ *                 back to the client depends on this setting.
  * @param out The function writes data into this buffer, which should be
  *            transferred to the client.
  * @param err The function writes error-messages into the buffer (if any).
@@ -211,7 +228,7 @@ typedef int (*packfile_objects_cb)(const char* repository, binbuf_t commits,
  *
  * @see https://github.com/git/git/blob/master/Documentation/technical/pack-protocol.txt
  */
-int reference_discovery(const char* repository,
+int reference_discovery(const char* repository, enum git_process process,
                         buffer_t out, buffer_t err,
                         reference_discovery_cb refs);
 

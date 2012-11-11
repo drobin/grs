@@ -25,7 +25,7 @@
 #include "pkt_line.h"
 #include "protocol.h"
 
-int reference_discovery(const char* repository,
+int reference_discovery(const char* repository, enum git_process process,
                         buffer_t out, buffer_t err,
                         reference_discovery_cb refs) {
   binbuf_t refs_buf;

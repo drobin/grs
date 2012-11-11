@@ -163,8 +163,8 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
   switch (data->current_process) {
   case p_upload_pack_reference_discovery:
     log_debug("reference discovery on %s", data->repository);
-    result = reference_discovery(data->repository, out_buf, err_buf,
-                                 libgit2_reference_discovery_cb);
+    result = reference_discovery(data->repository, process_upload_pack, out_buf,
+                                 err_buf, libgit2_reference_discovery_cb);
     break;
   case p_upload_pack_packfile_negotiation:
     log_debug("packfile negotiation on %s", data->repository);
@@ -234,7 +234,8 @@ static int git_receive_pack(buffer_t in_buf, buffer_t out_buf,
     switch (data->current_process) {
     case p_receive_pack_reference_discovery:
       log_debug("reference discovery on %s", data->repository);
-      result = reference_discovery(data->repository, out_buf, err_buf,
+      result = reference_discovery(data->repository, process_receive_pack,
+                                   out_buf, err_buf,
                                    libgit2_reference_discovery_cb);
       break;
     case p_receive_pack_update_request:

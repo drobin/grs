@@ -59,42 +59,78 @@ static void teardown() {
 }
 
 START_TEST(null_out_repository) {
-  fail_unless(reference_discovery(NULL, out, err, no_refs_stub) == -1);
+  fail_unless(reference_discovery(NULL, process_upload_pack, out, err,
+                                  no_refs_stub) == -1);
 }
 END_TEST
 
 START_TEST(null_out_buffer) {
-  fail_unless(reference_discovery("xxx", NULL, err, no_refs_stub) == -1);
+  fail_unless(reference_discovery("xxx", process_upload_pack, NULL, err,
+                                  no_refs_stub) == -1);
 }
 END_TEST
 
 START_TEST(null_err_buffer) {
-  fail_unless(reference_discovery("xxx", out, NULL, no_refs_stub) == -1);
+  fail_unless(reference_discovery("xxx", process_upload_pack, out, NULL,
+                                  no_refs_stub) == -1);
 }
 END_TEST
 
 START_TEST(null_refs) {
-  fail_unless(reference_discovery("xxx", out, err, NULL) == -1);
+  fail_unless(
+    reference_discovery("xxx", process_upload_pack, out, err, NULL) == -1);
 }
 END_TEST
 
-START_TEST(empty) {
-  fail_unless(reference_discovery("xxx", out, err, no_refs_stub) == 0);
+START_TEST(empty_upload_pack) {
+  fail_unless(reference_discovery("xxx", process_upload_pack, out, err,
+                                  no_refs_stub) == 0);
   fail_unless(buffer_get_size(out) == 4);
   fail_unless(strncmp(buffer_get_data(out), "0000", 4) == 0);
   fail_unless(buffer_get_size(err) == 0);
 }
 END_TEST
 
-START_TEST(fetch_failed) {
-  fail_unless(reference_discovery("xxx", out, err, failed_stub) == -1);
+START_TEST(empty_receive_pack) {
+  fail_unless(reference_discovery("xxx", process_receive_pack, out, err,
+                                  no_refs_stub) == 0);
+  fail_unless(buffer_get_size(out) == 4);
+  fail_unless(strncmp(buffer_get_data(out), "0000", 4) == 0);
+  fail_unless(buffer_get_size(err) == 0);
+}
+END_TEST
+
+START_TEST(fetch_failed_upload_pack) {
+  fail_unless(reference_discovery("xxx", process_upload_pack, out, err,
+                                  failed_stub) == -1);
   fail_unless(buffer_get_size(out) == 0);
   fail_unless(buffer_get_size(err) == 0);
 }
 END_TEST
 
-START_TEST(fetch) {
-  fail_unless(reference_discovery("xxx", out, err, refs_stub) == 0);
+START_TEST(fetch_failed_receive_pack) {
+  fail_unless(reference_discovery("xxx", process_receive_pack, out, err,
+                                  failed_stub) == -1);
+  fail_unless(buffer_get_size(out) == 0);
+  fail_unless(buffer_get_size(err) == 0);
+}
+END_TEST
+
+START_TEST(fetch_upload_pack) {
+  fail_unless(reference_discovery("xxx", process_upload_pack, out, err,
+                                  refs_stub) == 0);
+  fail_unless(buffer_get_size(out) == 34);
+  fail_unless(strncmp(buffer_get_data(out),
+                      "000fobjid1 foo\n"
+                      "000fobjid2 bar\n"
+                      "0000", 34) == 0);
+  fail_unless(buffer_get_size(err) == 0);
+}
+END_TEST
+
+START_TEST(fetch_receive_pack) {
+  fail_unless(reference_discovery("xxx", process_receive_pack, out, err,
+                                  refs_stub) == 0);
   fail_unless(buffer_get_size(out) == 34);
   fail_unless(strncmp(buffer_get_data(out),
                       "000fobjid1 foo\n"
@@ -112,9 +148,12 @@ TCase* reference_discovery_tcase() {
   tcase_add_test(tc, null_out_buffer);
   tcase_add_test(tc, null_err_buffer);
   tcase_add_test(tc, null_refs);
-  tcase_add_test(tc, empty);
-  tcase_add_test(tc, fetch_failed);
-  tcase_add_test(tc, fetch);
+  tcase_add_test(tc, empty_upload_pack);
+  tcase_add_test(tc, empty_receive_pack);
+  tcase_add_test(tc, fetch_failed_upload_pack);
+  tcase_add_test(tc, fetch_failed_receive_pack);
+  tcase_add_test(tc, fetch_upload_pack);
+  tcase_add_test(tc, fetch_receive_pack);
 
   return tc;
 }
