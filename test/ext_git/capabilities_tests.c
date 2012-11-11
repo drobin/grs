@@ -37,7 +37,7 @@ START_TEST(space_str) {
 END_TEST
 
 START_TEST(one_capability) {
-  fail_unless(capabilities_parse("multi_ack", 9) == multi_ack);
+  fail_unless(capabilities_parse("multi_ack", 9) == capability_multi_ack);
 }
 END_TEST
 
@@ -45,8 +45,8 @@ START_TEST(two_capabilities) {
   int result;
 
   result = capabilities_parse("multi_ack multi_ack_detailed", 28);
-  fail_unless(result & multi_ack);
-  fail_unless(result & multi_ack_detailed);
+  fail_unless(result & capability_multi_ack);
+  fail_unless(result & capability_multi_ack_detailed);
 }
 END_TEST
 
@@ -56,57 +56,58 @@ START_TEST(unknown_capability) {
 END_TEST
 
 START_TEST(parse_multi_ack) {
-  fail_unless(capabilities_parse("multi_ack", 9) == multi_ack);
+  fail_unless(capabilities_parse("multi_ack", 9) == capability_multi_ack);
 }
 END_TEST
 
 START_TEST(parse_multi_ack_detailed) {
-  fail_unless(capabilities_parse("multi_ack_detailed", 18) == multi_ack_detailed);
+  fail_unless(
+    capabilities_parse("multi_ack_detailed", 18) == capability_multi_ack_detailed);
 }
 END_TEST
 
 START_TEST(parse_thin_pack) {
-  fail_unless(capabilities_parse("thin-pack", 9) == thin_pack);
+  fail_unless(capabilities_parse("thin-pack", 9) == capability_thin_pack);
 }
 END_TEST
 
 START_TEST(parse_side_band) {
-  fail_unless(capabilities_parse("side-band", 9) == side_band);
+  fail_unless(capabilities_parse("side-band", 9) == capability_side_band);
 }
 END_TEST
 
 START_TEST(parse_side_band_64k) {
-  fail_unless(capabilities_parse("side-band-64k", 13) == side_band_64k);
+  fail_unless(capabilities_parse("side-band-64k", 13) == capability_side_band_64k);
 }
 END_TEST
 
 START_TEST(parse_ofs_delta) {
-  fail_unless(capabilities_parse("ofs-delta", 9) == ofs_delta);
+  fail_unless(capabilities_parse("ofs-delta", 9) == capability_ofs_delta);
 }
 END_TEST
 
 START_TEST(parse_shallow) {
-  fail_unless(capabilities_parse("shallow", 7) == shallow);
+  fail_unless(capabilities_parse("shallow", 7) == capability_shallow);
 }
 END_TEST
 
 START_TEST(parse_no_progress) {
-  fail_unless(capabilities_parse("no-progress", 11) == no_progress);
+  fail_unless(capabilities_parse("no-progress", 11) == capability_no_progress);
 }
 END_TEST
 
 START_TEST(parse_include_tag) {
-  fail_unless(capabilities_parse("include-tag", 11) == include_tag);
+  fail_unless(capabilities_parse("include-tag", 11) == capability_include_tag);
 }
 END_TEST
 
 START_TEST(parse_report_status) {
-  fail_unless(capabilities_parse("report-status", 13) == report_status);
+  fail_unless(capabilities_parse("report-status", 13) == capability_report_status);
 }
 END_TEST
 
 START_TEST(parse_delete_refs) {
-  fail_unless(capabilities_parse("delete-refs", 11) == delete_refs);
+  fail_unless(capabilities_parse("delete-refs", 11) == capability_delete_refs);
 }
 END_TEST
 

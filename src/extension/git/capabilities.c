@@ -30,17 +30,17 @@ struct capabilitiy_map
 };
 
 const static struct capabilitiy_map capability_mapping[] = {
-  { "multi_ack", multi_ack },
-  { "multi_ack_detailed", multi_ack_detailed },
-  { "thin-pack", thin_pack},
-  { "side-band", side_band},
-  { "side-band-64k", side_band_64k},
-  { "ofs-delta", ofs_delta},
-  { "shallow", shallow},
-  { "no-progress", no_progress},
-  { "include-tag",include_tag},
-  { "report-status", report_status},
-  { "delete-refs", delete_refs},
+  { "multi_ack", capability_multi_ack },
+  { "multi_ack_detailed", capability_multi_ack_detailed },
+  { "thin-pack", capability_thin_pack},
+  { "side-band", capability_side_band},
+  { "side-band-64k", capability_side_band_64k},
+  { "ofs-delta", capability_ofs_delta},
+  { "shallow", capability_shallow},
+  { "no-progress", capability_no_progress},
+  { "include-tag", capability_include_tag},
+  { "report-status", capability_report_status},
+  { "delete-refs", capability_delete_refs},
   { NULL, 0 }
 };
 

@@ -29,12 +29,12 @@
 static int capabilities_supported(int capabilities) {
   int result = capabilities;
 
-  if (result & thin_pack) {
-    result ^= thin_pack;
+  if (result & capability_thin_pack) {
+    result ^= capability_thin_pack;
   }
 
-  if (result & include_tag) {
-    result ^= include_tag;
+  if (result & capability_include_tag) {
+    result ^= capability_include_tag;
   }
 
   // TODO thin_pack and include_tag are marked as implemented but the

@@ -27,17 +27,17 @@
  * @see https://github.com/git/git/blob/master/Documentation/technical/protocol-capabilities.txt
  */
 enum capabilities {
-  multi_ack = 0x1,
-  multi_ack_detailed = 0x2,
-  thin_pack = 0x4,
-  side_band = 0x8,
-  side_band_64k = 0x10,
-  ofs_delta = 0x20,
-  shallow = 0x40,
-  no_progress = 0x80,
-  include_tag = 0x100,
-  report_status = 0x200,
-  delete_refs = 0x400
+  capability_multi_ack = 0x1,
+  capability_multi_ack_detailed = 0x2,
+  capability_thin_pack = 0x4,
+  capability_side_band = 0x8,
+  capability_side_band_64k = 0x10,
+  capability_ofs_delta = 0x20,
+  capability_shallow = 0x40,
+  capability_no_progress = 0x80,
+  capability_include_tag = 0x100,
+  capability_report_status = 0x200,
+  capability_delete_refs = 0x400
 };
 
 /**

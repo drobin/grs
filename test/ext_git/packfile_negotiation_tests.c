@@ -189,7 +189,7 @@ START_TEST(upload_request_with_capabilities) {
   fail_unless(binbuf_get_size(data.want_list) == 1);
   fail_unless(memcmp(binbuf_get(data.want_list, 0),
                      "0123456789012345678901234567890123456789", 40) == 0);
-  fail_unless(pn_results.capabilities == (thin_pack | shallow));
+  fail_unless(pn_results.capabilities == (capability_thin_pack | capability_shallow));
 }
 END_TEST
 
