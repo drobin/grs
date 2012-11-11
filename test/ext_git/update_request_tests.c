@@ -44,7 +44,7 @@ END_TEST
 
 START_TEST(flush_pkt) {
   buffer_append(in, "0000", 4);
-  fail_unless(update_request("XXX", in) == 0);
+  fail_unless(update_request("XXX", in) == 3);
 }
 END_TEST
 

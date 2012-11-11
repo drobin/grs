@@ -63,5 +63,5 @@ int update_request(const char* repository, buffer_t in) {
 
   buffer_destroy(pkt_line);
 
-  return result;
+  return result == 0 ? 3 : result;
 }

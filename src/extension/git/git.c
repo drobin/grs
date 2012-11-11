@@ -65,6 +65,11 @@ enum receive_pack_process {
   p_receive_pack_update_request,
 
   /**
+   * report_status()
+   */
+  p_receive_pack_report_status,
+
+  /**
    * No more processes!
    */
   p_receive_pack_finished
@@ -225,26 +230,36 @@ static int git_receive_pack(buffer_t in_buf, buffer_t out_buf,
     return 1;
   }
 
-  switch (data->current_process) {
-  case p_receive_pack_reference_discovery:
-    log_debug("reference discovery on %s", data->repository);
-    result = reference_discovery(data->repository, out_buf, err_buf,
-                                 libgit2_reference_discovery_cb);
-    break;
-  case p_receive_pack_update_request:
-    log_debug("update request on %s", data->repository);
-    result = update_request(data->repository, in_buf);
-    break;
-  default:
-    log_err("Unsupported process requested: %i", data->current_process);
-    result = -1;
-    break;
-  }
+  do {
+    switch (data->current_process) {
+    case p_receive_pack_reference_discovery:
+      log_debug("reference discovery on %s", data->repository);
+      result = reference_discovery(data->repository, out_buf, err_buf,
+                                   libgit2_reference_discovery_cb);
+      break;
+    case p_receive_pack_update_request:
+      log_debug("update request on %s", data->repository);
+      result = update_request(data->repository, in_buf);
+      break;
+    case p_receive_pack_report_status:
+      log_debug("report status on %s", data->repository);
+      result = report_status(data->repository);
+      break;
+    default:
+      log_err("Unsupported process requested: %i", data->current_process);
+      result = -1;
+      break;
+    }
+
+    if (result == 0 || result == 3) {
+      // Sucess, switch to next sub-process
+      data->current_process++;
+    }
+  } while (result == 3); // result of 3 means, that the next-process should
+                         // be executed immediately. Don't wait for new
+                         // input-data.
 
   if (result == 0) { // Success
-    // Switch to the next process
-    data->current_process++;
-
     if (data->current_process < p_receive_pack_finished) {
       // (Sub-process) finished, but there's at least another pending process.
       result = 1;
