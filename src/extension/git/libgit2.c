@@ -172,10 +172,11 @@ int libgit2_reference_discovery_cb(const char* repository, binbuf_t refs) {
     head_ref->obj_id[40] = '\0';
     strlcpy(head_ref->ref_name, "HEAD", sizeof(head_ref->ref_name));
   } else {
-    log_err("Failed to receive HEAD from %s: %s",
-            repository, giterr_last()->message);
-    git_repository_free(repo);
-    return result;
+    // TODO It is better to distinguish between
+    //      (1) no HEAD available
+    //      (2) any other error (which is a real error in this case)
+    log_warn("Failed to receive HEAD from %s: %s",
+             repository, giterr_last()->message);
   }
 
   // Fetch references from repository

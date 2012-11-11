@@ -45,6 +45,7 @@ add_executable(grs_test ${GRS_TEST_SOURCES})
 add_test(grs_test grs_test)
 add_test(grs_info ${INTEGRATION_TESTS}/grs_info.rb)
 add_test(ls_remote ${INTEGRATION_TESTS}/ls_remote.rb)
+add_test(clone_empty ${INTEGRATION_TESTS}/clone_empty.rb)
 add_test(clone ${INTEGRATION_TESTS}/clone.rb)
 add_test(pull ${INTEGRATION_TESTS}/pull.rb)
 
