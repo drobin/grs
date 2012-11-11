@@ -131,11 +131,11 @@ END_TEST
 START_TEST(fetch_receive_pack) {
   fail_unless(reference_discovery("xxx", process_receive_pack, out, err,
                                   refs_stub) == 0);
-  fail_unless(buffer_get_size(out) == 34);
-  fail_unless(strncmp(buffer_get_data(out),
-                      "000fobjid1 foo\n"
+  fail_unless(buffer_get_size(out) == 48);
+  fail_unless(memcmp(buffer_get_data(out),
+                      "001dobjid1 foo\0report-status\n"
                       "000fobjid2 bar\n"
-                      "0000", 34) == 0);
+                      "0000", 48) == 0);
   fail_unless(buffer_get_size(err) == 0);
 }
 END_TEST

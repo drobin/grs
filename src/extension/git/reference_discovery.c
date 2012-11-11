@@ -62,6 +62,15 @@ int reference_discovery(const char* repository, enum git_process process,
       buffer_append(pkt, ref->obj_id, strlen(ref->obj_id));
       buffer_append(pkt, " ", 1);
       buffer_append(pkt, ref->ref_name, strlen(ref->ref_name));
+
+      if (i == 0) {
+        // First ref also contains the capabilites supported by the server
+        // List of supported capabilites depends on the process
+        if (process == process_receive_pack) {
+          buffer_append(pkt, "\0report-status", 14);
+        }
+      }
+
       buffer_append(pkt, "\n", 1);
 
       pkt_line_write(pkt, out);
