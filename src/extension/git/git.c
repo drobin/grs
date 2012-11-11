@@ -32,22 +32,37 @@ enum upload_pack_process {
   /**
    * reference_discovery()
    */
-  p_reference_discovery = 0,
+  p_upload_pack_reference_discovery = 0,
 
   /**
    * packfile_negotiation()
    */
-  p_packfile_negotiation,
+  p_upload_pack_packfile_negotiation,
 
   /**
    * packfile_transfer()
    */
-  p_packfile_transfer,
+  p_upload_pack_packfile_transfer,
 
   /**
    * No more processes!
    */
-  p_finished
+  p_upload_pack_finished
+};
+
+/**
+ * List of processes executed by git-receive-pack
+ */
+enum receive_pack_process {
+  /**
+   * reference_discovery()
+   */
+  p_receive_pack_reference_discovery = 0,
+
+  /**
+   * No more processes!
+   */
+  p_receive_pack_finished
 };
 
 /**
@@ -83,6 +98,11 @@ struct git_receive_pack_data {
    * Path of the repository.
    */
   char* repository;
+
+  /**
+   * Currently executed process
+   */
+  enum receive_pack_process current_process;
 };
 
 static char* repository_path(const char* str) {
@@ -112,7 +132,7 @@ static int init_git_upload_pack(char *const command[], void** payload) {
   data->result.commits = binbuf_create(41);
   memset(&data->packfile_negotiation, 0,
          sizeof(struct packfile_negotiation_data));
-  data->current_process = p_reference_discovery;
+  data->current_process = p_upload_pack_reference_discovery;
   *payload = data;
 
   return 0;
@@ -131,18 +151,18 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
   }
 
   switch (data->current_process) {
-  case p_reference_discovery:
+  case p_upload_pack_reference_discovery:
     log_debug("reference discovery on %s", data->repository);
     result = reference_discovery(data->repository, out_buf, err_buf,
                                  libgit2_reference_discovery_cb);
     break;
-  case p_packfile_negotiation:
+  case p_upload_pack_packfile_negotiation:
     log_debug("packfile negotiation on %s", data->repository);
     result = packfile_negotiation(data->repository, in_buf, out_buf,
                                   &data->result, libgit2_commit_log_cb,
                                   &data->packfile_negotiation);
     break;
-  case p_packfile_transfer:
+  case p_upload_pack_packfile_transfer:
     log_debug("packfile transfer on %s", data->repository);
     result = packfile_transfer(data->repository, data->result.commits,
                                libgit2_packfile_objects_cb, out_buf);
@@ -157,12 +177,12 @@ static int git_upload_pack(buffer_t in_buf, buffer_t out_buf,
     // Switch to the next process
     data->current_process++;
 
-    if (data->current_process < p_finished) {
+    if (data->current_process < p_upload_pack_finished) {
       // (Sub-process) finished, but there's at least another pending process.
       result = 1;
     }
   } else if (result == 2) { // Success, but don't execute another sub-process
-    data->current_process = p_finished;
+    data->current_process = p_upload_pack_finished;
     result = 0;
   }
 
@@ -182,6 +202,7 @@ static int init_git_receive_pack(char *const command[], void** payload) {
 
   data = malloc(sizeof(struct git_receive_pack_data));
   data->repository = repository_path(command[1]);
+  data->current_process = p_receive_pack_reference_discovery;
 
   *payload = data;
 
@@ -190,6 +211,40 @@ static int init_git_receive_pack(char *const command[], void** payload) {
 
 static int git_receive_pack(buffer_t in_buf, buffer_t out_buf,
                             buffer_t err_buf, void* payload) {
+  struct git_receive_pack_data* data = (struct git_receive_pack_data*)payload;
+  int result;
+
+  if (buffer_get_size(out_buf) > 0 || buffer_get_size(err_buf) > 0) {
+    // You still have pending write-data, wait until everything is written back
+    // to the client
+    return 1;
+  }
+
+  switch (data->current_process) {
+  case p_receive_pack_reference_discovery:
+    log_debug("reference discovery on %s", data->repository);
+    result = reference_discovery(data->repository, out_buf, err_buf,
+                                 libgit2_reference_discovery_cb);
+    break;
+  default:
+    log_err("Unsupported process requested: %i", data->current_process);
+    result = -1;
+    break;
+  }
+
+  if (result == 0) { // Success
+    // Switch to the next process
+    data->current_process++;
+
+    if (data->current_process < p_receive_pack_finished) {
+      // (Sub-process) finished, but there's at least another pending process.
+      result = 1;
+    }
+  } else if (result == 2) { // Success, but don't execute another sub-process
+    data->current_process = p_receive_pack_finished;
+    result = 0;
+  }
+
   return 0;
 }
 
