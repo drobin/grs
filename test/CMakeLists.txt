@@ -49,6 +49,7 @@ add_test(ls_remote ${INTEGRATION_TESTS}/ls_remote.rb)
 add_test(clone_empty ${INTEGRATION_TESTS}/clone_empty.rb)
 add_test(clone ${INTEGRATION_TESTS}/clone.rb)
 add_test(pull ${INTEGRATION_TESTS}/pull.rb)
+add_test(push_empty ${INTEGRATION_TESTS}/push_empty.rb)
 
 include_directories(
   ${LIBEVENT_INCLUDE_DIR}
