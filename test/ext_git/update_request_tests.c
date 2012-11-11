@@ -19,28 +19,17 @@
 
 #include <check.h>
 
-extern TCase* capabilities_tcase();
-extern TCase* checksum_tcase();
-extern TCase* compress_tcase();
-extern TCase* git_extension_tcase();
-extern TCase* packfile_negotiation_tcase();
-extern TCase* packfile_transfer_tcase();
-extern TCase* pkt_line_tcase();
-extern TCase* reference_discovery_tcase();
-extern TCase* update_request_tcase();
+#include "../../src/extension/git/protocol.h"
 
-Suite* git_extension_suite() {
-  Suite* s = suite_create("git extension");
+START_TEST(null_repository) {
+  fail_unless(update_request(NULL) == -1);
+}
+END_TEST
 
-  suite_add_tcase(s, capabilities_tcase());
-  suite_add_tcase(s, checksum_tcase());
-  suite_add_tcase(s, compress_tcase());
-  suite_add_tcase(s, git_extension_tcase());
-  suite_add_tcase(s, packfile_negotiation_tcase());
-  suite_add_tcase(s, packfile_transfer_tcase());
-  suite_add_tcase(s, pkt_line_tcase());
-  suite_add_tcase(s, reference_discovery_tcase());
-  suite_add_tcase(s, update_request_tcase());
+TCase* update_request_tcase() {
+  TCase* tc = tcase_create("update request");
 
-  return s;
+  tcase_add_test(tc, null_repository);
+
+  return tc;
 }

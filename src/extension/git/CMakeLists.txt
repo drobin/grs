@@ -27,6 +27,7 @@ SET(LIBEXT_GIT_SOURCES
   packfile_transfer.c
   pkt_line.c
   reference_discovery.c
+  update_request.c
 )
 
 include_directories(

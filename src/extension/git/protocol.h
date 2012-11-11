@@ -253,4 +253,12 @@ int packfile_negotiation(const char* repository, buffer_t in, buffer_t out,
 int packfile_transfer(const char* repository, binbuf_t commits,
                       packfile_objects_cb obj_cb, buffer_t out);
 
+/**
+ * Implementation of the <i>Update request</i> process.
+ *
+ * @param repository The pack of the requested repository
+ * @return On success <code>0</code> is returned.
+ */
+int update_request(const char* repository);
+
 #endif  /* PROTOCOL_H */
