@@ -75,6 +75,16 @@ struct git_upload_pack_data {
   enum upload_pack_process current_process;
 };
 
+/**
+ * Payload-data for the git-receive-pack-command.
+ */
+struct git_receive_pack_data {
+  /**
+   * Path of the repository.
+   */
+  char* repository;
+};
+
 static char* repository_path(const char* str) {
   char* repository;
 
@@ -167,9 +177,27 @@ static void destroy_git_upload_pack(void* payload) {
   free(data);
 }
 
+static int init_git_receive_pack(char *const command[], void** payload) {
+  struct git_receive_pack_data* data;
+
+  data = malloc(sizeof(struct git_receive_pack_data));
+  data->repository = repository_path(command[1]);
+
+  *payload = data;
+
+  return 0;
+}
+
 static int git_receive_pack(buffer_t in_buf, buffer_t out_buf,
                             buffer_t err_buf, void* payload) {
   return 0;
+}
+
+static void destroy_git_receive_pack(void* payload) {
+  struct git_receive_pack_data* data = (struct git_receive_pack_data*)payload;
+
+  free(data->repository);
+  free(data);
 }
 
 int load_git_extension(grs_t grs) {
@@ -183,9 +211,9 @@ int load_git_extension(grs_t grs) {
   upload_pack_hooks.exec = git_upload_pack;
   upload_pack_hooks.destroy = destroy_git_upload_pack;
 
-  receive_pack_hooks.init = NULL;
+  receive_pack_hooks.init = init_git_receive_pack;
   receive_pack_hooks.exec = git_receive_pack;
-  receive_pack_hooks.destroy = NULL;
+  receive_pack_hooks.destroy = destroy_git_receive_pack;
 
   result = grs_register_command(grs, upload_pack_command, &upload_pack_hooks) -
     grs_register_command(grs, receive_pack_command, &receive_pack_hooks);
