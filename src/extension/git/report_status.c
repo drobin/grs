@@ -17,12 +17,24 @@
  *
  ******************************************************************************/
 
+#include <stdlib.h>
+
+#include "pkt_line.h"
 #include "protocol.h"
 
 int report_status(const char* repository, buffer_t out) {
+  buffer_t pkt_line;
+
   if (repository == NULL || out == NULL) {
     return -1;
   }
+
+  pkt_line = buffer_create();
+
+  buffer_append(pkt_line, "unpack ok\n", 10); // unpack-status
+  pkt_line_write(pkt_line, out);
+
+  buffer_destroy(pkt_line);
 
   return 0;
 }

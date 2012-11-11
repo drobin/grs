@@ -42,12 +42,20 @@ START_TEST(null_out) {
 }
 END_TEST
 
+START_TEST(flush_pkt) {
+  fail_unless(report_status("XXX", out) == 0);
+  fail_unless(buffer_get_size(out) == 14);
+  fail_unless(memcmp(buffer_get_data(out), "000eunpack ok\n", 14) == 0);
+}
+END_TEST
+
 TCase* report_status_tcase() {
   TCase* tc = tcase_create("status report");
   tcase_add_checked_fixture(tc, setup, teardown);
 
   tcase_add_test(tc, null_repository);
   tcase_add_test(tc, null_out);
+  tcase_add_test(tc, flush_pkt);
 
   return tc;
 }
