@@ -283,8 +283,10 @@ int update_request(const char* repository, buffer_t in);
  * Implementation of the <i>Report status</i> process.
  *
  * @param repository The pack of the requested repository
+ * @param out The output-buffer, where the function will store the
+ *            status-data.
  * @return On success <code>0</code> is returned.
  */
-int report_status(const char* repository);
+int report_status(const char* repository, buffer_t out);
 
 #endif  /* PROTOCOL_H */

@@ -244,7 +244,7 @@ static int git_receive_pack(buffer_t in_buf, buffer_t out_buf,
       break;
     case p_receive_pack_report_status:
       log_debug("report status on %s", data->repository);
-      result = report_status(data->repository);
+      result = report_status(data->repository, out_buf);
       break;
     default:
       log_err("Unsupported process requested: %i", data->current_process);

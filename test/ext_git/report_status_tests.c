@@ -21,15 +21,33 @@
 
 #include "../../src/extension/git/protocol.h"
 
+static buffer_t out;
+
+static void setup() {
+  fail_unless((out = buffer_create()) != NULL);
+}
+
+static void teardown() {
+  fail_unless(buffer_destroy(out) == 0);
+  out = NULL;
+}
+
 START_TEST(null_repository) {
-  fail_unless(report_status(NULL) == -1);
+  fail_unless(report_status(NULL, out) == -1);
+}
+END_TEST
+
+START_TEST(null_out) {
+  fail_unless(report_status("XXX", NULL) == -1);
 }
 END_TEST
 
 TCase* report_status_tcase() {
   TCase* tc = tcase_create("status report");
+  tcase_add_checked_fixture(tc, setup, teardown);
 
   tcase_add_test(tc, null_repository);
+  tcase_add_test(tc, null_out);
 
   return tc;
 }

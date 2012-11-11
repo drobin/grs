@@ -19,8 +19,8 @@
 
 #include "protocol.h"
 
-int report_status(const char* repository) {
-  if (repository == NULL) {
+int report_status(const char* repository, buffer_t out) {
+  if (repository == NULL || out == NULL) {
     return -1;
   }
 
