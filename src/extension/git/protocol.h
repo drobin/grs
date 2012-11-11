@@ -262,4 +262,12 @@ int packfile_transfer(const char* repository, binbuf_t commits,
  */
 int update_request(const char* repository, buffer_t in);
 
+/**
+ * Implementation of the <i>Report status</i> process.
+ *
+ * @param repository The pack of the requested repository
+ * @return On success <code>0</code> is returned.
+ */
+int report_status(const char* repository);
+
 #endif  /* PROTOCOL_H */

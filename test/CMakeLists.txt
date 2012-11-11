@@ -28,6 +28,7 @@ SET(GRS_TEST_SOURCES
   ext_git/packfile_transfer_tests.c
   ext_git/pkt_line_tests.c
   ext_git/reference_discovery_tests.c
+  ext_git/report_status_tests.c
   ext_git/suite.c
   ext_git/update_request_tests.c
   libgrs/acl_tests.c

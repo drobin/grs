@@ -27,6 +27,7 @@ extern TCase* packfile_negotiation_tcase();
 extern TCase* packfile_transfer_tcase();
 extern TCase* pkt_line_tcase();
 extern TCase* reference_discovery_tcase();
+extern TCase* report_status_tcase();
 extern TCase* update_request_tcase();
 
 Suite* git_extension_suite() {
@@ -40,6 +41,7 @@ Suite* git_extension_suite() {
   suite_add_tcase(s, packfile_transfer_tcase());
   suite_add_tcase(s, pkt_line_tcase());
   suite_add_tcase(s, reference_discovery_tcase());
+  suite_add_tcase(s, report_status_tcase());
   suite_add_tcase(s, update_request_tcase());
 
   return s;
