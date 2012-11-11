@@ -257,8 +257,9 @@ int packfile_transfer(const char* repository, binbuf_t commits,
  * Implementation of the <i>Update request</i> process.
  *
  * @param repository The pack of the requested repository
+ * @param in The function consumes data from this buffer
  * @return On success <code>0</code> is returned.
  */
-int update_request(const char* repository);
+int update_request(const char* repository, buffer_t in);
 
 #endif  /* PROTOCOL_H */

@@ -60,6 +60,11 @@ enum receive_pack_process {
   p_receive_pack_reference_discovery = 0,
 
   /**
+   * update_request()
+   */
+  p_receive_pack_update_request,
+
+  /**
    * No more processes!
    */
   p_receive_pack_finished
@@ -226,6 +231,10 @@ static int git_receive_pack(buffer_t in_buf, buffer_t out_buf,
     result = reference_discovery(data->repository, out_buf, err_buf,
                                  libgit2_reference_discovery_cb);
     break;
+  case p_receive_pack_update_request:
+    log_debug("update request on %s", data->repository);
+    result = update_request(data->repository, in_buf);
+    break;
   default:
     log_err("Unsupported process requested: %i", data->current_process);
     result = -1;
@@ -245,7 +254,7 @@ static int git_receive_pack(buffer_t in_buf, buffer_t out_buf,
     result = 0;
   }
 
-  return 0;
+  return result;
 }
 
 static void destroy_git_receive_pack(void* payload) {

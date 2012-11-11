@@ -17,12 +17,51 @@
  *
  ******************************************************************************/
 
+#include <stdlib.h>
+
+#include <libgrs/log.h>
+
+#include "pkt_line.h"
 #include "protocol.h"
 
-int update_request(const char* repository) {
-  if (repository == NULL) {
+int update_request(const char* repository, buffer_t in) {
+  buffer_t pkt_line;
+  int result = 0;
+
+  if (repository == NULL || in == NULL) {
     return -1;
   }
 
-  return 0;
+  if (buffer_get_size(in) == 0) {
+    // Nothing to do
+    return 1;
+  }
+
+  pkt_line = buffer_create();
+
+  log_debug("Start of update-request");
+
+  while (1) {
+    if ((result = pkt_line_read(in, pkt_line)) != 0) {
+      if (result < 0) {
+        log_err("Failed to read a pkt-line");
+      }
+
+      break;
+    }
+
+    if (buffer_get_size(pkt_line) == 0) {
+      // flush-pkt, this is the end of the the update-request
+      log_debug("End of update-request");
+      break;
+    } else {
+      log_err("Currently only flush-pkt is supported on update-request");
+      result = -1;
+      break;
+    }
+  }
+
+  buffer_destroy(pkt_line);
+
+  return result;
 }

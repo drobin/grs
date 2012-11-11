@@ -21,15 +21,47 @@
 
 #include "../../src/extension/git/protocol.h"
 
+static buffer_t in;
+
+static void setup() {
+  fail_unless((in = buffer_create()) != NULL);
+}
+
+static void teardown() {
+  fail_unless(buffer_destroy(in) == 0);
+  in = NULL;
+}
+
 START_TEST(null_repository) {
-  fail_unless(update_request(NULL) == -1);
+  fail_unless(update_request(NULL, in) == -1);
+}
+END_TEST
+
+START_TEST(null_in) {
+  fail_unless(update_request("XXX", NULL) == -1);
+}
+END_TEST
+
+START_TEST(flush_pkt) {
+  buffer_append(in, "0000", 4);
+  fail_unless(update_request("XXX", in) == 0);
+}
+END_TEST
+
+START_TEST(unsupported_line) {
+  buffer_append(in, "0008XXXX", 8);
+  fail_unless(update_request("XXX", in) == -1);
 }
 END_TEST
 
 TCase* update_request_tcase() {
   TCase* tc = tcase_create("update request");
+  tcase_add_checked_fixture(tc, setup, teardown);
 
   tcase_add_test(tc, null_repository);
+  tcase_add_test(tc, null_in);
+  tcase_add_test(tc, flush_pkt);
+  tcase_add_test(tc, unsupported_line);
 
   return tc;
 }
